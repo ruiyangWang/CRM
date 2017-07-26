@@ -1,0 +1,108 @@
+//
+//  YDAddCustomerController.m
+//  CRM
+//
+//  Created by ios on 16/7/25.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDAddCustomerController.h"
+#import "YDUpdateCusInfoS1Cell.h"
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDUpdateCusInfoS3Cell.h"
+#import "YDUpdateCusInfoS4Cell.h"
+#import "YDUpdateCusInfoS5Cell.h"
+
+@interface YDAddCustomerController ()
+{
+    NSArray *title;
+    NSArray *subTitle;
+}
+
+
+@property (weak, nonatomic) IBOutlet UITableView *myTableView;
+
+@end
+
+@implementation YDAddCustomerController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    [_myTableView registerNib(@"YDUpdateCusInfoS1Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS3Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS4Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS5Cell")];
+    
+    title = @[@[@"",@"联系电话",@"",@"意向车型",@""],@[@"",@"查看报价"],@[@"下次跟进时间",@""]];
+    subTitle = @[@[@"",@"15012733698",@"",@"请选择",@""],@[@"",@"¥201899"],@[@"6月30日 周日",@""]];
+    
+}
+
+
+
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+#pragma mark ----- custom action for UI 界面处理有关
+#pragma mark ----- custom action for DATA 数据处理有关
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+#pragma mark - Table view data source
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return 3;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if(section == 0){
+        return 5;
+    }else{
+        return 2;
+    }
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (indexPath.row == 2) {
+        return 98;
+    }else{
+        return 49;
+    }
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (indexPath.section == 0) {
+        if (indexPath.row == 0) {
+            YDUpdateCusInfoS1Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS1Cell" forIndexPath:indexPath];
+            return cell;
+        }else if(indexPath.row == 2){
+            YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS3Cell" forIndexPath:indexPath];
+            return cell;
+            
+        }else if (indexPath.row == 4){
+            YDUpdateCusInfoS1Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS1Cell" forIndexPath:indexPath];
+            return cell;
+        }
+    }else if(indexPath.section == 1 && indexPath.row == 0){
+        YDUpdateCusInfoS4Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS4Cell" forIndexPath:indexPath];
+        return cell;
+    }else if (indexPath.section == 2 && indexPath.row == 1){
+        YDUpdateCusInfoS5Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS5Cell" forIndexPath:indexPath];
+        return cell;
+    }
+    
+    YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS2Cell" forIndexPath:indexPath];
+    cell.title.text = [[title objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+    cell.subTitle.text = [[subTitle objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+    return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    NSLog(@"");
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

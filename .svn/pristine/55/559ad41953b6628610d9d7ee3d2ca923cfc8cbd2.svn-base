@@ -1,0 +1,56 @@
+//
+//  YDCustomerView.h
+//  CRM
+//
+//  Created by ios on 16/8/2.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+
+@protocol YDCustomerListViewDelegate <NSObject>
+
+/**
+ *  左边tableView的cell被选中
+ *
+ *  @param index 选中的下标
+ */
+- (void)leftTableViewDidSelectIndex:(NSInteger)index;
+
+/**
+ *  右边的tableview的cell被选中
+ *
+ *  @param index 选中的下标
+ */
+- (void)rightTableViewDidSelectIndex:(NSInteger)index;
+
+/**
+ *  搜索栏已经准备好
+ */
+- (void)searchBarDidEndEditingWithSearchBar:(UISearchBar *)searchBar;
+
+/**
+ *  点击搜索栏取消按钮
+ */
+- (void)searchBarCancelButtonClick;
+
+/**
+ *  当searchBar文字发生改变的时候
+ *
+ *  @param searchBar <#searchBar description#>
+ */
+- (void)searchBarTextChangeWithSearchBar:(UISearchBar *)searchBar;
+
+@end
+
+@interface YDCustomerListView : UIView
+
+@property (nonatomic, weak) id<YDCustomerListViewDelegate> delegate;
+
+
+/**
+ *  是否显示第一个表（左边的）
+ */
+- (void)showOneTableView:(BOOL)isShow;
+@end

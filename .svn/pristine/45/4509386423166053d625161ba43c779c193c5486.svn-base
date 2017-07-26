@@ -1,0 +1,70 @@
+//
+//  YDCustomerListController.m
+//  CRM
+//
+//  Created by ios on 16/7/15.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCustomerListController.h"
+#import "NYSegmentedControl.h"
+#import "YDCustomerListCell.h"
+
+@interface YDCustomerListController ()
+
+
+
+@end
+
+@implementation YDCustomerListController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    
+    [self setupNavigation];
+    
+}
+
+#pragma mark 设置导航栏
+- (void)setupNavigation
+{
+    
+    
+    //中间view
+    NYSegmentedControl *segment = [[NYSegmentedControl alloc] initWithItems:@[@"意向客户", @"订单客户"]];
+    segment.frame = CGRectMake(0, 0, 160.0f, 33.0f);
+    segment.titleTextColor = [UIColor colorWithRed:157 / 255.0f green:191 / 255.0f blue:226 / 255.0f alpha:1.0f];
+    segment.selectedTitleTextColor = [UIColor colorWithRed:82 / 255.0f green:142 / 255.0f blue:205 / 255.0f alpha:1.0f];
+    segment.backgroundColor = [UIColor colorWithRed:62 / 255.0f green:122 / 255.0f blue:186 / 255.0f alpha:1.0f];
+    segment.drawsGradientBackground = NO;
+    segment.borderWidth = 0;
+    segment.segmentIndicatorBorderWidth = 0;
+    segment.segmentIndicatorInset = 2.0f;
+    segment.drawsSegmentIndicatorGradientBackground = NO;
+    segment.segmentIndicatorBackgroundColor = [UIColor whiteColor];
+    segment.selectedSegmentIndex = 0;
+    [segment sizeToFit];
+    self.navigationItem.titleView = segment;
+    
+    
+    //右边加号
+    
+}
+
+
+#pragma mark - tableView delegete
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return 20;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDCustomerListCell *cell = [YDCustomerListCell cellWithTabelView:tableView];
+    return cell;
+}
+
+
+@end

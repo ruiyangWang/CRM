@@ -1,0 +1,67 @@
+//
+//  YDMainTabBarController.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/14.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDMainTabBarController.h"
+#import "ViewController.h"
+#import "YDHomeViewController.h"
+#import "YDCustomerListController.h"
+#import "YDNavigationController.h"
+
+@interface YDMainTabBarController ()
+
+@end
+
+@implementation YDMainTabBarController
+
+#pragma mark ----- vc lift cycle 生命周期
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    [self createTabViewController];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+#pragma mark ----- custom action for UI 界面处理有关
+- (void)createTabViewController {
+    YDHomeViewController *homeVC = [[YDHomeViewController alloc] initWithNibName:@"YDHomeViewController" bundle:nil];
+    homeVC.title = @"主页";
+    homeVC.tabBarItem.image = [UIImage imageNamed:@""];
+    homeVC.tabBarItem.selectedImage = [UIImage imageNamed:@""];
+    
+
+    YDCustomerListController *customerListController = [[YDCustomerListController alloc] init];
+    customerListController.title = @"客户";
+    
+    ViewController *l3 = [[ViewController alloc] init];
+    l3.title = @"我";
+    
+    self.viewControllers = @[[[UINavigationController alloc] initWithRootViewController:homeVC],
+                             [[YDNavigationController alloc] initWithRootViewController:customerListController],
+                             [[UINavigationController alloc] initWithRootViewController:l3]];
+    
+}
+#pragma mark ----- custom action for DATA 数据处理有关
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

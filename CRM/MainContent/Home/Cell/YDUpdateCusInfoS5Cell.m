@@ -1,0 +1,37 @@
+//
+//  YDUpdateCusInfoS5Cell.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUpdateCusInfoS5Cell.h"
+
+@interface YDUpdateCusInfoS5Cell()<UITextFieldDelegate>
+
+@end
+
+@implementation YDUpdateCusInfoS5Cell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+    
+    _textInfo.delegate = self;
+    
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField{
+    if (_EndEditBlack != nil) {
+        _EndEditBlack(self, textField.text);
+    }
+}
+
+@end

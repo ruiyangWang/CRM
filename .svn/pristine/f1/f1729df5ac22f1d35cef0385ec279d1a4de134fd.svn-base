@@ -1,0 +1,151 @@
+//
+//  YDImportCustomerController.m
+//  CRM
+//
+//  Created by ios on 16/8/1.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDImportCustomerController.h"
+#import <AddressBook/AddressBook.h>
+#import "YDImportCustModel.h"
+#import "YDImportCustCell.h"
+
+@interface YDImportCustomerController ()
+
+@property (nonatomic, strong) NSMutableArray *dataArray;
+
+@end
+
+@implementation YDImportCustomerController
+
+
+- (NSMutableArray *)dataArray
+{
+    if (_dataArray == nil) {
+        _dataArray = [NSMutableArray array];
+    }
+    return _dataArray;
+}
+
+- (instancetype)init
+{
+    if (self = [super init]) {
+        
+    }
+    return self;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    self.title = @"导入客户";
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
+    
+    [self loadPerson];
+}
+#pragma mark - ========================tableView delegate========================
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return self.dataArray.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+    YDImportCustCell *cell = [YDImportCustCell cellWithTableView:tableView];
+    cell.custModel = self.dataArray[indexPath.row];
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDImportCustModel *cellModel = self.dataArray[indexPath.row];
+    cellModel.isSelected = !cellModel.isSelected;
+    [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 49.0f;
+}
+
+
+
+#pragma mark - ========================获取通讯录中的联系人========================
+- (void)loadPerson
+{
+    ABAddressBookRef addressBookRef = ABAddressBookCreateWithOptions(NULL, NULL);
+    
+    if (ABAddressBookGetAuthorizationStatus() == kABAuthorizationStatusNotDetermined) {
+        ABAddressBookRequestAccessWithCompletion(addressBookRef, ^(bool granted, CFErrorRef error) {
+            
+            CFErrorRef *error1 = NULL;
+            ABAddressBookCreateWithOptions(NULL, error1);
+            [self copyAddressBook:addressBookRef];
+        });
+    }
+    else if (ABAddressBookGetAuthorizationStatus() == kABAuthorizationStatusAuthorized){
+        
+        CFErrorRef *error = NULL;
+        ABAddressBookRef addressBook = ABAddressBookCreateWithOptions(NULL, error);
+        [self copyAddressBook:addressBook];
+    }
+    else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView * alart = [[UIAlertView alloc]initWithTitle:@"温馨提示" message:@"请您设置允许APP访问您的通讯录\nSettings>General>Privacy" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alart show];
+        });
+    }
+    
+    [self.tableView reloadData];
+}
+
+- (void)copyAddressBook:(ABAddressBookRef)addressBook
+{
+    //获取所有联系人的数组
+    CFArrayRef allLinkPeople = ABAddressBookCopyArrayOfAllPeople(addressBook);
+    //获取联系人总数
+    CFIndex number = ABAddressBookGetPersonCount(addressBook);
+    //进行遍历
+    for (NSInteger i=0; i<number; i++) {
+        
+        YDImportCustModel *model = [[YDImportCustModel alloc] init];
+        
+        //获取联系人对象的引用
+        ABRecordRef  people = CFArrayGetValueAtIndex(allLinkPeople, i);
+        //获取当前联系人名字
+        NSString*firstName=(__bridge NSString *)(ABRecordCopyValue(people, kABPersonFirstNameProperty));
+        //获取当前联系人姓氏
+        NSString*lastName=(__bridge NSString *)(ABRecordCopyValue(people, kABPersonLastNameProperty));
+       
+        model.name = [NSString stringWithFormat:@"%@%@", lastName, firstName];
+        
+        //获取当前联系人的电话 数组
+        NSMutableArray * phoneArr = [[NSMutableArray alloc]init];
+        ABMultiValueRef phones= ABRecordCopyValue(people, kABPersonPhoneProperty);
+        for (NSInteger j=0; j<ABMultiValueGetCount(phones); j++) {
+            [phoneArr addObject:(__bridge NSString *)(ABMultiValueCopyValueAtIndex(phones, j))];
+        }
+        
+        model.phoneArray = [NSMutableArray arrayWithArray:phoneArr];
+        
+        [self.dataArray addObject:model];
+
+    }
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

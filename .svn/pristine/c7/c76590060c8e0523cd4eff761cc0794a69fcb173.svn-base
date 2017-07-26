@@ -1,0 +1,199 @@
+//
+//  YDCustomerDetailController.m
+//  CRM
+//
+//  Created by ios on 16/7/26.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCustomerDetailController.h"
+#import "YDCustDetailView.h"
+#import "YDTool.h"
+#import "YDAddFollowController.h"
+#import "YDFollowRecordController.h"
+#import <MessageUI/MessageUI.h>
+#import "YDCustCellModel.h"
+#import "YDCellEditController.h"
+
+@interface YDCustomerDetailController () <YDCustDetailViewDelegate,MFMessageComposeViewControllerDelegate>
+
+
+@property (nonatomic, strong) YDCustDetailView *custDetailView;
+
+@end
+
+@implementation YDCustomerDetailController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    [self setupNavgationBar];
+    
+    [self createView];
+    
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    self.tabBarController.tabBar.hidden = YES;
+    
+    [super viewWillAppear:animated];
+}
+//在页面消失的时候就让navigationbar还原样式
+-(void)viewDidlDisappear:(BOOL)animated{
+    
+    [super viewDidDisappear:animated];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark 发信息
+- (void)sendMessage
+{
+    if( [MFMessageComposeViewController canSendText] ){
+        
+        MFMessageComposeViewController * controller = [[MFMessageComposeViewController alloc]init]; //autorelease];
+        
+        controller.recipients = [NSArray arrayWithObject:@"10010"];
+        controller.body = @"测试发短信";
+        controller.messageComposeDelegate = self;
+        
+        [self presentViewController:controller animated:YES completion:^{
+            
+        }];
+        
+        [[[[controller viewControllers] lastObject] navigationItem] setTitle:@"测试短信"];//修改短信界面标题
+    }else{
+        [[[UIAlertView alloc] initWithTitle:@"提示信息" message:@"设备没有短信功能" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil] show];
+        //[self alertWithTitle:@"提示信息" msg:@"设备没有短信功能"];
+    }
+}
+
+- (void)messageComposeViewController:(MFMessageComposeViewController *)controller didFinishWithResult:(MessageComposeResult)result
+{
+    [controller dismissViewControllerAnimated:YES completion:^{
+        
+    }];//关键的一句   不能为YES
+    
+    switch ( result ) {
+            
+        case MessageComposeResultCancelled:
+            
+            //[self alertWithTitle:@"提示信息" msg:@"发送取消"];
+            break;
+        case MessageComposeResultFailed:// send failed
+            //[self alertWithTitle:@"提示信息" msg:@"发送成功"];
+            break;
+        case MessageComposeResultSent:
+            //[self alertWithTitle:@"提示信息" msg:@"发送失败"];
+            break;
+        default:
+            break;
+    }
+}
+
+#pragma mark 打电话
+- (void)callPhone
+{
+    //判断设备能不能打电话
+    NSString *deviceModel = [UIDevice currentDevice].model;
+    if ([deviceModel isEqualToString:@"iPod touch"] || [deviceModel isEqualToString:@"iPad"] || [deviceModel isEqualToString:@"iPhone Simulator"]) {
+        
+        [[[UIAlertView alloc] initWithTitle:@"提示" message:@"您的设备不能打电话" delegate:nil cancelButtonTitle:@"好的,知道了" otherButtonTitles:nil,nil] show];
+        
+    } else {
+        
+        UIWebView *phoneWebView = [[UIWebView alloc] init];
+        [self.view addSubview:phoneWebView];
+        
+        //打电话
+        NSString *phoneNum = @"10086";
+        NSString *phoneString = [NSString stringWithFormat:@"tel://%@", phoneNum];
+        NSURL *phoneURL = [NSURL URLWithString:phoneString];
+        [phoneWebView loadRequest:[NSURLRequest requestWithURL:phoneURL]];
+    }
+}
+
+#pragma mark - =====================view=====================
+
+- (void)setupNavgationBar
+{
+    self.title = @"宋海鹏";
+    
+    UIButton *messageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    messageButton.frame = CGRectMake(0, 0, 20.0f, 20.0f);
+    [messageButton setImage:[UIImage imageNamed:@"message_image"] forState:UIControlStateNormal];
+    [messageButton setImage:[UIImage imageNamed:@"message_image"] forState:UIControlStateHighlighted];
+    [messageButton addTarget:self action:@selector(sendMessage) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *messageItem = [[UIBarButtonItem alloc] initWithCustomView:messageButton];
+    
+    UIButton *spaceButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    spaceButton.frame = CGRectMake(0, 0, 1.0f, 1.0f);
+    UIBarButtonItem *spaceItem = [[UIBarButtonItem alloc] initWithCustomView:spaceButton];
+    
+    UIButton *phoneButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    phoneButton.frame = CGRectMake(0, 0, 20.0f, 20.0f);
+    [phoneButton setImage:[UIImage imageNamed:@"phone_image"] forState:UIControlStateNormal];
+    [phoneButton setImage:[UIImage imageNamed:@"phone_image"] forState:UIControlStateHighlighted];
+    [phoneButton addTarget:self action:@selector(callPhone) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *phoneItem = [[UIBarButtonItem alloc] initWithCustomView:phoneButton];
+    
+    self.navigationItem.rightBarButtonItems = @[messageItem, spaceItem, phoneItem];
+}
+
+- (void)createView
+{
+    _custDetailView = [[YDCustDetailView alloc] init];
+    _custDetailView.delegate = self;
+    _custDetailView.frame = CGRectMake(0, -1.0f, kScreenWidth, kScreenHeight - 64.0f);
+    _custDetailView.oneCellArray = [NSMutableArray arrayWithArray:[YDTool cellModelArrayWithCellName:@"intertionCustomerDetailOneCell"]];
+    _custDetailView.twoCellArray = [NSMutableArray arrayWithArray:[YDTool cellModelArrayWithCellName:@"intertionCustomerDetailTwoCell"]];
+
+    self.view = _custDetailView;
+}
+
+#pragma mark -  ========================YDCustDetailViewDelegate============================
+#pragma mark
+- (void)clickCustomerInfoWithCellModel:(YDCustCellModel *)cellModel
+{
+    if ([cellModel.editMode isEqualToString:@"1"]) {
+        
+    } else if ([cellModel.editMode isEqualToString:@"2"]) {
+        
+        //直接编辑的情况
+        YDCellEditController *vc = [[YDCellEditController alloc] init];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self presentViewController:vc animated:YES completion:^{
+                
+            }];
+        });
+        
+        
+    } else if ([cellModel.editMode isEqualToString:@"3"]) {
+        
+    } else {
+        
+    }
+}
+
+#pragma mark 添加跟进
+- (void)addFollow
+{
+    YDAddFollowController *addFollowController = [[YDAddFollowController alloc] init];
+    addFollowController.addFollowType = AddFollowTypeManual;
+    [self.navigationController pushViewController:addFollowController animated:YES];
+}
+
+#pragma mark 查看跟进记录
+- (void)followRecordDetail
+{
+    YDFollowRecordController *followRecordController = [[YDFollowRecordController alloc] init];
+    [self.navigationController pushViewController:followRecordController animated:YES];
+}
+
+@end

@@ -1,0 +1,79 @@
+//
+//  YDUserInfoCell.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/19.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUserInfoCell.h"
+
+@interface YDUserInfoCell()
+
+@property (weak, nonatomic) IBOutlet UILabel *userLevel;
+@property (weak, nonatomic) IBOutlet UILabel *userName;
+@property (weak, nonatomic) IBOutlet UILabel *carName;
+@property (weak, nonatomic) IBOutlet UILabel *lastTime;//需要自己加上 上次跟进时间：  这几个字符串
+@property (weak, nonatomic) IBOutlet UILabel *userState;// 报价 ...
+
+
+@end
+
+@implementation YDUserInfoCell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+-(void)setCustListModel:(YDCustListModel *)custListModel{
+    _userLevel.text = custListModel.customerLevel;
+    _userName.text = custListModel.customerName;
+    _carName.text = [NSString stringWithFormat:@"%@%@%@", custListModel.brandName, custListModel.carTypeName, custListModel.carsName];
+    
+    NSString *d = [NSDate stringWithDate:[NSDate dateWithString:custListModel.lastFollowTime format:@"yyyy-MM-ddHH:mm:ss"] format:@"yyyy-MM-dd"];
+
+    _lastTime.text = [NSString stringWithFormat:@"上次跟进时间：%@",d];;
+    
+    if ([custListModel.eventType isEqualToString:@"1"]) {
+        _userState.text = @"报价";
+    }else if ([custListModel.eventType isEqualToString:@"2"]){
+        _userState.text = @"试驾";
+    }else if ([custListModel.eventType isEqualToString:@"3"]){
+        _userState.text = @"下订";
+    }
+
+    
+    if ([custListModel.customerLevel isEqualToString:@"A"]) {
+        _userLevel.backgroundColor = kABackgroundColor;
+    } else if ([custListModel.customerLevel isEqualToString:@"B"]) {
+        _userLevel.backgroundColor = kBBackgroundColor;
+    } else if ([custListModel.customerLevel isEqualToString:@"C"]) {
+        _userLevel.backgroundColor = kCBackgroundColor;
+    } else if ([custListModel.customerLevel isEqualToString:@"H"]) {
+        _userLevel.backgroundColor = kHBackgroundColor;
+    }
+    
+    if ([custListModel.customerType integerValue] == 2) {
+        //订单客户
+        if ([custListModel.customerStatus integerValue] == 3) {
+            _userLevel.text = @"订";
+            _userLevel.backgroundColor =  kNavigationBackgroundColor;
+        } else if ([custListModel.customerStatus integerValue] == 4) {
+            _userLevel.text = @"取";
+            _userLevel.backgroundColor =  kGetBackgroundColor;
+        } else if ([custListModel.customerStatus integerValue] == 5) {
+            _userLevel.text = @"交";
+            _userLevel.backgroundColor =  kDeliveryBackgroundColor;
+        }
+    }
+    
+}
+
+@end

@@ -1,0 +1,107 @@
+//
+//  YDRequestAddress.h
+//  CRM
+//
+//  Created by YD_iOS on 16/7/15.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#ifndef YDRequestAddress_h
+#define YDRequestAddress_h
+
+
+#endif /* YDRequestAddress_h */
+
+/**
+ *  服务器地址
+ */
+#define kServerAddress @"http://192.168.8.177/admin-webapp/service/func"
+
+/**
+ *  服务器地址zeng
+ */
+#define kServerAddressZ @"http://192.168.8.177/admin-webapp/service/func"
+
+/**
+ *  服务器地址dong
+ */
+#define kServerAddressW @"http://192.168.1.177/admin-webapp/service/func"
+
+#define kUser kServerAddress
+
+/**
+ *  获取SID-OK
+ */
+#define kSIDRequest @"http://192.168.8.177/admin-webapp/loginapi/token"
+
+/**
+ *  获取客流列表接口-OK
+ */
+#define kListPassenger [NSString stringWithFormat:@"%@/passenger/crmListPassenger?",kUser]
+
+/**
+ *  新增客流接口/修改客流接口-（修改为非意向OK）
+ */
+#define kAddPassenger [NSString stringWithFormat:@"%@/passenger/crmAddPassenger?",kUser]
+
+/**
+ *  查询客户详情、意向信息、跟进记录接口
+ */
+#define kCrmGetCustomerInfo [NSString stringWithFormat:@"%@/customer/CrmGetCustomerInfo?",kUser]
+
+/**
+ *  获取客流详情接口
+ */
+#define kFindPassenger [NSString stringWithFormat:@"%@/crmFindPassenger?",kUser]
+
+/**
+ *  更新客流状态接口
+ */
+#define kUpdateStatus [NSString stringWithFormat:@"%@/crmUpdateStatus?",kUser]
+
+/**
+ *  客户列表接口
+ */
+#define kCustomerListAddress [NSString stringWithFormat:@"%@/customer/crmListCustomer?",kUser]
+
+/**
+ *  直接新建客户接口
+ */
+#define kAddCustomerAddress [NSString stringWithFormat:@"%@/customer/crmAddCustomer?type=save&",kUser]
+
+/**
+ *  获取客户信息接口
+ */
+#define kGetCustomerInfoAddress [NSString stringWithFormat:@"%@/customer/CrmGetCustomerInfo?type=save&",kUser]
+
+/**
+ *  获取未读消息列表接口-OK
+ */
+#define kCrmGetNotifyMsg [NSString stringWithFormat:@"%@/notify/CrmGetNotifyMsg?",kUser]
+
+/**
+ *  标记未读消息为已读接口-OK
+ */
+#define kCrmModifyNotifyMsg [NSString stringWithFormat:@"%@/notify/CrmModifyNotifyMsg?",kUser]
+
+/**
+ *  查车
+ */
+#define kChooseBrands [NSString stringWithFormat:@"%@/carType/CrmQueryBrandsAndCars?",kUser]
+
+/**
+ *  新增跟进信息
+ */
+#define kCrmAddFollow [NSString stringWithFormat:@"%@/customer/crmAddFollow?",kUser]
+
+/**
+ *  待跟进信息
+ */
+#define kCrmListFollow [NSString stringWithFormat:@"%@/customer/crmListFollow?",kUser]
+
+/**
+ *  销售总览
+ */
+#define kCrmSalesOverview [NSString stringWithFormat:@"%@/customer/crmSalesOverview?",kUser]
+
+

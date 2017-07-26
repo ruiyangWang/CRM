@@ -1,0 +1,37 @@
+//
+//  YDUpdateCusInfoS2Cell.h
+//  CRM
+//
+//  Created by YD_iOS on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface YDUpdateCusInfoS2Cell : UITableViewCell
+
+@property (weak, nonatomic) IBOutlet UILabel *title;
+@property (weak, nonatomic) IBOutlet UITextField *subTitle;
+
+@property (nonatomic, copy) NSString *titleString;
+@property (nonatomic, copy) NSString *subTitleString;
+@property (nonatomic, assign) BOOL isMust;
+@property (nonatomic, assign) BOOL ud;//cell.subTitle.userInteractionEnabled
+
+@property (nonatomic, assign) BOOL showNextButton;
+
+/**
+ 是否在键盘上显示带完成的工具条
+ */
+@property (nonatomic, assign) BOOL isShowDoneTool;
+
+
+/**
+ 限制输入文字的长度，默认无限制
+ */
+@property (nonatomic, assign) NSInteger textLongest;
+
+@property (nonatomic, strong) void (^EndEditBlack) (YDUpdateCusInfoS2Cell *cell , NSString *str);
+
+
+@end

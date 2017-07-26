@@ -1,0 +1,39 @@
+//
+//  YDCustDetailView.h
+//  CRM
+//
+//  Created by ios on 16/7/26.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@protocol YDCustDetailViewDelegate <NSObject>
+
+/**
+ *  添加跟进
+ */
+- (void)addFollow;
+
+
+/**
+ *  跟进记录查看
+ */
+- (void)followRecordDetail;
+
+@end
+
+@interface YDCustDetailView : UIView
+
+
+/**
+ *  是否订单客户
+ */
+@property (nonatomic, assign) BOOL isOrder;
+
+@property (nonatomic, weak) id<YDCustDetailViewDelegate> delegate;
+
+@property (nonatomic, strong) NSMutableArray *oneCellArray;
+@property (nonatomic, strong) NSMutableArray *twoCellArray;
+
+@end

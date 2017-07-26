@@ -1,0 +1,89 @@
+//
+//  YDSearchController.m
+//  CRM
+//
+//  Created by ios on 16/7/28.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDSearchController.h"
+
+@interface YDSearchController () 
+
+@end
+
+@implementation YDSearchController
+
+- (void) viewDidLoad
+{
+    [super viewDidLoad];
+   
+    self.view.backgroundColor = [UIColor clearColor];
+    self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+    
+    //_data = [[NSMutableArray alloc] init];
+}
+
+- (void) viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+}
+
+- (void) viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    [UIApplication sharedApplication].statusBarStyle = UIStatusBarStyleDefault;
+}
+
+- (void) viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    
+    [UIApplication sharedApplication].statusBarStyle = UIStatusBarStyleLightContent;
+}
+
+#pragma mark - UITableViewDataSource
+- (NSInteger) numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 2;
+}
+
+- (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return 1;
+}
+
+- (NSString *) tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    if (section == 0) {
+        return @"意向客户";
+    }
+    return @"订单客户";
+}
+
+- (UITableViewCell *) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    UITableViewCell *cell = [[UITableViewCell alloc] init];
+    return cell;
+}
+
+#pragma mark - UITableViewDelegate
+- (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 49.0f;
+}
+
+
+
+#pragma mark - UISearchResultsUpdating
+- (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
+//    NSString *searchText = searchController.searchBar.text;
+//    [_data removeAllObjects];
+//    for (TLUser *user in _friendsArray) {
+//        if ([user.userID containsString:searchText] || [user.username containsString:searchText] || [user.nikename containsString:searchText] || [user.pinyin containsString:searchText] || [user.initial containsString:searchText]) {
+//            [_data addObject:user];
+//        }
+//    }
+//    [self.tableView reloadData];
+}
+@end

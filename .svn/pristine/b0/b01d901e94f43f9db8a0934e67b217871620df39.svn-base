@@ -1,0 +1,60 @@
+//
+//  RequestAddress.h
+//  YDCalculateTool
+//
+//  Created by ios on 16/6/22.
+//  Copyright © 2016年 ios. All rights reserved.
+//
+
+#ifndef RequestAddress_h
+#define RequestAddress_h
+
+
+#endif /* RequestAddress_h */
+
+
+/**
+ *  服务器地址
+ */
+#define kServerAddress @"http://192.168.8.118:8080/admin-webapp/service/api/func/"
+
+
+/**
+ *  选择车系，获取车牌请求
+ */
+#define kCarBrandsRequest [NSString stringWithFormat:@"%@car/ApiQueryBrands",kServerAddress]
+
+
+/**
+ *  选择车型，获取车的配置信息
+ */
+#define kCarTypeRequest  [NSString stringWithFormat:@"%@car/ApiQueryCar",kServerAddress]
+
+
+/**
+ *  根据输入的电话号码，获取客户信息接口
+ */
+#define kGetCustInfoRequest  [NSString stringWithFormat:@"%@customer/apiFindCustomer",kServerAddress]
+
+
+/**
+ *  问题反馈接口
+ */
+#define kAddQuestionRequest [NSString stringWithFormat:@"%@feedback/apiAddFeedback",kServerAddress]
+
+
+/**
+ *  新增客户
+ */
+#define kAddCustomerRequest [NSString stringWithFormat:@"%@customer/apiAddCustomer?type=save",kServerAddress]
+
+
+/**
+ *  更新客户信息
+ */
+#define kUpdateCustomerRequest [NSString stringWithFormat:@"%@customer/apiAddCustomer?type=",kServerAddress] 
+
+
+
+
+

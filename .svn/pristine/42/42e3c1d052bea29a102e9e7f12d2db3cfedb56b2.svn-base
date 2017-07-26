@@ -1,0 +1,132 @@
+//
+//  YDFollowupDateView.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/27.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDFollowupDateView.h"
+
+#define kTextColorRed [UIColor colorWithHexString:@"F26E6E"]
+#define kBGColorBlue [UIColor colorWithHexString:@"528ECD"]
+#define kWhiteColor [UIColor colorWithHexString:@"FFFFFF"]
+
+@interface YDFollowupDateView()
+
+@property (weak, nonatomic) IBOutlet UIButton *bgButton;
+@property (weak, nonatomic) IBOutlet UILabel *labelOne;
+@property (weak, nonatomic) IBOutlet UILabel *labelTwo;
+@property (weak, nonatomic) IBOutlet UIButton *badge;
+
+@property (nonatomic, assign) NSInteger dayCount; //今日人数纪录
+
+@end
+
+@implementation YDFollowupDateView
+
+-(instancetype)initWithCoder:(NSCoder *)aDecoder{
+    if (self = [super initWithCoder:aDecoder]) {
+        [self setup];
+    }
+    return self;
+}
+
+-(void)setup{
+    [[NSBundle mainBundle]loadNibNamed:@"YDFollowupDateView" owner:self options:nil];
+    self.frame = CGRectMake(0, 0, (kScreenWidth-5)/6, 84);
+    self.view.frame = self.frame;
+    [self addSubview:self.view];
+}
+
+-(void)awakeFromNib{
+    
+    [super awakeFromNib];
+    
+    if (self.tag == 20000) {
+        [self setColor1:kWhiteColor andColor2:kTextColorRed];
+    }else if (self.tag == 20001){
+        [self setColor1:kBGColorBlue andColor2:kWhiteColor];
+    }else
+        [self setColor1:kWhiteColor andColor2:kTextColorRed];
+}
+
+- (IBAction)clickButton:(UIButton *)sender {
+    
+    for (YDFollowupDateView *subView in self.superview.subviews) {
+        
+        if (subView.tag == 20000) {//逾期按钮 tag == 20000
+            if (self.tag == subView.tag) {
+                [subView setColor1:kTextColorRed andColor2:kWhiteColor];
+            }else
+                [subView setColor1:kWhiteColor andColor2:kTextColorRed];
+            
+        }/*else if (subView.tag == 20001){
+            //今天的状态不改变
+        }*/else{
+            
+            if (self.tag == subView.tag) {
+                [subView setColor1:kBGColorBlue andColor2:kWhiteColor];
+                
+            }else{
+                [subView setColor1:kWhiteColor andColor2:kBGColorBlue];
+            }
+        }
+    }
+    
+    if (_ClickButtonBlock != nil) {
+        _ClickButtonBlock(self);
+    }
+}
+
+- (void)setColor1:(UIColor *)c1 andColor2:(UIColor *)c2{
+    
+    _bgButton.backgroundColor = c1;
+    
+    _labelOne.textColor = c2;
+    
+    if (self.tag == 20000) {
+        _labelOne.text = @"逾期\n跟进";
+    }else if(self.tag == 20001){
+        _labelOne.text = @"今日";
+    }else{
+        _labelOne.text = [NSString stringWithFormat:@"%@月",[NSDate monthWithDateOffset:self.tag-20001]];
+    }
+    
+    _labelTwo.textColor = c2;
+    
+    if (self.tag == 20000) {
+        _labelTwo.text = @"";
+    }else
+        _labelTwo.text = [NSDate dayWithDateOffset:self.tag-20001];
+    
+    _badge.backgroundColor = c2;
+    [_badge setTitleColor:c1 forState:(UIControlStateNormal)];
+    
+    if (self.tag > 20000 && CGColorEqualToColor(c1.CGColor, kWhiteColor.CGColor)) {
+        _labelOne.textColor = [UIColor colorWithHexString:@"444444"];
+        _labelTwo.textColor = [UIColor colorWithHexString:@"7B7B7B"];
+        _badge.backgroundColor = [UIColor colorWithHexString:@"D8D8D8"];
+    }
+}
+
+-(void)setHowRow:(NSInteger)howRow{
+    _howRow = howRow;
+    [_badge setTitle:[NSString stringWithFormat:@"%ld",howRow] forState:(UIControlStateNormal)];
+    
+    if (self.tag == 20000) {//逾期按钮处理
+        if (_hRow == self.tag - 20000) {
+            [self setColor1:kTextColorRed andColor2:kWhiteColor];
+        }else{
+            [self setColor1:kWhiteColor andColor2:kTextColorRed];
+        }
+    }else{//非逾期按钮处理
+        if (_hRow == self.tag - 20000) {
+            [self setColor1:kBGColorBlue andColor2:kWhiteColor];
+        }else{
+            [self setColor1:kWhiteColor andColor2:kBGColorBlue];
+        }
+    }
+}
+
+@end

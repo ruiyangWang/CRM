@@ -1,0 +1,134 @@
+//
+//  YDCustomerListCell.m
+//  CRM
+//
+//  Created by ios on 16/7/21.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#define MAS_SHORTHAND
+#define MAS_SHORTHAND_GLOBALS
+#import "Masonry.h"
+
+#import "YDCustomerListCell.h"
+
+
+
+@interface YDCustomerListCell ()
+
+@property (nonatomic, strong) UIView *bgView; //底部view
+
+@property (nonatomic, strong) UILabel *custRankLabel; //客户类型 && 客户等级
+@property (nonatomic, strong) UILabel *nameLabel; //客户名字
+@property (nonatomic, strong) UILabel *carInfoLabel; //客户选择的汽车
+@property (nonatomic, strong) UILabel *custTypeLabel; //客户业务
+@property (nonatomic, strong) UILabel *timeLabel; //业务时间
+@property (nonatomic, strong) UIView *lineView; //分割线
+
+@end
+@implementation YDCustomerListCell
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self createUI];
+        self.selectionStyle = UITableViewCellSelectionStyleNone;
+    }
+    return self;
+}
+
++ (instancetype)cellWithTabelView:(UITableView *)tableView
+{
+    static NSString *cellID = @"YDCustomerListCell";
+    
+    YDCustomerListCell *cell = [tableView dequeueReusableCellWithIdentifier:cellID];
+    if (cell == nil) {
+        cell = [[YDCustomerListCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellID];
+    }
+    return cell;
+}
+
+- (void)createUI
+{
+    _bgView = [[UIView alloc] init];
+    _bgView.frame = CGRectMake(0, 0, kScreenWidth, kCustomerListCellHeight - 0.5f);
+    [self.contentView addSubview:_bgView];
+    
+    //客户等级 或者 客户类型
+    _custRankLabel = [[UILabel alloc] init];
+    _custRankLabel.layer.cornerRadius = 16.0f;
+    _custRankLabel.layer.masksToBounds = YES;
+    _custRankLabel.backgroundColor = kHBackgroundColor;
+    _custRankLabel.text = @"H";
+    _custRankLabel.font = [UIFont systemFontOfSize:24.0f];
+    _custRankLabel.textColor = [UIColor whiteColor];
+    _custRankLabel.textAlignment = NSTextAlignmentCenter;
+    [_bgView addSubview:_custRankLabel];
+    [_custRankLabel makeConstraints:^(MASConstraintMaker *make) {
+        make.centerY.equalTo(_bgView);
+        make.left.equalTo(_bgView).with.offset(25.0f);
+        make.size.mas_offset(CGSizeMake(32.0f, 32.0f));
+    }];
+    
+    //客户姓名
+    _nameLabel = [[UILabel alloc] init];
+    _nameLabel.text = @"宋鹏鹏";
+    _nameLabel.font = [UIFont systemFontOfSize:18.0f];
+    [_bgView addSubview:_nameLabel];
+    [_nameLabel makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_custRankLabel.mas_right).with.offset(9.0f);
+        make.top.equalTo(_bgView).with.offset(13.0f);
+        make.size.mas_offset(CGSizeMake(55.0f, 25.0f));
+    }];
+    
+    //客户选择的汽车信息
+    _carInfoLabel = [[UILabel alloc] init];
+    _carInfoLabel.font = [UIFont systemFontOfSize:12.0f];
+    _carInfoLabel.textColor = kTwoTextColor;
+    _carInfoLabel.text = @"哈弗 H7 2015豪华尊享版";
+    [_bgView addSubview:_carInfoLabel];
+    [_carInfoLabel makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_custRankLabel.mas_right).with.offset(9.0f);
+        make.bottom.equalTo(_bgView).with.offset(-12.0f);
+        make.size.mas_offset(CGSizeMake(150.0f, 17.0f));
+    }];
+    
+    //客户的事件，只有意向客户有
+    _custTypeLabel = [[UILabel alloc] init];
+    _custTypeLabel.text = @"胜诉中";
+    _custTypeLabel.textColor = [UIColor colorWithRed:123 / 255.0f green:123 / 255.0f blue:123 / 255.0f alpha:1.0f];
+    _custTypeLabel.textAlignment = NSTextAlignmentCenter;
+    _custTypeLabel.layer.cornerRadius = 4.0f;
+    _custTypeLabel.layer.masksToBounds = YES;
+    _custTypeLabel.layer.borderWidth = 0.5f;
+    _custTypeLabel.layer.borderColor = [UIColor colorWithRed:217 / 255.0f green:217 / 255.0f blue:217 / 255.0f alpha:1.0f].CGColor;
+    _custTypeLabel.font = [UIFont systemFontOfSize:9.0f];
+    [_bgView addSubview:_custTypeLabel];
+    [_custTypeLabel makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_nameLabel.mas_right).with.offset(3.0f);
+        make.centerY.equalTo(_nameLabel);
+        make.size.mas_offset(CGSizeMake(42.0f, 15.0f));
+    }];
+    
+    //业务时间
+    _timeLabel = [[UILabel alloc] init];
+    _timeLabel.text = @"上次跟进:2016.9.44";
+    _timeLabel.textColor = kThreeTextColor;
+    _timeLabel.font = [UIFont systemFontOfSize:12.0f];
+    _timeLabel.textAlignment = NSTextAlignmentRight;
+    [_bgView addSubview:_timeLabel];
+    [_timeLabel makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(_bgView.mas_right).with.offset(-25.0f);
+        make.bottom.equalTo(_bgView.mas_bottom).with.offset(-12.0f);
+        make.size.mas_offset(CGSizeMake(110.0f, 17.0f));
+    }];
+    
+    //分割线
+    _lineView = [[UIView alloc] init];
+    _lineView.backgroundColor = kTableViewLineColor;
+    _lineView.frame = CGRectMake(20.0f, kCustomerListCellHeight - 0.5f, kScreenWidth, 0.5f);
+    [self.contentView addSubview:_lineView];
+}
+
+
+@end

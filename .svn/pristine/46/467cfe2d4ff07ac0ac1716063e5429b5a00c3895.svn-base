@@ -1,0 +1,387 @@
+//
+//  YDHomeViewController.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/15.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDHomeViewController.h"
+#import "YDSalesListViewController.h"
+#import "YDUpdateCustomersViewController.h"
+#import "YDFollowupViewController.h"
+#import "YDMessageVC.h"
+#import "YDUserInfoCell.h"
+#import "YDCircleProgressView.h"
+#import "YDCustomerDetailController.h"
+#import "YDDataService.h"
+
+#import "YDAppealSettleVC.h"
+#import "YDLoseSettleVC.h"
+#import "YDCalendarPicker.h"
+
+#import "YDMessageModel.h"
+#import "YDPassengerModel.h"
+#import "YDSalesModel.h"
+
+@interface YDHomeViewController ()
+
+@property (weak, nonatomic) IBOutlet UIView *headerView;
+@property (weak, nonatomic) IBOutlet UILabel *messageLabel;
+@property (weak, nonatomic) IBOutlet UIView *messageLabelBGView;
+
+@property (weak, nonatomic) IBOutlet UITableView *myTableView;
+@property (weak, nonatomic) IBOutlet YDCircleProgressView *followUpcpView;
+@property (weak, nonatomic) IBOutlet YDCircleProgressView *getCarcpView;
+@property (weak, nonatomic) IBOutlet YDCircleProgressView *listcpView;
+@property (weak, nonatomic) IBOutlet UILabel *fLabel;
+@property (weak, nonatomic) IBOutlet UILabel *gLabel;
+@property (weak, nonatomic) IBOutlet UILabel *lLabel;
+@property (weak, nonatomic) IBOutlet UILabel *passengerLabel;
+@property (weak, nonatomic) IBOutlet UILabel *followupLabel;
+
+@property (copy, nonatomic) NSMutableArray *messages;   //未读消息
+@property (copy, nonatomic) NSMutableArray *passengers; //待补充客流
+@property (copy, nonatomic) NSMutableArray *liveness; //活跃客户
+@property (copy, nonatomic) NSMutableDictionary *followups; //待跟进客流
+@property (copy, nonatomic) NSArray *salesData;//销售总览数据
+@property (copy, nonatomic) NSArray *salesScale;//销售总览比例
+@property (copy, nonatomic) NSArray *showData;//销售总览显示值
+
+@end
+
+@implementation YDHomeViewController
+
+#pragma mark ----- vc lift cycle 生命周期
+
+- (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    [self.navigationController setNavigationBarHidden:YES animated:animated];
+}
+- (void)viewDidLoad{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    
+    _messages = [NSMutableArray array];
+    _passengers = [NSMutableArray array];
+    _liveness = [NSMutableArray array ];
+    _followups = [NSMutableDictionary dictionary];
+    
+    [self updateUI];
+    
+}
+- (void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    
+    [self reloadLayer];
+    
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        [self startAllRequest];
+    });
+}
+- (void)viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+    [self.navigationController setNavigationBarHidden:NO animated:YES];
+}
+- (void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
+    //
+    NSArray *arr = @[_followUpcpView, _getCarcpView, _listcpView];
+    for (YDCircleProgressView *cpView in arr) {
+        [cpView removeView];
+    }
+}
+- (void)didReceiveMemoryWarning{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+
+- (IBAction)clickUpdateCustomersButton:(id)sender {
+    YDUpdateCustomersViewController *vc = [[YDUpdateCustomersViewController alloc]initWithNibName:@"YDUpdateCustomersViewController" bundle:nil];
+    vc.passengers = _passengers;
+    [vc setHidesBottomBarWhenPushed:YES];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+- (IBAction)clickFollowUpButton:(id)sender {
+    YDFollowupViewController *vc = [[YDFollowupViewController alloc]initWithNibName:@"YDFollowupViewController" bundle:nil];
+    vc.followups = _followups;
+    [vc setHidesBottomBarWhenPushed:YES];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+- (IBAction)clickMessageButton:(id)sender {
+    YDMessageVC *vc = [[YDMessageVC alloc]initWithNibName:@"YDMessageVC" bundle:nil];
+    vc.messages = _messages;
+    [vc setHidesBottomBarWhenPushed:YES];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+- (IBAction)clickBuyAllButton:(id)sender {
+    
+    YDSalesListViewController *vc = [[YDSalesListViewController alloc]initWithNibName:@"YDSalesListViewController" bundle:nil];
+    vc.monthDatas = _salesData;
+    vc.salesScale = _salesScale;
+    vc.textData = _showData;
+    [vc setHidesBottomBarWhenPushed:YES];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+#pragma mark ----- custom action for UI 界面处理有关
+
+- (void)updateUI{
+    
+    [_myTableView registerNib(@"YDUserInfoCell") ];
+    
+    _headerView.frame = CGRectMake(0, 0, kScreenWidth, 306);
+    _myTableView.tableHeaderView = _headerView;
+    
+    WEAKSELF
+    _myTableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+        [weakSelf startAllRequest];
+    }];
+}
+- (void)reloadLayer{
+    
+    if (_salesData.count == 0) {
+        return;
+    }
+
+    NSArray *arr = @[_followUpcpView, _getCarcpView, _listcpView];
+    for (int i = 0; i<arr.count; i++) {
+        YDCircleProgressView *cpView = arr[i];
+        CGFloat lp = [_salesScale[i] floatValue];
+        if (cpView.progress > 0) {
+            [cpView reLoadUI];
+        }else{
+            [cpView setUI];
+            cpView.progress += lp;
+        }
+    }
+    
+    _fLabel.text = [NSString stringWithFormat:@"%@",_showData[0]];
+    _gLabel.text = [NSString stringWithFormat:@"%@",_showData[1]];
+    _lLabel.text = [NSString stringWithFormat:@"%@",_showData[2]];
+    
+}
+
+#pragma mark ----- custom action for DATA 数据处理有关
+
+- (void)startAllRequest{
+
+    [self showHudInView:self.view hint:@""];
+    
+    dispatch_group_t group = dispatch_group_create();
+    //销售总览
+    dispatch_group_async(group, dispatch_get_global_queue(0,0), ^{
+        
+        NSString *url = [NSString stringWithFormat:@"%@date=month&sid=%@",kCrmSalesOverview,getNSUser(@"youdao.CRM_SID")];
+        
+        [YDDataService startSyncRequest:@{} url:url block:^(id result) {
+
+            if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+                
+                NSDictionary *d = result[@"var"];
+                
+                //月跟进
+                NSMutableArray *addCusList = [NSMutableArray array ];
+                NSInteger addTotalCount = [d[@"addTotalCount"] integerValue];
+                addTotalCount = MAX(1, addTotalCount);
+                
+                //交车数
+                NSMutableArray *giveCarList = [NSMutableArray array ];
+                NSInteger giveCarCount = [d[@"orderTotalCount"] integerValue];
+                giveCarCount = MAX(1, giveCarCount);
+                
+                for (NSDictionary *dic in d[@"addCustomerList"]) {
+                    YDCustListModel *sModel = [[YDCustListModel alloc]initWithDict:dic];
+                    [addCusList addObject:sModel];
+                    
+                    if ([sModel.customerStatus integerValue] == 5) {
+                        [giveCarList addObject:sModel];
+                    }
+                }
+                
+                //排名
+                NSMutableArray *rankList = [NSMutableArray array ];
+                NSInteger rankCount = 0;
+                for (int i=0; i<[[d objectForKey:@"rankList"] count]; i++) {
+                    NSDictionary *dic = [[d objectForKey:@"rankList"] objectAtIndex:i];
+                    YDSalesModel *sm = [[YDSalesModel alloc] initWithDict:dic];
+                    [rankList addObject:sm];
+                    
+                    if ([dic[@"memberId"] isEqualToString:d[@"currMemId"]]) {
+                        rankCount = i;
+                    }
+                }
+
+                _salesData = @[addCusList, giveCarList, rankList];
+                _salesScale = @[@(addCusList.count/addTotalCount), @(giveCarList.count/giveCarCount), @(rankCount/MAX(1, rankList.count))];
+                _showData = @[@(addCusList.count), @(giveCarList.count), @(rankCount)];
+  
+            }
+            
+        } failBlock:^(id error) {
+            NSLog(@"获取销售总览失败");
+        }];
+        
+    });
+    //获取消息
+    dispatch_group_async(group, dispatch_get_global_queue(0,0), ^{
+        
+        NSString *messageUrl = [NSString stringWithFormat:@"%@sid=%@",kCrmGetNotifyMsg,getNSUser(@"youdao.CRM_SID")];
+        
+        [YDDataService startSyncRequest:@{} url:messageUrl block:^(id result) {
+
+            if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+                
+                _messages = [NSMutableArray array];
+                for (NSDictionary *dic in [result objectForKey:@"var"]) {
+                    YDMessageModel *messageModel = [[YDMessageModel alloc]initWithDic:dic];
+                    [_messages addObject:messageModel];
+                }
+            }
+        } failBlock:^(id error) {
+            NSLog(@"消息获取失败");
+        }];
+        
+    });
+    //获取待补充客流
+    dispatch_group_async(group, dispatch_get_global_queue(0,0), ^{
+        
+        NSString *url = [NSString stringWithFormat:@"%@type=crm&sid=%@",kListPassenger,getNSUser(@"youdao.CRM_SID")];
+        [YDDataService startSyncRequest:@{} url:url block:^(id result) {
+            if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+                
+                _passengers = [NSMutableArray array];
+                for (NSDictionary *dic in [[result objectForKey:@"var"] objectForKey:@"list"]) {
+                    YDPassengerModel *m = [[YDPassengerModel alloc] initWithDic:dic];
+                    [_passengers addObject:m];
+                }
+            }
+        } failBlock:^(id error) {
+            NSLog(@"获取待补充客流失败");
+        }];
+    });
+    //获取待跟进客流
+    dispatch_group_async(group, dispatch_get_global_queue(0,0), ^{
+                
+        NSString *url = [NSString stringWithFormat:@"%@type=list&sid=%@",kCrmListFollow,getNSUser(@"youdao.CRM_SID")];
+        [YDDataService startSyncRequest:@{} url:url block:^(id result) {
+            if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+                NSArray *data = [result objectForKey:@"var"][@"list"];
+                if (![data isKindOfClass:[NSArray class]]) {
+                    return ;
+                }
+                
+                _followups = [NSMutableDictionary dictionary];
+                for (NSDictionary *dic in data) {
+                    YDCustListModel *m = [[YDCustListModel alloc] initWithDict:dic];
+                    
+                    NSDate *mDate = [NSDate dateWithString:m.nextFollowTimeString  format:@"yyyy-MM-dd HH:mm:ss"];
+                    NSString *mString = [NSDate stringWithDate:mDate format:@"yyyy-MM-dd"];
+                    
+                    NSMutableArray *mArray = [NSMutableArray arrayWithArray:[_followups objectForKey:mString]];
+                    [mArray addObject:m];
+                    [_followups setObject:mArray forKey:mString];
+                }
+            }
+        } failBlock:^(id error) {
+            NSLog(@"获取待跟进客流失败");
+        }];
+    });
+    //活跃客户
+    dispatch_group_async(group, dispatch_get_global_queue(0,0), ^{
+        
+                NSString *url = [NSString stringWithFormat:@"%@type=liveness&sid=%@",kCustomerListAddress,getNSUser(@"youdao.CRM_SID")];
+                [YDDataService startSyncRequest:@{} url:url block:^(id result) {
+                    if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+
+                        _liveness = [NSMutableArray array];
+                        for (NSDictionary *dic in result[@"var"][@"livenessList"]) {
+                            YDCustListModel *m = [[YDCustListModel alloc] initWithDict:dic];
+                            [_liveness addObject:m];
+                        }
+                    }
+
+                } failBlock:^(id error) {
+                    NSLog(@"获取活跃客户失败");
+                }];
+    });
+    
+    dispatch_group_notify(group, dispatch_get_global_queue(0,0), ^{
+        
+        // 更新UI
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            [self hideHud];
+            
+            _messageLabel.text = _messages.count>99?@"99":[NSString stringWithFormat:@"%ld",_messages.count];
+            if (_messages.count == 0) {
+                _messageLabelBGView.hidden = YES;
+            }else
+                _messageLabelBGView.hidden = NO;
+            
+            [self reloadLayer];
+            
+            _passengerLabel.text = [NSString stringWithFormat:@"%ld",_passengers.count];
+            
+            NSString *nowDateString = [NSDate stringWithDate:[NSDate new] format:@"yyyy-MM-dd"];
+            NSArray *nowFUpDatas = [_followups objectForKey:nowDateString];
+            _followupLabel.text = [NSString stringWithFormat:@"%ld",nowFUpDatas.count];
+            
+            [_myTableView.mj_header endRefreshing];
+            [_myTableView reloadData];
+        });
+    });
+}
+
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+#pragma mark - Table view data source
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return _liveness.count>9?10:_liveness.count;
+}
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+    UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, kScreenWidth, 25)];
+    label.font = [UIFont systemFontOfSize:12];
+    label.backgroundColor = [UIColor whiteColor];
+    label.textColor = kNavigationBackgroundColor;
+    label.text = @"    活跃客户";
+    return label;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+     YDUserInfoCell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUserInfoCell" forIndexPath:indexPath];
+     cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    cell.custListModel = _liveness[indexPath.row];
+     return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    YDCustListModel *custListModel = _liveness[indexPath.row];
+    
+    if (indexPath.row == 0) {
+        YDCustomerDetailController *vc = [[YDCustomerDetailController alloc] init];
+        vc.customerId = custListModel.modelId;
+        [vc setHidesBottomBarWhenPushed:YES];
+        vc.edgesForExtendedLayout = UIRectEdgeNone;
+        [self.navigationController pushViewController:vc animated:YES];
+    }else if (indexPath.row == 1){
+        YDAppealSettleVC *vc = [[YDAppealSettleVC alloc]initWithNibName:@"YDAppealSettleVC" bundle:nil];
+        [vc setHidesBottomBarWhenPushed:YES];
+        [self.navigationController pushViewController:vc animated:YES];
+    }else if (indexPath.row == 2){
+        YDLoseSettleVC *vc = [[YDLoseSettleVC alloc]initWithNibName:@"YDLoseSettleVC" bundle:nil];
+        [vc setHidesBottomBarWhenPushed:YES];
+        [self.navigationController pushViewController:vc animated:YES];
+    }else if (indexPath.row == 3){
+        YDCalendarPicker *calendarPicker = [[YDCalendarPicker alloc] initWithFrame:CGRectMake(0, 110, kScreenWidth, 220)];
+        calendarPicker.ClickDateButton = ^(YDCalendarPicker *c , NSDate *date){
+            NSLog(@"%@",date);
+        };
+        [self.view addSubview:calendarPicker];
+    }
+}
+
+@end

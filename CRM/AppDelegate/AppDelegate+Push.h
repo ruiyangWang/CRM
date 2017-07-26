@@ -1,0 +1,20 @@
+//
+//  AppDelegate+Push.h
+//  CRM
+//
+//  Created by YD_iOS on 2016/12/12.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "AppDelegate.h"
+#import "JPUSHService.h"
+
+@interface AppDelegate (Push)<JPUSHRegisterDelegate>
+
+///注册系统推送
+- (void)registRemoteNotification;
+
+///注册极光推送
+- (void)registJPushRemoteNotificationWithOptions:(NSDictionary *)launchOptions;
+
+@end

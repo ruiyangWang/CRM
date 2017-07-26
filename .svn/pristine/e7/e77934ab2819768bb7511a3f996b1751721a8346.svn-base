@@ -1,0 +1,47 @@
+//
+//  YDIntentionCustomerFMDB.h
+//  CRM
+//
+//  Created by ios on 16/9/29.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+
+@class YDImportCustModel;
+@interface YDIntentionCustomerFMDB : NSObject
+
+SINGLE_INTERFACE(YDIntentionCustomerFMDB)
+
+/**
+ *  插入导入的意向客户模型
+ *
+ *  @param importCustModel 导入的意向客户模型
+ */
+- (void)insertIntenCustomer:(YDImportCustModel *)importCustModel;
+
+/**
+ *  更新导入的意向客户模型
+ *
+ *  @param importCustModel 导入的意向客户模型
+ */
+- (void)updateCustomer:(YDImportCustModel *)importCustModel;
+
+
+/**
+ *  删除导入的意向客户模型
+ *
+ *  @param importCustModel 导入的意向客户模型
+ */
+- (void)deleteCustomer:(YDImportCustModel *)importCustModel;
+
+
+/**
+ *  查询所有的导入的意向客户
+ *
+ *  @return <#return value description#>
+ */
+- (NSArray *)queryAllImporeIntentionCustomer;
+
+@end

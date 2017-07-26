@@ -1,0 +1,13 @@
+//
+//  YDPickView.h
+//  CRM
+//
+//  Created by YD_iOS on 16/8/3.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface YDPickView : UIView
+
+@end

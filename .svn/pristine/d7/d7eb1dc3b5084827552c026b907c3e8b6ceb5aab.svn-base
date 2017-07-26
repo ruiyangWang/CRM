@@ -1,0 +1,95 @@
+//
+//  AppDelegate+Push.m
+//  CRM
+//
+//  Created by YD_iOS on 2016/12/12.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "AppDelegate+Push.h"
+
+// iOS10注册APNs所需头 件
+#ifdef NSFoundationVersionNumber_iOS_9_x_Max
+#import <UserNotifications/UserNotifications.h> 
+#endif
+
+static NSString *appKey = @"2acaffe60f0f2d921a541c7c";//公司
+//static NSString *appKey = @"348b98278bf99d0eb009a0ae";//个人
+static NSString *channel = @"Publish channel";
+static BOOL isProduction = FALSE;
+
+@implementation AppDelegate (Push)
+
+#pragma mark - 注册远程推送
+- (void)registRemoteNotification{
+    
+#ifdef __IPHONE_8_0
+    
+    if ([[UIApplication sharedApplication] respondsToSelector:@selector(registerUserNotificationSettings:)]) {
+        
+        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeBadge|UIUserNotificationTypeSound|UIUserNotificationTypeAlert categories:nil];
+        
+        [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
+        
+    } else {
+        
+        //        UIRemoteNotificationType myTypes = UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound;
+        //        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:myTypes];
+    }
+    
+#else
+    
+    UIRemoteNotificationType myTypes = UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound;
+    [[UIApplication sharedApplication] registerForRemoteNotificationTypes:myTypes];
+    
+#endif
+    
+}
+
+- (void)registJPushRemoteNotificationWithOptions:(NSDictionary *)launchOptions{
+
+    // Required
+    // notice: 3.0.0及以后版本注册可以这样写，也可以继续 旧的注册 式
+    JPUSHRegisterEntity * entity = [[JPUSHRegisterEntity alloc] init];
+    entity.types = JPAuthorizationOptionAlert|JPAuthorizationOptionBadge|JPAuthorizationOptionSound;
+    if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
+        // 可以添加 定义categories
+        // NSSet<UNNotificationCategory *> *categories for iOS10 or later
+        // NSSet<UIUserNotificationCategory *> *categories for iOS8 and iOS9
+    }
+    [JPUSHService registerForRemoteNotificationConfig:entity delegate:self];
+    
+    //如不需要使用IDFA，advertisingIdentifier 可为nil
+    [JPUSHService setupWithOption:launchOptions appKey:appKey
+                          channel:channel
+                 apsForProduction:isProduction
+            advertisingIdentifier:nil];
+}
+
+/*
+ * @brief handle UserNotifications.framework [willPresentNotification:withCompletionHandler:]
+ * @param center [UNUserNotificationCenter currentNotificationCenter] 新特性用户通知中心
+ * @param notification 前台得到的的通知对象
+ * @param completionHandler 该callback中的options 请使用UNNotificationPresentationOptions
+ */
+- (void)jpushNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(NSInteger options))completionHandler{
+    NSLog(@"C%s",__func__);//输出当前方法名
+    [[NSUserDefaults standardUserDefaults] setValue:@"1" forKey:@"isNewPassenger"];
+    [JPUSHService resetBadge];
+}
+/*
+ * @brief handle UserNotifications.framework [didReceiveNotificationResponse:withCompletionHandler:]
+ * @param center [UNUserNotificationCenter currentNotificationCenter] 新特性用户通知中心
+ * @param response 通知响应对象
+ * @param completionHandler
+ */
+- (void)jpushNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^)())completionHandler{
+    NSLog(@"C%s",__func__);//输出当前方法名
+
+    [[NSUserDefaults standardUserDefaults] setValue:@"1" forKey:@"isNewPassenger"];
+    [JPUSHService resetBadge];
+    [UIApplication sharedApplication].applicationIconBadgeNumber  =  0;
+}
+
+
+@end

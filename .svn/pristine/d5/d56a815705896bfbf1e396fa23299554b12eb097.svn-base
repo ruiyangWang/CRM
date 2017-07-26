@@ -1,0 +1,468 @@
+//
+//  YDAddCustomerController.m
+//  CRM
+//
+//  Created by ios on 16/7/25.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDAddCustomerController.h"
+#import "YDUpdateCusInfoS1Cell.h"
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDUpdateCusInfoS3Cell.h"
+#import "YDUpdateCusInfoS4Cell.h"
+#import "YDUpdateCusInfoS5Cell.h"
+#import "YDCustSectionHeaderView.h"
+#import "YDTool.h"
+#import "YDCustCellModel.h"
+#import "YDCellEditController.h"
+#import "YDSearchCarModelTVC.h"
+#import "YDBuyCarOptionController.h"
+#import "YDDataService.h"
+#import "YDCustListModel.h"
+
+
+@interface YDAddCustomerController () <UITableViewDelegate,UITableViewDataSource>
+
+@property (nonatomic, strong) YDCustSectionHeaderView *firstGroupHeaderView;
+@property (nonatomic, strong) YDCustSectionHeaderView *secondGroupHeaderView;
+
+@property (nonatomic, strong) UITableView *myTableView;
+
+@property (nonatomic, strong) NSMutableArray *cellArray;
+
+//记住tableview原来的偏移量，编辑完成后改回来
+@property (nonatomic, assign) CGPoint oldOffset;
+
+//新建的客户的参数
+@property (nonatomic, strong) NSMutableDictionary *customerInfoDic; //基本信息
+@property (nonatomic, strong) NSMutableDictionary *intentionInfoDic; //意向信息
+@property (nonatomic, strong) NSMutableDictionary *followInfoDic; //跟进信息
+@property (nonatomic, strong) NSMutableArray *carRelArray; //意向车型
+
+
+@property (nonatomic, assign) BOOL isOpenFirstGroup;
+@property (nonatomic, assign) BOOL isOpenSecondGroup;
+
+@end
+
+@implementation YDAddCustomerController
+
+- (void)dealloc
+{
+    NSLog(@"%@--调用了dealloc方法", self);
+}
+
+- (instancetype)init
+{
+    if (self = [super init]) {
+        _customerInfoDic = [NSMutableDictionary dictionary];
+        _intentionInfoDic = [NSMutableDictionary dictionary];
+        _followInfoDic = [NSMutableDictionary dictionary];
+        _carRelArray = [NSMutableArray array];
+    }
+    return self;
+}
+
+- (void)viewDidLoad {
+    
+    [super viewDidLoad];
+
+    [self createView];
+    
+    [self setupNavigationBar];
+    
+}
+
+
+
+
+#pragma mark -  ==========================从网络加载数据==============================
+#pragma mark ＝新增客户
+- (void)addCustomerRequest
+{
+    //参数
+    NSMutableDictionary *parameterDic = [NSMutableDictionary dictionary];
+    [parameterDic setValue:_customerInfoDic forKey:@"customerInfo"];
+    [parameterDic setValue:_intentionInfoDic forKey:@"intentionInfo"];
+    [parameterDic setValue:_followInfoDic forKey:@"followInfo"];
+    [parameterDic setValue:_carRelArray forKey:@"carRel"];
+    
+    //地址
+    NSString *addCustUrl = [NSString stringWithFormat:@"%@sid=%@",kAddCustomerAddress,getNSUser(@"youdao.CRM_SID")];
+    
+    [YDDataService startRequest:parameterDic url:addCustUrl block:^(id result) {
+        
+    } failBlock:^(id error) {
+        
+    }];
+}
+
+
+#pragma mark -  ==========================UI部分==============================
+- (void)createView
+{
+    _myTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight - 64.0f) style:UITableViewStylePlain];
+    _myTableView.dataSource = self;
+    _myTableView.delegate = self;
+    _myTableView.backgroundColor = kViewControllerBackgroundColor;
+    _myTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _myTableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+    [_myTableView registerNib(@"YDUpdateCusInfoS1Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS3Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS4Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS5Cell")];
+    [self.view addSubview:_myTableView];
+    
+    self.cellArray = [NSMutableArray arrayWithArray:[YDTool cellModelArrayWithCellName:@"addCustomerCell"]];
+    
+    _isOpenFirstGroup = NO;
+    _isOpenSecondGroup = NO;
+}
+
+#pragma mark 设置导航条
+- (void)setupNavigationBar
+{
+    self.title = @"新建客户";
+    self.navigationController.navigationBarHidden = NO;
+    
+    UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [doneButton setTitle:@"完成" forState:UIControlStateNormal];
+    doneButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+    [doneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    doneButton.frame = CGRectMake(0, 0, 28.0f, 20.0f);
+    [doneButton addTarget:self action:@selector(rightDoneButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *doneItem = [[UIBarButtonItem alloc] initWithCustomView:doneButton];
+    self.navigationItem.rightBarButtonItem = doneItem;
+}
+
+- (void)rightDoneButtonClick
+{
+    [self addCustomerRequest];
+    //[self.navigationController popViewControllerAnimated:YES];
+}
+
+#pragma mark - ======================Table view data source============================
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return self.cellArray.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if (section == 1 && !_isOpenFirstGroup) {
+        return 0;
+    } else if (section == 2 && !_isOpenSecondGroup) {
+        return 0;
+    }
+    return [self.cellArray[section] count];
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (indexPath.section == 0 && indexPath.row == 2) {
+        return 98;
+    } else{
+        return 49;
+    }
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    NSArray *cellArray = self.cellArray[indexPath.section];
+    YDCustCellModel *cellModel = cellArray[indexPath.row];
+    
+    if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS1Cell"]) {
+        YDUpdateCusInfoS1Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        if ([cellModel.changeButtonType isEqualToString:@"1"]) {
+            cell.cellType = CellTypeMan;
+        } else {
+            cell.cellType = CellTypeBool;
+        }
+        
+        cell.name = cellModel.title;
+        cell.subString = cellModel.subTitle;
+        cell.isMust = cellModel.isMust;
+        cell.subT.placeholder = cellModel.placeholder;
+
+        cell.ChangeBlack = ^(NSString *str){
+            [self setupParameterWithTitle:cellModel.title value:str];
+        };
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS2Cell"]) {
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.titleString = cellModel.title;
+        cell.subTitleString = cellModel.subTitle;
+        cell.subTitle.placeholder = cellModel.placeholder;
+        cell.showNextButton = cellModel.isShowArrow;
+        cell.isMust = cellModel.isMust;
+        cell.hidden = !cellModel.isShowCell;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS3Cell"]) {
+        YDUpdateCusInfoS3Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.titleName = cellModel.title;
+        cell.ChangeBlack = ^(NSString *str){
+            [self setupParameterWithTitle:cellModel.title value:str];
+        };
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS4Cell"]) {
+        YDUpdateCusInfoS4Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.t = cellModel.title;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS5Cell"]) {
+        YDUpdateCusInfoS5Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        
+        return cell;
+    }
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+    
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    
+    return 0;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    if (section == 0) {
+        return 0;
+    } else if (section == 1 || section == 2) {
+        return 49.0f;
+    }
+    return 10.0f;
+}
+
+
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    WEAKSELF
+    if (section == 1) {
+        
+        self.firstGroupHeaderView.openCellBlock = ^(BOOL isOpen){
+            weakSelf.isOpenFirstGroup = isOpen;
+            NSIndexSet *indexSet = [[NSIndexSet alloc] initWithIndex:1];
+            [weakSelf.myTableView reloadSections:indexSet withRowAnimation:UITableViewRowAnimationFade];
+        };
+        return self.firstGroupHeaderView;
+    } else if (section == 2) {
+        
+        self.secondGroupHeaderView.openCellBlock = ^(BOOL isOpen){
+            weakSelf.isOpenSecondGroup = isOpen;
+            NSIndexSet *indexSet = [[NSIndexSet alloc] initWithIndex:2];
+            [weakSelf.myTableView reloadSections:indexSet withRowAnimation:UITableViewRowAnimationFade];
+        };
+        return self.secondGroupHeaderView;
+    }
+    UIView *view = [[UIView alloc] init];
+    view.backgroundColor = kViewControllerBackgroundColor;
+    return view;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+   
+    NSArray *cellArray = self.cellArray[indexPath.section];
+    YDCustCellModel *cellModel = cellArray[indexPath.row];
+    
+    WEAKSELF
+    if ([cellModel.editMode isEqualToString:@"1"]) {
+    
+        //选择车型
+        [self chooseCarWithTableView:tableView cellModel:cellModel chooseBlock:^(NSMutableDictionary *dic) {
+            [weakSelf setupParameterWithTitle:cellModel.title value:dic];
+        }];
+        
+    } else if ([cellModel.editMode isEqualToString:@"2"]) {
+        
+        //直接编辑的情况
+        [self directEditWithTableView:tableView cellModel:cellModel indexPath:indexPath hearderHeight:0 chooseBlock:^(NSString *str) {
+           [weakSelf setupParameterWithTitle:cellModel.title value:str];
+        }];
+     
+    } else if ([cellModel.editMode isEqualToString:@"3"]) {
+        
+        //日历选择
+        [self calendarPickerWithTableView:tableView cellModel:cellModel indexPath:indexPath hearderHeight:0 chooseBlock:^(NSString *str) {
+            [weakSelf setupParameterWithTitle:cellModel.title value:str];
+        }];
+    
+    } else if ([cellModel.editMode isEqualToString:@"4"]) {
+        
+        //购车条件选择
+        [self buyCarOptionWithTableView:tableView cellModel:cellModel chooseBlock:^(NSString *str) {
+            
+        }];
+        
+    } else if ([cellModel.editMode isEqualToString:@"5"]) {
+        //地址选择
+        
+        
+    } else if ([cellModel.editMode isEqualToString:@"6"]) {
+    
+        //时间选择
+        [self dateChooseWithTableView:tableView cellModel:cellModel indexPath:indexPath hearderHeight:0 chooseBlock:^(NSString *str) {
+            [weakSelf setupParameterWithTitle:cellModel.title value:str];
+        }];
+        
+    } else {
+    
+    
+    }
+    
+}
+
+/**
+ *  设置上传参数
+ *
+ *  @param cellName cell标题
+ *  @param value    选择的值
+ */
+#pragma mark - ================设置上传参数（cellName标题、value选择的值）====================
+- (void)setupParameterWithTitle:(NSString *)title value:(id)value
+{
+    //上传的格式
+    NSDictionary *dic = @{@"customerInfo":
+                              @{
+                                  @"customerName":@"凤凰传奇",
+                                  @"customerPhone":@"15555665566",
+                                  @"gender":@(1),
+                                  @"isDrive":@(0),
+                                  @"birthday":@"1991-03-18",
+                                  @"idNumber":@"123456999988887777",
+                                  @"qq":@"1546353933",
+                                  @"weixin":@"1546353933",
+                                  @"address":@"中国",
+                                  @"familyStatus":@(1)
+                                  } ,
+                          @"intentionInfo":
+                              @{
+                                  @"customerLevel":@"H",
+                                  @"purpose":@"家用",
+                                  @"concerns":@"品牌",
+                                  @"type":@(1),
+                                  @"isLoan":@(0)
+                                  } ,
+                          @"followInfo":
+                              @{
+                                  @"nextFollowTime":@"2016-08-25 00:00:00",
+                                  @"remark":@"我只是个备注"
+                                  } ,
+                          @"carRel":
+                              @[
+                                  @{
+                                      @"brandsId":@"2",
+                                      @"carsId":@"2",
+                                      @"carTypeId":@"2",
+                                      @"type":@(1)
+                                      },
+                                  @{
+                                      @"brandsId":@"3",
+                                      @"carsId":@"3",
+                                      @"carTypeId":@"3",
+                                      @"type":@(2)
+                                      },
+                                  @{
+                                      @"brandsId":@"4",
+                                      @"carsId":@"4",
+                                      @"carTypeId":@"4",
+                                      @"type":@(2)
+                                      }
+                                  ]
+                          
+                          };
+    
+    if ([title isEqualToString:@"客户名称"]) {
+        if ([value isEqualToString:@"女士"]) {
+            [_customerInfoDic setValue:@(0) forKey:@"gender"];
+        } else if ([value isEqualToString:@"男士"]) {
+            [_customerInfoDic setValue:@(1) forKey:@"gender"];
+        } else {
+            [_customerInfoDic setValue:value forKey:@"customerName"];
+        }
+    } else if ([title isEqualToString:@"联系电话"]) {
+        [_customerInfoDic setValue:value forKey:@"customerPhone"];
+    } else if ([title isEqualToString:@"客户级别"]) {
+        if ([value isEqualToString:@"a级"]) {
+            [_intentionInfoDic setValue:@"A" forKey:@"customerLevel"];
+        } else if ([value isEqualToString:@"b级"]) {
+            [_intentionInfoDic setValue:@"B" forKey:@"customerLevel"];
+        } else if ([value isEqualToString:@"c级"]) {
+            [_intentionInfoDic setValue:@"C" forKey:@"customerLevel"];
+        } else if ([value isEqualToString:@"h级"]) {
+            [_intentionInfoDic setValue:@"H" forKey:@"customerLevel"];
+        } else if ([value isEqualToString:@"战败"]) {
+            
+        } else{
+            [_intentionInfoDic setValue:@"A" forKey:@"customerLevel"];
+        }
+    } else if ([title isEqualToString:@"意向车型"]) {
+        [value setValue:@(1) forKey:@"type"];
+        [_carRelArray addObject:value];
+    } else if ([title isEqualToString:@"是否开车"]) {
+        YDCustCellModel *cellModel = _cellArray[0][5];
+        if ([value isEqualToString:@"是"]) {
+            [_customerInfoDic setValue:@(1) forKey:@"isDrive"];
+            cellModel.isShowCell = YES;
+            [self.myTableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:5 inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
+        } else {
+            [_customerInfoDic setValue:@(0) forKey:@"isDrive"];
+            cellModel.isShowCell = NO;
+            [self.myTableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:5 inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
+        }
+        
+    } else if ([title isEqualToString:@"保有车型"]) {
+        [value setValue:@(0) forKey:@"type"];
+        [_carRelArray addObject:value];
+    } else if ([title isEqualToString:@"出生日期"]) {
+        
+    } else if ([title isEqualToString:@"身份证号"]) {
+        [_customerInfoDic setValue:value forKey:@"idNumber"];
+    } else if ([title isEqualToString:@"微信／QQ"]) {
+        [_customerInfoDic setValue:value forKey:@"weixin"];
+    } else if ([title isEqualToString:@"家庭情况"]) {
+        
+    } else if ([title isEqualToString:@"居住地址"]) {
+        
+    } else if ([title isEqualToString:@"竞争车型1"]) {
+        [value setValue:@(2) forKey:@"type"];
+        [_carRelArray addObject:value];
+    } else if ([title isEqualToString:@"竞争车型2"]) {
+        [value setValue:@(2) forKey:@"type"];
+        [_carRelArray addObject:value];
+    } else if ([title isEqualToString:@"购车用途"]) {
+        
+    } else if ([title isEqualToString:@"购车类型"]) {
+        
+    } else if ([title isEqualToString:@"购车关注点"]) {
+        
+    } else if ([title isEqualToString:@"是否贷款"]) {
+        
+    } else if ([title isEqualToString:@"下次跟进时间"]) {
+        [_followInfoDic setValue:value forKey:@"nextFollowTime"];
+    } else if ([title isEqualToString:@""]) {
+        
+    } else if ([title isEqualToString:@""]) {
+        
+    }
+}
+
+
+#pragma mark - ================懒加载====================
+- (YDCustSectionHeaderView *)firstGroupHeaderView
+{
+    if (!_firstGroupHeaderView) {
+        _firstGroupHeaderView = [YDCustSectionHeaderView custSectionHeaderViewWithTitle:@"客户信息"];
+    }
+    return _firstGroupHeaderView;
+}
+
+- (YDCustSectionHeaderView *)secondGroupHeaderView
+{
+    if (!_secondGroupHeaderView) {
+        _secondGroupHeaderView = [YDCustSectionHeaderView custSectionHeaderViewWithTitle:@"意向信息"];
+    }
+    return _secondGroupHeaderView;
+}
+
+
+@end

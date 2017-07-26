@@ -1,0 +1,92 @@
+//
+//  YDCustomerDetailController.m
+//  CRM
+//
+//  Created by ios on 16/7/26.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCustomerDetailController.h"
+#import "YDCustDetailView.h"
+
+@interface YDCustomerDetailController ()
+
+
+@property (nonatomic, strong) YDCustDetailView *custDetailView;
+
+@end
+
+@implementation YDCustomerDetailController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    [self setupNavgationBar];
+    
+    [self createView];
+    
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    self.tabBarController.tabBar.hidden = YES;
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
+    [self.navigationController.navigationBar setShadowImage:[UIImage new]];
+    [super viewWillAppear:animated];
+}
+//在页面消失的时候就让navigationbar还原样式
+-(void)viewDidlDisappear:(BOOL)animated{
+    
+    [self.navigationController.navigationBar setBackgroundImage:nil forBarMetrics:UIBarMetricsDefault];
+    [self.navigationController.navigationBar setShadowImage:nil];
+    [super viewDidDisappear:animated];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark 发信息
+- (void)sendMessage
+{
+    
+}
+#pragma mark 打电话
+- (void)callPhone
+{
+
+}
+
+#pragma mark - =====================view=====================
+
+- (void)setupNavgationBar
+{
+    self.title = @"善魍魉";
+    
+    UIButton *messageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    messageButton.frame = CGRectMake(0, 0, 20.0f, 20.0f);
+    [messageButton setImage:[UIImage imageNamed:@"message_image"] forState:UIControlStateNormal];
+    [messageButton setImage:[UIImage imageNamed:@"message_image"] forState:UIControlStateHighlighted];
+    [messageButton addTarget:self action:@selector(sendMessage) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *messageItem = [[UIBarButtonItem alloc] initWithCustomView:messageButton];
+    
+    UIButton *phoneButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    phoneButton.frame = CGRectMake(0, 0, 20.0f, 20.0f);
+    [phoneButton setImage:[UIImage imageNamed:@"phone_image"] forState:UIControlStateNormal];
+    [phoneButton setImage:[UIImage imageNamed:@"phone_image"] forState:UIControlStateHighlighted];
+    [phoneButton addTarget:self action:@selector(callPhone) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *phoneItem = [[UIBarButtonItem alloc] initWithCustomView:phoneButton];
+    
+    self.navigationItem.rightBarButtonItems = @[messageItem, phoneItem];
+}
+
+- (void)createView
+{
+    _custDetailView = [[YDCustDetailView alloc] init];
+    _custDetailView.frame = CGRectMake(0, -1.0f, kScreenWidth, kScreenHeight - 64.0f);
+    self.view = _custDetailView;
+}
+
+@end

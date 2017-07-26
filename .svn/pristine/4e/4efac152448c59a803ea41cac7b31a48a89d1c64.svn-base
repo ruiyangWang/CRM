@@ -1,0 +1,183 @@
+//
+//  YDCustDetailView.m
+//  CRM
+//
+//  Created by ios on 16/7/26.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCustDetailView.h"
+#import "YDUpdateCusInfoS1Cell.h"
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDUpdateCusInfoS3Cell.h"
+#import "YDUpdateCusInfoS4Cell.h"
+#import "YDUpdateCusInfoS5Cell.h"
+#import "YDCustSectionHeaderView.h"
+
+
+@interface YDCustDetailView () <UITableViewDelegate,UITableViewDataSource>
+{
+    NSArray *title;
+    NSArray *subTitle;
+}
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *leadx;
+
+@property (weak, nonatomic) IBOutlet UIView *topBgView; //顶部蓝色背景
+@property (weak, nonatomic) IBOutlet UIButton *basicInfoButton; //基本信息按钮
+@property (weak, nonatomic) IBOutlet UIButton *otherInfoButton; //其它信息按钮
+@property (nonatomic, strong) UIView *slideBarView; //滑动条
+@property (weak, nonatomic) IBOutlet UITableView *oneTableView;
+@property (weak, nonatomic) IBOutlet UITableView *twoTableView;
+
+@end
+@implementation YDCustDetailView
+
+- (instancetype)init
+{
+    if (self = [super init]) {
+        self = [[[NSBundle mainBundle] loadNibNamed:@"YDCustDetailView" owner:self options:nil] lastObject];
+        [self createUI];
+        
+    }
+    return self;
+}
+
+- (void)createUI
+{
+    self.oneTableView.dataSource = self;
+    self.oneTableView.delegate = self;
+    self.twoTableView.dataSource = self;
+    self.twoTableView.delegate = self;
+    
+    [self.oneTableView registerNib(@"YDUpdateCusInfoS1Cell")];
+    [self.oneTableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    [self.oneTableView registerNib(@"YDUpdateCusInfoS3Cell")];
+    [self.oneTableView registerNib(@"YDUpdateCusInfoS4Cell")];
+    [self.oneTableView registerNib(@"YDUpdateCusInfoS5Cell")];
+    
+    [self.twoTableView registerNib(@"YDUpdateCusInfoS1Cell")];
+    [self.twoTableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    [self.twoTableView registerNib(@"YDUpdateCusInfoS3Cell")];
+    [self.twoTableView registerNib(@"YDUpdateCusInfoS4Cell")];
+    [self.twoTableView registerNib(@"YDUpdateCusInfoS5Cell")];
+    
+    title = @[@[@"",@"联系电话",@"意向级别",@"意向车型"], @[@"出生日期", @"身份证号", @"微信/QQ", @"",@"居住地址"], @[@"竞争车型1", @"竞争车型2", @"购车用途", @"购车类型", @"购车关注点", @""], @[@"下次跟进时间",@""]];
+    subTitle = @[@[@"",@"15012733698",@"K级",@"2156年的大黄蜂"],@[@"2031.21.25", @"98532455", @"454asd", @"",@"201899"], @[@"竞争车型1", @"竞争车型2", @"购车用途", @"购车类型", @"购车关注点", @""], @[@"6月30日 周日",@""]];
+    
+    self.topBgView.backgroundColor = kNavigationBackgroundColor;
+    
+    self.slideBarView = [[UIView alloc] init];
+    self.slideBarView.backgroundColor = [UIColor whiteColor];
+    self.slideBarView.frame = CGRectMake(self.basicInfoButton.x - 5.0f, 47.0f, 70.0f, 3.0f);
+    [self.topBgView addSubview:self.slideBarView];
+    
+}
+- (IBAction)basicInfoClick {
+    [UIView animateWithDuration:0.5f animations:^{
+
+        [self.slideBarView xSlideValue:-160.0f];
+        
+        _leadx.constant = _leadx.constant + kScreenWidth;
+        
+        [self.oneTableView layoutIfNeeded];
+        [self.twoTableView layoutIfNeeded];
+    }];
+}
+- (IBAction)otherInfoClick {
+    [UIView animateWithDuration:0.5f animations:^{
+
+        [self.slideBarView xSlideValue:160.0f];
+        //self.slideBarView.frame = CGRectMake(self.basicInfoButton.maxX - 5.0f, 47.0f, 70.0f, 3.0f);
+        
+        _leadx.constant = _leadx.constant - kScreenWidth;
+        [self.oneTableView layoutIfNeeded];
+        [self.twoTableView layoutIfNeeded];
+    }];
+}
+
+#pragma mark - ================tableview delegate========================
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 4;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if(section == 0){
+        return 4;
+    } else if (section == 1) {
+        return 5;
+    } else if (section == 2) {
+        return 6;
+    } else{
+        return 2;
+    }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    return 49;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (indexPath.section == 0) {
+        if (indexPath.row == 0) {
+            YDUpdateCusInfoS1Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS1Cell" forIndexPath:indexPath];
+            return cell;
+        }
+    }else if(indexPath.section == 1 && indexPath.row == 3){
+        YDUpdateCusInfoS4Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS4Cell" forIndexPath:indexPath];
+        return cell;
+    } else if (indexPath.section == 2 && indexPath.row == 5) {
+        YDUpdateCusInfoS1Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS1Cell" forIndexPath:indexPath];
+        return cell;
+    } else if (indexPath.section == 3 && indexPath.row == 1){
+        YDUpdateCusInfoS5Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS5Cell" forIndexPath:indexPath];
+        return cell;
+    }
+    
+    YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS2Cell" forIndexPath:indexPath];
+    cell.title.text = [[title objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+    cell.subTitle.text = [[subTitle objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    
+    return 0;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    if (section == 0) {
+        return 0;
+    } else if (section == 1 || section == 2) {
+        return 49.0f;
+    }
+    return 10.0f;
+}
+
+
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    if (section == 1) {
+        YDCustSectionHeaderView *custSectionHeaderView = [YDCustSectionHeaderView custSectionHeaderViewWithTitle:@"客户信息"];
+        return custSectionHeaderView;
+    } else if (section == 2) {
+        YDCustSectionHeaderView *custSectionHeaderView = [YDCustSectionHeaderView custSectionHeaderViewWithTitle:@"意向信息"];
+        return custSectionHeaderView;
+    }
+    UIView *view = [[UIView alloc] init];
+    view.backgroundColor = [UIColor clearColor];
+    return view;
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    NSLog(@"");
+}
+
+@end

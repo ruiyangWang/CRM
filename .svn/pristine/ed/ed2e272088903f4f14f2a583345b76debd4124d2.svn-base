@@ -1,0 +1,23 @@
+//
+//  YDCustomerDetailController.h
+//  CRM
+//
+//  Created by ios on 16/7/26.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDViewController.h"
+
+typedef NS_ENUM(NSInteger, YDCustomerType) {
+    YDCustomerTypeintertion,        //意向客户
+    YDCustomerTypeOrder             //订单客户
+};
+
+@interface YDCustomerDetailController : YDViewController
+
+/**
+ *  客户详情类型（意向客户／订单客户）
+ */
+@property (nonatomic, assign) YDCustomerType customerDetailType;
+
+@end

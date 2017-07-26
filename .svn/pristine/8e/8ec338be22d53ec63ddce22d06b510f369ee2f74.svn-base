@@ -1,0 +1,55 @@
+//
+//  YDUserInfoCell.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/19.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUserInfoCell.h"
+
+@interface YDUserInfoCell()
+
+@property (weak, nonatomic) IBOutlet UILabel *userLevel;
+@property (weak, nonatomic) IBOutlet UILabel *userName;
+@property (weak, nonatomic) IBOutlet UILabel *carName;
+@property (weak, nonatomic) IBOutlet UILabel *lastTime;//需要自己加上 上次跟进时间：  这几个字符串
+@property (weak, nonatomic) IBOutlet UILabel *userState;// 报价 ...
+
+
+@end
+
+@implementation YDUserInfoCell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+-(void)setCustListModel:(YDCustListModel *)custListModel{
+    _custListModel = custListModel;
+    
+    _userLevel.text = custListModel.customerLevel;
+    _userName.text = custListModel.customerName;
+    _carName.text = [NSString stringWithFormat:@"%@%@%@", custListModel.brandName, custListModel.carTypeName, custListModel.carsName];
+    _lastTime.text = [NSString stringWithFormat:@"上次跟进时间：%@",custListModel.createTimeString];;
+    //_userState.text = custListModel.customerStatus;
+    
+    if ([custListModel.customerLevel isEqualToString:@"A"]) {
+        _userLevel.backgroundColor = kABackgroundColor;
+    } else if ([custListModel.customerLevel isEqualToString:@"B"]) {
+        _userLevel.backgroundColor = kBBackgroundColor;
+    } else if ([custListModel.customerLevel isEqualToString:@"C"]) {
+        _userLevel.backgroundColor = kCBackgroundColor;
+    } else if ([custListModel.customerLevel isEqualToString:@"H"]) {
+        _userLevel.backgroundColor = kHBackgroundColor;
+    }
+}
+
+@end

@@ -1,0 +1,22 @@
+//
+//  YDCalendarPicker.h
+//  calendar
+//
+//  Created by YD_iOS on 16/8/12.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+typedef enum
+{
+    YDCalendarPickerStyleDays = 0,
+    YDCalendarPickerStyleWeeks
+}YDCalendarPickerStyle;
+
+@interface YDCalendarPicker : UIView
+
+@property (nonatomic, strong) UITableView *tableView;
+@property (nonatomic, copy) void (^ClickDateButton) (YDCalendarPicker *calendar, NSDate *date );
+
+@end

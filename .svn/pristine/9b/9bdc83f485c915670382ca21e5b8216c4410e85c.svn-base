@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="YDMessageVC">
+            <connections>
+                <outlet property="myTableView" destination="k6S-9L-1tE" id="WbJ-h2-IT9"/>
+                <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="k6S-9L-1tE">
+                    <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <connections>
+                        <outlet property="dataSource" destination="-1" id="YbV-BC-dAZ"/>
+                        <outlet property="delegate" destination="-1" id="ggm-wJ-8F7"/>
+                    </connections>
+                </tableView>
+            </subviews>
+            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="k6S-9L-1tE" secondAttribute="bottom" id="ERd-fZ-ZjX"/>
+                <constraint firstItem="k6S-9L-1tE" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="Epr-9u-m7H"/>
+                <constraint firstItem="k6S-9L-1tE" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" constant="64" id="OoK-pI-dDx"/>
+                <constraint firstAttribute="trailing" secondItem="k6S-9L-1tE" secondAttribute="trailing" id="yor-jC-hxv"/>
+            </constraints>
+            <variation key="default">
+                <mask key="subviews">
+                    <exclude reference="k6S-9L-1tE"/>
+                </mask>
+                <mask key="constraints">
+                    <exclude reference="ERd-fZ-ZjX"/>
+                    <exclude reference="Epr-9u-m7H"/>
+                    <exclude reference="OoK-pI-dDx"/>
+                    <exclude reference="yor-jC-hxv"/>
+                </mask>
+            </variation>
+            <variation key="widthClass=compact">
+                <mask key="subviews">
+                    <include reference="k6S-9L-1tE"/>
+                </mask>
+                <mask key="constraints">
+                    <include reference="ERd-fZ-ZjX"/>
+                    <include reference="Epr-9u-m7H"/>
+                    <include reference="OoK-pI-dDx"/>
+                    <include reference="yor-jC-hxv"/>
+                </mask>
+            </variation>
+        </view>
+    </objects>
+</document>

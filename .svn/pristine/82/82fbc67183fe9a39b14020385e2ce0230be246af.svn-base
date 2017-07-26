@@ -1,0 +1,27 @@
+//
+//  YDCustomerModel.h
+//  CRM
+//
+//  Created by ios on 16/8/23.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDBaseModel.h"
+
+@class YDCustInfoModel,YDIntentionInfoModel,YDFollowInfoModel,YDDefeatInfoModel;
+@interface YDCustomerModel : YDBaseModel
+
+@property (nonatomic, strong) YDCustInfoModel *customerInfo;
+
+@property (nonatomic, strong) YDIntentionInfoModel *intentionInfo;
+
+@property (nonatomic, strong) NSMutableArray *listArray;
+
+@property (nonatomic, strong) NSMutableArray *listApplyArray;
+
+@property (nonatomic, strong) id carRel;
+
+@property (nonatomic, strong) id followInfo;
+
+
+@end

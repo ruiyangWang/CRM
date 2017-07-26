@@ -1,0 +1,43 @@
+//
+//  DBManager.h
+//  CRM
+//
+//  Created by ios on 16/9/18.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import "FMDatabaseQueue.h"
+#import "FMDatabase.h"
+
+@interface DBManager : NSObject
+
+SINGLE_INTERFACE(DBManager)
+
+/*!
+ @brief     事务队列
+ */
+@property (nonatomic, readonly, strong) FMDatabaseQueue *dbQueue;
+
+
+/**
+ *  异部执行数据库操作
+*/
+-(void) inDatabase:(void(^)(FMDatabase*))block;
+/**
+ *  异部执行数据库事务操作
+ */
+-(void) inTransaction:(void (^)(FMDatabase *db, BOOL *rollback))block;
+
+/*
+ @brief     删除数据库文件
+ */
++ (void)removeDBFile;
+
+/*!
+     创建数据库，创建前先检查数据库是否存在，考虑修改为带参数是否覆盖
+ */
+- (void)createDataBase;
+
+
+@end

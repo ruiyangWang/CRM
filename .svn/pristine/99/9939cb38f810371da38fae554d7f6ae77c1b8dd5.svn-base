@@ -1,0 +1,73 @@
+//
+//  YDMyInfoController.m
+//  CRM
+//
+//  Created by ios on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDMyInfoController.h"
+#import "YDUserInfoController.h"
+#import "YDUserSetController.h"
+#import "YDImportCustomerController.h"
+
+@interface YDMyInfoController ()
+
+
+@end
+
+@implementation YDMyInfoController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    
+    self.navigationController.navigationBarHidden = YES;
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    if (self.tabBarController.selectedIndex != 2) {
+        [self.navigationController setNavigationBarHidden:YES animated:NO];
+    }else{
+        [self.navigationController setNavigationBarHidden:YES animated:YES];
+    }
+
+    [super viewWillAppear:animated];
+}
+
+-(void)viewWillDisappear:(BOOL)animated{
+    
+    [self.navigationController setNavigationBarHidden:NO animated:YES];
+    [super viewWillDisappear:animated];
+}
+
+#pragma mark 个人信息  界面
+- (IBAction)userInfomation {
+    
+    YDUserInfoController *userInfoController = [[YDUserInfoController alloc] init];
+    [userInfoController setHidesBottomBarWhenPushed:YES];
+    [self.navigationController pushViewController:userInfoController animated:YES];
+}
+
+#pragma mark 设置
+- (IBAction)userSet {
+    YDUserSetController *userSetController = [[YDUserSetController alloc] init];
+    [userSetController setHidesBottomBarWhenPushed:YES];
+    [self.navigationController pushViewController:userSetController animated:YES];
+}
+
+#pragma mark 导入客户
+- (IBAction)importCustomer {
+    YDImportCustomerController *importCustomerController = [[YDImportCustomerController alloc] init];
+    [importCustomerController setHidesBottomBarWhenPushed:YES];
+    [self.navigationController pushViewController:importCustomerController animated:YES];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+@end

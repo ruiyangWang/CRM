@@ -1,0 +1,485 @@
+//
+//  YDCustomerDetailController.m
+//  CRM
+//
+//  Created by ios on 16/7/26.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCustomerDetailController.h"
+#import "YDTool.h"
+#import "YDAddFollowController.h"
+#import "YDFollowRecordController.h"
+#import <MessageUI/MessageUI.h>
+#import "YDCustCellModel.h"
+#import "YDCellEditController.h"
+#import "YDCustSectionHeaderView.h"
+
+//cell
+#import "YDUpdateCusInfoS1Cell.h"
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDUpdateCusInfoS3Cell.h"
+#import "YDUpdateCusInfoS4Cell.h"
+#import "YDUpdateCusInfoS5Cell.h"
+
+
+
+@interface YDCustomerDetailController () <MFMessageComposeViewControllerDelegate,UITableViewDataSource,UITableViewDelegate>
+
+
+
+@property (strong, nonatomic)  UIView *topBgView; //顶部蓝色背景
+@property (strong, nonatomic)  UIButton *basicInfoButton; //基本信息按钮
+@property (strong, nonatomic)  UIButton *otherInfoButton; //其它信息按钮
+@property (strong, nonatomic)  UIView *slideBarView; //滑动条
+@property (strong, nonatomic)  UITableView *oneTableView;
+@property (strong, nonatomic)  UITableView *twoTableView;
+
+
+@property (nonatomic, strong) NSMutableArray *oneCellArray;
+@property (nonatomic, strong) NSMutableArray *twoCellArray;
+@property (nonatomic, strong) YDCustSectionHeaderView *firstGroupHeaderView;
+@property (nonatomic, strong) YDCustSectionHeaderView *secondGroupHeaderView;
+@property (nonatomic, assign) BOOL isOpenFirstGroup;
+@property (nonatomic, assign) BOOL isOpenSecondGroup;
+
+@end
+
+@implementation YDCustomerDetailController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    [self setupNavgationBar];
+    
+    [self createUI];
+    
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    self.tabBarController.tabBar.hidden = YES;
+    
+    [super viewWillAppear:animated];
+}
+
+//在页面消失的时候就让navigationbar还原样式
+-(void)viewDidlDisappear:(BOOL)animated{
+    
+    [super viewDidDisappear:animated];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+#pragma mark - ===========================UI===============================
+- (void)setupNavgationBar
+{
+    self.title = @"宋海鹏";
+    
+    UIButton *messageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    messageButton.frame = CGRectMake(0, 0, 20.0f, 20.0f);
+    [messageButton setImage:[UIImage imageNamed:@"message_image"] forState:UIControlStateNormal];
+    [messageButton setImage:[UIImage imageNamed:@"message_image"] forState:UIControlStateHighlighted];
+    [messageButton addTarget:self action:@selector(sendMessage) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *messageItem = [[UIBarButtonItem alloc] initWithCustomView:messageButton];
+    
+    UIButton *spaceButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    spaceButton.frame = CGRectMake(0, 0, 1.0f, 1.0f);
+    UIBarButtonItem *spaceItem = [[UIBarButtonItem alloc] initWithCustomView:spaceButton];
+    
+    UIButton *phoneButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    phoneButton.frame = CGRectMake(0, 0, 20.0f, 20.0f);
+    [phoneButton setImage:[UIImage imageNamed:@"phone_image"] forState:UIControlStateNormal];
+    [phoneButton setImage:[UIImage imageNamed:@"phone_image"] forState:UIControlStateHighlighted];
+    [phoneButton addTarget:self action:@selector(callPhone) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *phoneItem = [[UIBarButtonItem alloc] initWithCustomView:phoneButton];
+    
+    self.navigationItem.rightBarButtonItems = @[messageItem, spaceItem, phoneItem];
+}
+
+
+- (void)createUI
+{
+    //顶部蓝色条
+    _topBgView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, 44.0f)];
+    
+    
+    
+    
+    self.oneCellArray = [NSMutableArray arrayWithArray:[YDTool cellModelArrayWithCellName:@"intertionCustomerDetailOneCell"]];
+    self.twoCellArray = [NSMutableArray arrayWithArray:[YDTool cellModelArrayWithCellName:@"intertionCustomerDetailTwoCell"]];
+    
+    self.oneTableView.dataSource = self;
+    self.oneTableView.delegate = self;
+    self.twoTableView.dataSource = self;
+    self.twoTableView.delegate = self;
+    self.oneTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.twoTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.oneTableView.backgroundColor = kViewControllerBackgroundColor;
+    self.twoTableView.backgroundColor = kViewControllerBackgroundColor;
+    
+    [self.oneTableView registerNib(@"YDUpdateCusInfoS1Cell")];
+    [self.oneTableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    [self.oneTableView registerNib(@"YDUpdateCusInfoS3Cell")];
+    [self.oneTableView registerNib(@"YDUpdateCusInfoS4Cell")];
+    [self.oneTableView registerNib(@"YDUpdateCusInfoS5Cell")];
+    
+    [self.twoTableView registerNib(@"YDUpdateCusInfoS1Cell")];
+    [self.twoTableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    [self.twoTableView registerNib(@"YDUpdateCusInfoS3Cell")];
+    [self.twoTableView registerNib(@"YDUpdateCusInfoS4Cell")];
+    [self.twoTableView registerNib(@"YDUpdateCusInfoS5Cell")];
+    [self.twoTableView registerNib(@"YDCustDetail1Cell")];
+    [self.twoTableView registerNib(@"YDCustDetail2Cell")];
+    
+    self.oneTableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+    self.twoTableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+    
+    self.topBgView.backgroundColor = kNavigationBackgroundColor;
+    
+    self.slideBarView = [[UIView alloc] init];
+    self.slideBarView.backgroundColor = [UIColor whiteColor];
+    self.slideBarView.frame = CGRectMake(self.basicInfoButton.x - 5.0f, 47.0f, 70.0f, 3.0f);
+    [self.topBgView addSubview:self.slideBarView];
+}
+
+
+#pragma mark - =======================tableview delegate===============================
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    if (tableView == self.oneTableView) {
+        return self.oneCellArray.count;
+    } else {
+        return self.twoCellArray.count;
+    }
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    
+    if (tableView == self.oneTableView) {
+        if (section == 1 && !self.isOpenFirstGroup) {
+            return 0;
+        }
+        if (section == 2 && !self.isOpenSecondGroup) {
+            return 0;
+        }
+        return [self.oneCellArray[section] count];
+    } else {
+        return [self.twoCellArray[section] count];
+    }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (tableView == self.twoTableView) {
+        if (indexPath.section == 1) {
+            return 74.0f;
+        }
+    }
+    return 49;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    NSArray *cellArray = nil;
+    
+    if (tableView == self.oneTableView) {
+        cellArray = self.oneCellArray[indexPath.section];
+    } else {
+        cellArray = self.twoCellArray[indexPath.section];
+    }
+    
+    YDCustCellModel *cellModel = cellArray[indexPath.row];
+    
+    if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS1Cell"]) {
+        YDUpdateCusInfoS1Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        if ([cellModel.changeButtonType isEqualToString:@"1"]) {
+            cell.cellType = CellTypeMan;
+        } else {
+            cell.cellType = CellTypeBool;
+        }
+        
+        cell.name = cellModel.title;
+        cell.subString = cellModel.subTitle;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS2Cell"]) {
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.titleString = cellModel.title;
+        cell.subTitleString = cellModel.subTitle;
+        cell.subTitle.placeholder = cellModel.placeholder;
+        cell.showNextButton = cellModel.isShowArrow;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS3Cell"]) {
+        YDUpdateCusInfoS3Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.titleName = cellModel.title;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS4Cell"]) {
+        YDUpdateCusInfoS4Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.t = cellModel.title;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS5Cell"]) {
+        YDUpdateCusInfoS5Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        
+        return cell;
+    }
+    
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+    return cell;
+    
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    
+    return 0;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    if (tableView == self.oneTableView) {
+        if (section == 0) {
+            return 0;
+        } else if (section == 1 || section == 2) {
+            return 49.0f;
+        }
+        return 10.0f;
+    } else {
+        if (section == 0) {
+            return 0;
+        }
+        return 10.0f;
+    }
+}
+
+
+
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    WEAKSELF
+    if (tableView == self.oneTableView) {
+        if (section == 1) {
+            
+            self.firstGroupHeaderView.openCellBlock = ^(BOOL isOpen){
+                weakSelf.isOpenFirstGroup = isOpen;
+               
+                NSIndexSet *indexSet = [[NSIndexSet alloc] initWithIndex:1];
+                [weakSelf.oneTableView reloadSections:indexSet withRowAnimation:UITableViewRowAnimationFade];
+            };
+            return self.firstGroupHeaderView;
+        } else if (section == 2) {
+            
+            self.secondGroupHeaderView.openCellBlock = ^(BOOL isOpen){
+                weakSelf.isOpenSecondGroup = isOpen;
+                
+                NSIndexSet *indexSet = [[NSIndexSet alloc] initWithIndex:2];
+                [weakSelf.oneTableView reloadSections:indexSet withRowAnimation:UITableViewRowAnimationFade];
+            };
+            return self.secondGroupHeaderView;
+        }
+    }
+    
+    
+    UIView *view = [[UIView alloc] init];
+    view.backgroundColor = kViewControllerBackgroundColor;
+    return view;
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
+    NSArray *cellArray = nil;
+    
+    if (tableView == self.oneTableView) {
+        cellArray = self.oneCellArray[indexPath.section];
+    } else {
+        cellArray = self.twoCellArray[indexPath.section];
+    }
+    
+    YDCustCellModel *cellModel = cellArray[indexPath.row];
+    
+    if (tableView == self.oneTableView) {
+        [self clickCustomerInfoWithCellModel:cellModel];
+        
+        
+    } else if (tableView == self.twoTableView) {
+        if (indexPath.section == 0 && indexPath.row == 0) {
+            //意向客户跟进信息的第一组第一行是添加跟进
+            [self addFollow];
+            
+        } else if (indexPath.section == 1) {
+            //意向客户跟进信息的第二组是查看跟进记录
+            [self followRecordDetail];
+            
+        }
+    }
+}
+
+#pragma mark - ===================================功能类========================================
+
+- (void)basicInfoClick {
+    
+    
+    self.oneTableView.hidden = NO;
+    self.twoTableView.hidden = NO;
+    
+    [UIView animateWithDuration:0.25f animations:^{
+        
+        [self.slideBarView leftOrRightSlideValue:-156.0f];
+        
+        
+        
+        [self.oneTableView layoutIfNeeded];
+        [self.twoTableView layoutIfNeeded];
+    } completion:^(BOOL finished) {
+        self.twoTableView.hidden = YES;
+    }];
+}
+- (void)otherInfoClick {
+    
+    
+    
+    self.oneTableView.hidden = NO;
+    self.twoTableView.hidden = NO;
+    
+    [UIView animateWithDuration:0.25f animations:^{
+        
+        [self.slideBarView leftOrRightSlideValue:156.0f];
+        
+      
+        [self.oneTableView layoutIfNeeded];
+        [self.twoTableView layoutIfNeeded];
+    } completion:^(BOOL finished) {
+        self.oneTableView.hidden = YES;
+    }];
+}
+
+
+#pragma mark  cell被点击的方法触发
+- (void)clickCustomerInfoWithCellModel:(YDCustCellModel *)cellModel
+{
+    if ([cellModel.editMode isEqualToString:@"1"]) {
+        
+    } else if ([cellModel.editMode isEqualToString:@"2"]) {
+        
+        //直接编辑的情况
+        YDCellEditController *vc = [[YDCellEditController alloc] init];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self presentViewController:vc animated:YES completion:^{
+                
+            }];
+        });
+        
+        
+    } else if ([cellModel.editMode isEqualToString:@"3"]) {
+        
+    } else {
+        
+    }
+}
+
+#pragma mark 添加跟进
+- (void)addFollow
+{
+    YDAddFollowController *addFollowController = [[YDAddFollowController alloc] init];
+    addFollowController.addFollowType = AddFollowTypeManual;
+    [self.navigationController pushViewController:addFollowController animated:YES];
+}
+
+#pragma mark 查看跟进记录
+- (void)followRecordDetail
+{
+    YDFollowRecordController *followRecordController = [[YDFollowRecordController alloc] init];
+    [self.navigationController pushViewController:followRecordController animated:YES];
+}
+
+#pragma mark 发信息
+- (void)sendMessage
+{
+    if( [MFMessageComposeViewController canSendText] ){
+        
+        MFMessageComposeViewController * controller = [[MFMessageComposeViewController alloc]init]; //autorelease];
+        
+        controller.recipients = [NSArray arrayWithObject:@"10010"];
+        controller.body = @"测试发短信";
+        controller.messageComposeDelegate = self;
+        
+        [self presentViewController:controller animated:YES completion:^{
+            
+        }];
+        
+        [[[[controller viewControllers] lastObject] navigationItem] setTitle:@"测试短信"];//修改短信界面标题
+    }else{
+        [[[UIAlertView alloc] initWithTitle:@"提示信息" message:@"设备没有短信功能" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil] show];
+    }
+}
+
+- (void)messageComposeViewController:(MFMessageComposeViewController *)controller didFinishWithResult:(MessageComposeResult)result
+{
+    [controller dismissViewControllerAnimated:YES completion:^{
+        
+    }];//关键的一句   不能为YES
+    
+    switch ( result ) {
+            
+        case MessageComposeResultCancelled:
+            [[[UIAlertView alloc] initWithTitle:@"提示信息" message:@"发送取消" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil] show];
+            break;
+        case MessageComposeResultFailed:// send failed
+            [[[UIAlertView alloc] initWithTitle:@"提示信息" message:@"发送成功" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil] show];
+            break;
+        case MessageComposeResultSent:
+            [[[UIAlertView alloc] initWithTitle:@"提示信息" message:@"发送失败" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil] show];
+            break;
+        default:
+            break;
+    }
+}
+
+#pragma mark 打电话
+- (void)callPhone
+{
+    //判断设备能不能打电话
+    NSString *deviceModel = [UIDevice currentDevice].model;
+    if ([deviceModel isEqualToString:@"iPod touch"] || [deviceModel isEqualToString:@"iPad"] || [deviceModel isEqualToString:@"iPhone Simulator"]) {
+        
+        [[[UIAlertView alloc] initWithTitle:@"提示" message:@"您的设备不能打电话" delegate:nil cancelButtonTitle:@"好的,知道了" otherButtonTitles:nil,nil] show];
+        
+    } else {
+        
+        UIWebView *phoneWebView = [[UIWebView alloc] init];
+        [self.view addSubview:phoneWebView];
+        
+        //打电话
+        NSString *phoneNum = @"10086";
+        NSString *phoneString = [NSString stringWithFormat:@"tel://%@", phoneNum];
+        NSURL *phoneURL = [NSURL URLWithString:phoneString];
+        [phoneWebView loadRequest:[NSURLRequest requestWithURL:phoneURL]];
+    }
+}
+#pragma mark - ================懒加载====================
+- (YDCustSectionHeaderView *)firstGroupHeaderView
+{
+    if (!_firstGroupHeaderView) {
+        _firstGroupHeaderView = [YDCustSectionHeaderView custSectionHeaderViewWithTitle:@"客户信息"];
+    }
+    return _firstGroupHeaderView;
+}
+
+- (YDCustSectionHeaderView *)secondGroupHeaderView
+{
+    if (!_secondGroupHeaderView) {
+        _secondGroupHeaderView = [YDCustSectionHeaderView custSectionHeaderViewWithTitle:@"意向信息"];
+    }
+    return _secondGroupHeaderView;
+}
+
+@end

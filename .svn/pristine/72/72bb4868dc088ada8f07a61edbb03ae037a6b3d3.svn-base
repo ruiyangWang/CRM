@@ -1,0 +1,65 @@
+//
+//  YDUpdateCusInfoS2Cell.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUpdateCusInfoS2Cell.h"
+
+@interface YDUpdateCusInfoS2Cell()<UITextFieldDelegate>
+
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *nextButtonW;
+@property (weak, nonatomic) IBOutlet UIView *blueMake;
+
+@end
+
+@implementation YDUpdateCusInfoS2Cell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+    
+    _subTitle.delegate = self;
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+-(void)setTitleString:(NSString *)titleString{
+    _titleString = titleString;
+    _title.text = titleString;
+}
+-(void)setSubTitleString:(NSString *)subTitleString{
+    _subTitleString = subTitleString;
+    _subTitle.text = subTitleString;
+}
+-(void)setShowNextButton:(BOOL)showNextButton{
+    _showNextButton = showNextButton;
+    
+    if (!showNextButton) {
+        _nextButtonW.constant = 0;
+    }else
+        _nextButtonW.constant = 10;
+}
+-(void)setUd:(BOOL)ud{
+    _ud = ud;
+    
+//    self.subTitle.userInteractionEnabled = ud;
+}
+-(void)setIsMust:(BOOL)isMust{
+    _isMust = isMust;
+    
+    _blueMake.alpha = isMust?1:0;
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField{
+    if (_EndEditBlack != nil) {
+        _EndEditBlack(self, textField.text);
+    }
+}
+@end

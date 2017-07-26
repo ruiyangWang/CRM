@@ -1,0 +1,28 @@
+//
+//  YDPassengerModel.h
+//  CRM
+//
+//  Created by YD_iOS on 16/8/18.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import "YDCustListModel.h"
+
+@interface YDPassengerModel : NSObject
+
+- (instancetype)initWithDic:(NSDictionary *)dic;
+
+@property (nonatomic, copy) NSString *modelId;
+@property (nonatomic, copy) NSString *memberId;
+@property (nonatomic, copy) NSString *quoteId;//报价id
+@property (nonatomic, copy) NSString *memberName;//用户名称
+@property (nonatomic, copy) NSString *createTime;
+@property (nonatomic, strong) NSDate *createDate;
+@property (nonatomic, assign) NSInteger count;//到店人数
+@property (nonatomic, assign) BOOL hasQuote;//是否有报价
+
+@property (nonatomic, strong) YDCustListModel *cModel;
+
+
+@end

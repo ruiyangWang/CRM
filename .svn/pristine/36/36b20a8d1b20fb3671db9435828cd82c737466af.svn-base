@@ -1,0 +1,25 @@
+//
+//  DBTool.m
+//  CRM
+//
+//  Created by ios on 16/9/18.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "DBTool.h"
+#import "DBManager.h"
+
+@implementation DBTool
+
+- (FMDatabaseQueue *)dbQueue
+{
+    return [DBManager sharedDBManager].dbQueue;
+}
+
+
++ (id)dbTool
+{
+    return [[self alloc] init];
+}
+
+@end

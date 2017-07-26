@@ -1,0 +1,47 @@
+//
+//  YDUpdateCusInfoS2Cell.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUpdateCusInfoS2Cell.h"
+
+@interface YDUpdateCusInfoS2Cell()
+
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *nextButtonW;
+
+
+@end
+
+@implementation YDUpdateCusInfoS2Cell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+-(void)setTitle:(UILabel *)title{
+    _title = title;
+    _title.text = title.text;
+}
+-(void)setSubTitle:(UILabel *)subTitle{
+    _subTitle = subTitle;
+    _subTitle.text = subTitle.text;
+}
+-(void)setShowNextButton:(BOOL)showNextButton{
+    _showNextButton = showNextButton;
+    
+    if (!showNextButton) {
+        _nextButtonW.constant = 0;
+    }
+}
+
+@end

@@ -1,0 +1,46 @@
+//
+//  NSDate+YDString.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/13.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "NSDate+YDString.h"
+
+#define kDaySecond (24*60*60)
+
+@implementation NSDate (YDString)
+
++ (NSDateComponents *)_dateComponents:(NSInteger)count{
+    NSDate *now = [NSDate date];
+    
+    NSInteger nowDateSecond = [now timeIntervalSince1970];
+    NSInteger newDateSecond = nowDateSecond + kDaySecond*count;
+    NSDate *newDate = [NSDate dateWithTimeIntervalSince1970:newDateSecond];
+    
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSUInteger unitFlags = NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
+    NSDateComponents *dateComponent = [calendar components:unitFlags fromDate:newDate];
+    return dateComponent;
+}
+
++ (NSString *)dayWithDateOffset:(NSInteger)count{
+    
+    NSDateComponents *dateComponent = [NSDate _dateComponents:count];
+    NSInteger day = [dateComponent day];
+    
+    return [NSString stringWithFormat:@"%ld",day];
+}
+
++ (NSString *)monthWithDateOffset:(NSInteger)count{
+    
+    NSDateComponents *dateComponent = [NSDate _dateComponents:count];
+    NSInteger day = [dateComponent month];
+    
+    return [NSString stringWithFormat:@"%ld",day];
+}
+
+
+
+@end

@@ -1,0 +1,55 @@
+//
+//  YDVersionUpdateController.m
+//  CRM
+//
+//  Created by ios on 16/11/8.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDVersionUpdateController.h"
+
+@interface YDVersionUpdateController ()
+@property (weak, nonatomic) IBOutlet UIView *BGView;
+@property (weak, nonatomic) IBOutlet UIImageView *logoImageView;
+@property (weak, nonatomic) IBOutlet UIButton *downButton;
+@property (weak, nonatomic) IBOutlet UILabel *versionLabel;
+
+@end
+
+@implementation YDVersionUpdateController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    
+    [self setupUI];
+}
+
+- (void)setupUI
+{
+    self.title = @"检查更新";
+    self.downButton.backgroundColor = kNavigationBackgroundColor;
+}
+- (IBAction)downButtonClick {
+    
+    NSString *textURL = @"http://fir.im/1gud";
+    NSURL *cleanURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@", textURL]];
+    [[UIApplication sharedApplication] openURL:cleanURL];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

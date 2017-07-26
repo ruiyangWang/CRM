@@ -1,0 +1,50 @@
+//
+//  YDCustomerModel.m
+//  CRM
+//
+//  Created by ios on 16/8/23.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCustomerModel.h"
+#import "YDCustInfoModel.h"
+#import "YDIntentionInfoModel.h"
+#import "YDFollowInfoModel.h"
+#import "YDDefeatInfoModel.h"
+
+@implementation YDCustomerModel
+
+
+- (void)setValue:(id)value forKey:(NSString *)key
+{
+    if ([key isEqualToString:@"customerInfo"]) {
+        
+        if ([value isKindOfClass:[NSDictionary class]]) {
+            _customerInfo = [YDCustInfoModel instanceWithDict:value];
+        }
+        
+    } else if ([key isEqualToString:@"intentionInfo"]) {
+    
+        if ([value isKindOfClass:[NSDictionary class]]) {
+            _intentionInfo = [YDIntentionInfoModel instanceWithDict:value];
+        }
+        
+    } else if ([key isEqualToString:@"list"]) {
+        _listArray = [NSMutableArray array];
+        for (NSDictionary *dic in value) {
+            YDFollowInfoModel *followInfoModel = [YDFollowInfoModel instanceWithDict:dic];
+            [_listArray addObject:followInfoModel];
+        }
+        
+    } else if ([key isEqualToString:@"listApply"]) {
+        _listApplyArray = [NSMutableArray array];
+        for (NSDictionary *dic in value) {
+            YDDefeatInfoModel *defeatInfoModel = [YDDefeatInfoModel instanceWithDict:dic];
+            [_listArray addObject:defeatInfoModel];
+        }
+
+    } else {
+        [super setValue:value forKey:key];
+    }
+}
+@end

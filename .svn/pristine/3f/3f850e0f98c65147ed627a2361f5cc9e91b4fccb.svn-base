@@ -1,0 +1,87 @@
+//
+//  NSDate+YDString.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/13.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "NSDate+YDString.h"
+
+#define kDaySecond (24*60*60)
+
+@implementation NSDate (YDString)
+
++ (NSDateComponents *)_dateComponents:(NSInteger)count{
+    NSDate *now = [NSDate date];
+    
+    NSInteger nowDateSecond = [now timeIntervalSince1970];
+    NSInteger newDateSecond = nowDateSecond + kDaySecond*count;
+    NSDate *newDate = [NSDate dateWithTimeIntervalSince1970:newDateSecond];
+    
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSUInteger unitFlags = NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
+    NSDateComponents *dateComponent = [calendar components:unitFlags fromDate:newDate];
+    return dateComponent;
+}
+
++ (NSString *)dayWithDateOffset:(NSInteger)count{
+    
+    NSDateComponents *dateComponent = [NSDate _dateComponents:count];
+    NSInteger day = [dateComponent day];
+    
+    return [NSString stringWithFormat:@"%ld",day];
+}
+
++ (NSString *)monthWithDateOffset:(NSInteger)count{
+    
+    NSDateComponents *dateComponent = [NSDate _dateComponents:count];
+    NSInteger day = [dateComponent month];
+    
+    return [NSString stringWithFormat:@"%ld",day];
+}
+
++ (NSDate *)dateWithString:(NSString *)str format:(NSString*)format{
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init] ;
+    [formatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:8]];
+    [formatter setDateFormat:format];
+    NSDate *date=[formatter dateFromString:str];
+    return date;
+}
++ (NSString *)stringWithDate:(NSDate *)date format:(NSString*)format{
+    
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
+    [dateFormatter setDateFormat:format];
+    return [dateFormatter stringFromDate:date];
+}
+
++(NSString *)compareDate:(NSDate *)date{
+    
+    NSTimeInterval secondsPerDay = 24 * 60 * 60;
+    NSDate *today = [[NSDate alloc] init];
+    NSDate *tomorrow, *yesterday;
+    
+    tomorrow = [today dateByAddingTimeInterval: secondsPerDay];
+    yesterday = [today dateByAddingTimeInterval: -secondsPerDay];
+    
+    // 10 first characters of description is the calendar date:
+    NSString * todayString = [[today description] substringToIndex:10];
+    NSString * yesterdayString = [[yesterday description] substringToIndex:10];
+    NSString * tomorrowString = [[tomorrow description] substringToIndex:10];
+    
+    NSString * dateString = [[date description] substringToIndex:10];
+    
+    if ([dateString isEqualToString:todayString])
+    {
+        return @"今天";
+    } else if ([dateString isEqualToString:yesterdayString])
+    {
+        return @"昨天";
+    }
+    else
+    {
+        return dateString;
+    }
+}
+
+@end

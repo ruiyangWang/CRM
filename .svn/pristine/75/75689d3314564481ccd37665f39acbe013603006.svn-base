@@ -1,0 +1,28 @@
+//
+//  UIView+MBIBnspectable.h
+//  YDCalculateTool
+//
+//  Created by YD_iOS on 16/6/21.
+//  Copyright © 2016年 ios. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface UIView (MBIBnspectable)
+
+@property (assign,nonatomic) IBInspectable CGFloat cornerRadius;
+@property (assign,nonatomic) IBInspectable CGFloat borderWidth;
+@property (strong,nonatomic) IBInspectable UIColor  *borderColor;
+// set background hex color
+@property (assign,nonatomic) IBInspectable NSString *hexRgbColor;
+@property (assign,nonatomic) IBInspectable BOOL      onePx;
+
+///xib文件中设置阴影
+@property (nonatomic, assign) IBInspectable BOOL masksToBounds;
+@property (nonatomic, strong) IBInspectable UIColor *shadowColor;
+@property (nonatomic, assign) IBInspectable CGSize shadowOffset;
+@property (nonatomic, assign) IBInspectable CGFloat shadowRadius;
+@property (nonatomic, assign) IBInspectable CGFloat shadowOpacity;
+
+
+@end

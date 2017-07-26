@@ -1,0 +1,437 @@
+//
+//  YDOrderCusInfoVC.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/29.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDOrderCusInfoVC.h"
+#import "YDUpdateCusInfoS1Cell.h"
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDUpdateCusInfoS4Cell.h"
+#import "YDSearchCarModelTVC.h"
+#import "YDGiveCarVC.h"
+#import "YDCancelOrderVC.h"
+#import <MessageUI/MessageUI.h>
+
+@interface YDOrderCusInfoVC ()<MFMessageComposeViewControllerDelegate> {
+    NSArray *title;
+    NSArray *subPHTitle;
+    NSMutableDictionary *_subMDTitle;
+    NSDictionary *_carRel;//保有车型
+}
+
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *topViewHeight;
+@property (strong, nonatomic) UIButton *editButton;
+@property (weak, nonatomic) IBOutlet UITableView *userInfoTV;
+@property (weak, nonatomic) IBOutlet UITableView *orderInfoTV;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *x_userInfoTV;
+@property (weak, nonatomic) IBOutlet UIView *lineView;
+@property (weak, nonatomic) IBOutlet UIView *buttonsBGView;
+@property (weak, nonatomic) IBOutlet UIView *tableviewBGView;
+
+@property (nonatomic, strong) UIButton *messageButton; //发信息
+
+@property (nonatomic, strong) UIButton *phoneButton; //拨打电话
+
+@property (nonatomic, strong) UIButton *doneEditButton; //完成编辑按钮
+
+@property (nonatomic, strong) UIButton *cancelEditButton; //取消编辑按钮
+
+@property (nonatomic, assign) BOOL isEdit; //是否编辑状态
+
+@end
+
+@implementation YDOrderCusInfoVC
+
+#pragma mark ----- vc lift cycle 生命周期
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    
+    [self createView];
+    
+    [self setupViewDataWithCustomerInfo];
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - UI相关
+- (void)createView
+{
+    [_userInfoTV registerNib(@"YDUpdateCusInfoS1Cell")];
+    [_userInfoTV registerNib(@"YDUpdateCusInfoS2Cell")];
+    [_userInfoTV registerNib(@"YDUpdateCusInfoS4Cell")];
+    
+    [_orderInfoTV registerNib(@"YDUpdateCusInfoS2Cell")];
+    
+    title = @[@"",@"联系电话",@"出生日期",@"身份证号码",@"微信/QQ",@"",@"保有车型",@"居住地址"];
+    subPHTitle = @[@"",@"请填写电话号码",@"请选择出生日期",@"请填写身份证号",@"请填写联系方式",@"",@"请选择车型",@"请选择地址"];
+    
+    _subMDTitle = [NSMutableDictionary dictionary];
+    [_subMDTitle setValue:_custListModel.customerName forKey:@"客户名称"];
+    [_subMDTitle setValue:_custListModel.gender forKey:@"客户性别"];
+    [_subMDTitle setValue:_custListModel.customerPhone forKey:@"联系电话"];
+    [_subMDTitle setValue:[_custListModel.birthday substringToIndex:10] forKey:@"出生日期"];
+    [_subMDTitle setValue:_custListModel.idNumber forKey:@"身份证号码"];
+    [_subMDTitle setValue:_custListModel.qq forKey:@"QQ"];
+    [_subMDTitle setValue:_custListModel.weixin forKey:@"微信"];
+    [_subMDTitle setValue:_custListModel.familyStatus forKey:@"家庭状况"];
+    [_subMDTitle setValue:_custListModel.address forKey:@"地址"];
+    
+    _userInfoTV.tableFooterView = [[UIView alloc]initWithFrame:CGRectZero];
+    
+    //发信息按钮
+    _messageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _messageButton.frame = CGRectMake(0, 0, 20.0f, 20.0f);
+    [_messageButton setImage:[UIImage imageNamed:@"message_image"] forState:UIControlStateNormal];
+    [_messageButton setImage:[UIImage imageNamed:@"message_image"] forState:UIControlStateHighlighted];
+    [_messageButton addTarget:self action:@selector(sendMessage) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *messageItem = [[UIBarButtonItem alloc] initWithCustomView:_messageButton];
+    
+    //空按钮
+    UIButton *spaceButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    spaceButton.frame = CGRectMake(0, 0, 1.0f, 1.0f);
+    UIBarButtonItem *spaceItem = [[UIBarButtonItem alloc] initWithCustomView:spaceButton];
+    
+    //打电话按钮
+    _phoneButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _phoneButton.frame = CGRectMake(0, 0, 20.0f, 20.0f);
+    [_phoneButton setImage:[UIImage imageNamed:@"phone_image"] forState:UIControlStateNormal];
+    [_phoneButton setImage:[UIImage imageNamed:@"phone_image"] forState:UIControlStateHighlighted];
+    [_phoneButton addTarget:self action:@selector(callPhone) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *phoneItem = [[UIBarButtonItem alloc] initWithCustomView:_phoneButton];
+    
+    self.navigationItem.rightBarButtonItems = @[messageItem, spaceItem, phoneItem];
+    
+    //编辑资料
+    _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _editButton.frame = CGRectMake(25.0f, kScreenHeight - 44.0f, kScreenWidth - 50.0f, 34.0f);
+    _editButton.layer.cornerRadius = 4.0f;
+    _editButton.layer.masksToBounds = YES;
+    _editButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+    [_editButton setTitle:@"编辑资料" forState:UIControlStateNormal];
+    _editButton.backgroundColor = kNavigationBackgroundColor;
+    [_editButton addTarget:self action:@selector(editCustButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_editButton];
+    
+    CGFloat editButtonY = kScreenHeight - 44.0f;
+    CGFloat editButtonWidth = kScreenWidth - 50.0f;
+    //完成编辑
+    _doneEditButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _doneEditButton.frame = CGRectMake(25.0f, editButtonY, (editButtonWidth - 12.0f) / 2, 34.0f);
+    _doneEditButton.backgroundColor = [UIColor colorWithRed:82 green:205 blue:181];
+    [_doneEditButton setTitle:@"完成编辑" forState:UIControlStateNormal];
+    _doneEditButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+    _doneEditButton.layer.cornerRadius = 4.0f;
+    _doneEditButton.layer.masksToBounds = YES;
+    _doneEditButton.hidden = YES;
+    [_doneEditButton addTarget:self action:@selector(doneEditButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_doneEditButton];
+    
+    //取消编辑
+    _cancelEditButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _cancelEditButton.frame = CGRectMake(_doneEditButton.maxX + 12.0f, editButtonY, _doneEditButton.width, _doneEditButton.height);
+    _cancelEditButton.backgroundColor = [UIColor colorWithRed:242 green:110 blue:110];
+    [_cancelEditButton setTitle:@"取消编辑" forState:UIControlStateNormal];
+    _cancelEditButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+    _cancelEditButton.layer.cornerRadius = 4.0f;
+    _cancelEditButton.layer.masksToBounds = YES;
+    _cancelEditButton.hidden = YES;
+    [_cancelEditButton addTarget:self action:@selector(cancelEditButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_cancelEditButton];
+}
+
+#pragma mark 根据订单客户的信息设置页面的数据
+- (void)setupViewDataWithCustomerInfo
+{
+    self.title = _custListModel.customerName;
+    
+    
+    
+    if ([_custListModel.customerStatus integerValue] == 3) {
+        //有订单信息
+        self.topViewHeight.constant = 50.0f;
+    } else {
+        //无订单信息
+        self.topViewHeight.constant = 0;
+    }
+}
+
+#pragma mark 发信息
+- (void)sendMessage
+{
+    if( [MFMessageComposeViewController canSendText] ){
+        
+        MFMessageComposeViewController * controller = [[MFMessageComposeViewController alloc] init];
+        
+        controller.recipients = [NSArray arrayWithObject:_custListModel.customerPhone];
+        //controller.body = @"测试发短信";
+        controller.messageComposeDelegate = self;
+        
+        [self presentViewController:controller animated:YES completion:^{
+            
+        }];
+        
+        //修改短信界面标题
+        //[[[[controller viewControllers] lastObject] navigationItem] setTitle:@"测试短信"];
+    }else{
+        [[[UIAlertView alloc] initWithTitle:@"提示信息" message:@"设备没有短信功能" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil] show];
+    }
+}
+
+- (void)messageComposeViewController:(MFMessageComposeViewController *)controller didFinishWithResult:(MessageComposeResult)result
+{
+    [controller dismissViewControllerAnimated:YES completion:^{
+        
+    }];//关键的一句   不能为YES
+    
+    switch ( result ) {
+            
+        case MessageComposeResultCancelled:
+            [[[UIAlertView alloc] initWithTitle:@"信息发送取消" message:nil delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil] show];
+            break;
+        case MessageComposeResultFailed:
+            [[[UIAlertView alloc] initWithTitle:@"信息发送失败" message:nil delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil] show];
+            break;
+        case MessageComposeResultSent:
+            [[[UIAlertView alloc] initWithTitle:@"信息发送成功" message:nil delegate:self cancelButtonTitle:@"好的" otherButtonTitles:nil] show];
+            break;
+        default:
+            break;
+    }
+}
+
+#pragma mark 打电话
+- (void)callPhone
+{
+    //判断设备能不能打电话
+    NSString *deviceModel = [UIDevice currentDevice].model;
+    if ([deviceModel isEqualToString:@"iPod touch"] || [deviceModel isEqualToString:@"iPad"] || [deviceModel isEqualToString:@"iPhone Simulator"]) {
+        
+        [[[UIAlertView alloc] initWithTitle:@"您的设备不能打电话" message:nil delegate:nil cancelButtonTitle:@"好的,知道了" otherButtonTitles:nil,nil] show];
+        
+    } else {
+        
+        UIWebView *phoneWebView = [[UIWebView alloc] init];
+        [self.view addSubview:phoneWebView];
+        
+        //打电话
+        NSString *phoneNum = _custListModel.customerPhone;
+        NSString *phoneString = [NSString stringWithFormat:@"tel://%@", phoneNum];
+        NSURL *phoneURL = [NSURL URLWithString:phoneString];
+        [phoneWebView loadRequest:[NSURLRequest requestWithURL:phoneURL]];
+    }
+}
+
+#pragma mark - ==================功能==================
+#pragma mark 编辑资料按钮点击
+- (void)editCustButtonClick
+{
+    _isEdit = YES;
+    
+    [self.navigationItem setHidesBackButton:YES];
+    _messageButton.hidden = YES;
+    _phoneButton.hidden = YES;
+    _doneEditButton.hidden = NO;
+    _cancelEditButton.hidden = NO;
+    _editButton.hidden = YES;
+    [UIView animateWithDuration:0.25f animations:^{
+        
+    }];
+    
+}
+
+#pragma mark 完成编辑按钮点击
+- (void)doneEditButtonClick
+{
+    [self.navigationItem setHidesBackButton:NO];
+    _isEdit = NO;
+    _messageButton.hidden = NO;
+    _phoneButton.hidden = NO;
+    _doneEditButton.hidden = YES;
+    _cancelEditButton.hidden = YES;
+    _editButton.hidden = NO;
+    [UIView animateWithDuration:0.25f animations:^{
+       
+    }];
+    
+    //更新客户信息请求
+    [self saveUserInfo];
+}
+
+#pragma mark 取消编辑按钮点击
+- (void)cancelEditButtonClick
+{
+    [self.navigationItem setHidesBackButton:NO];
+    _isEdit = NO;
+    _messageButton.hidden = NO;
+    _phoneButton.hidden = NO;
+    _doneEditButton.hidden = YES;
+    _cancelEditButton.hidden = YES;
+    _editButton.hidden = NO;
+    [UIView animateWithDuration:0.25f animations:^{
+        
+    }];
+}
+
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+- (IBAction)changeButton:(UIButton *)sender {
+    CGFloat move;
+    NSString *buttonTitle = [sender titleForState:(UIControlStateNormal)];
+    if ([buttonTitle isEqualToString:@"基本资料"] && _x_userInfoTV.constant<0) {
+        move = kScreenWidth;
+    }else if ([buttonTitle isEqualToString:@"订单信息"] && _x_userInfoTV.constant>-1){
+        move = -kScreenWidth;
+    }else
+        return;
+    
+    _userInfoTV.hidden = NO;
+    
+    [UIView animateWithDuration:.25 animations:^{
+        _lineView.center = CGPointMake(_lineView.center.x-move/2, _lineView.center.y);
+        _x_userInfoTV.constant += move;
+        [_userInfoTV layoutIfNeeded];
+        [_orderInfoTV layoutIfNeeded];
+        [_buttonsBGView layoutIfNeeded];
+    } completion:^(BOOL finished) {
+        _userInfoTV.hidden = move<0 ? YES : NO ;
+    }];
+}
+
+- (IBAction)giveCar:(id)sender {
+    YDGiveCarVC *vc = [[YDGiveCarVC alloc] initWithNibName:@"YDGiveCarVC" bundle:nil];
+    vc.cModel = _custListModel;
+    [self.navigationController pushViewController:vc animated:YES];
+}
+- (IBAction)cancelOrder:(id)sender {
+    YDCancelOrderVC *vc = [[YDCancelOrderVC alloc]initWithNibName:@"YDCancelOrderVC" bundle:nil];
+    vc.cModel = _custListModel;
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+#pragma mark ----- custom action for UI 界面处理有关
+#pragma mark ----- custom action for DATA 数据处理有关
+- (void)saveUserInfo{
+    
+    if ([_subMDTitle[@"客户名称"] length] == 0) {
+        [self showHint:@"客户姓名不能为空"];return;
+    }
+    
+    if ([_subMDTitle[@"联系电话"] length] == 0) {
+        [self showHint:@"联系电话不能为空"];return;
+    }
+    
+//    if(_carRel == nil){
+//        [self showHint:@"保有车型不能为空"];return;
+//    }
+    
+    //保存用户信息
+    NSString *url = [NSString stringWithFormat:@"%@type=update&sid=%@",kAddCustomerAddress,getNSUser(@"youdao.CRM_SID")];
+    NSMutableDictionary *mDic = [NSMutableDictionary dictionary];
+    
+    NSDictionary *customerInfo = [NSMutableDictionary dictionary];
+    [customerInfo setValue:_custListModel.modelId forKey:@"id"];
+    [customerInfo setValue:_subMDTitle[@"客户名称"] forKey:@"customerName"];
+    [customerInfo setValue:_subMDTitle[@"联系电话"] forKey:@"customerPhone"];
+    [customerInfo setValue:[NSString stringWithFormat:@"%@",_subMDTitle[@"客户性别"]] forKey:@"gender"];
+    [mDic setValue:customerInfo forKey:@"customerInfo"];
+    
+    if (_carRel != nil) {
+        [mDic setValue:@[_carRel] forKey:@"carRel"];
+    }
+    
+//    _carRel = @{@"brandsId":_custListModel.brandName, @"carsId":@(ctID), @"carTypeId":@(cID), @"type":@0};
+
+    
+    
+    [self showHudInView:self.view hint:@""];
+    [YDDataService startRequest:mDic url:url block:^(id result) {
+        [self hideHud];
+        if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+            [self showHint:@"修改成功"];
+            [_editButton setTitle:@"编辑资料" forState:(UIControlStateNormal)];
+            _userInfoTV.userInteractionEnabled = NO;
+        }else{
+            [self showHint:@"修改失败"];
+        }
+        
+    } failBlock:^(id error) {
+        [self hideHud];
+        [self showHint:@"修改失败"];
+    }];
+}
+
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+#pragma mark - Table view data source
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if (tableView == _userInfoTV) {
+        return 8;
+    }else
+        return 1;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (tableView == _userInfoTV) {
+        if (indexPath.row == 0) {
+            YDUpdateCusInfoS1Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS1Cell" forIndexPath:indexPath];
+            cell.cellType = CellTypeMan;
+            cell.subString = _subMDTitle[@"客户名称"];
+            cell.onORoff = [_subMDTitle[@"客户性别"] boolValue];
+            cell.isMust = YES;
+            return cell;
+        }else if(indexPath.row == 5){
+            YDUpdateCusInfoS4Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS4Cell" forIndexPath:indexPath];
+            cell.t = @"家庭状况";
+            cell.eventType = _subMDTitle[@"家庭状况"];
+            cell.ClickButtonBlock = ^(NSString *eType, BOOL setH, NSString *bS){
+                NSDictionary *dd = @{@"000":@"0", @"100":@"1", @"010":@"2", @"001":@"3"};
+                _subMDTitle[@"家庭状况"] = dd[eType];
+            };
+            return cell;
+        }
+        
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS2Cell" forIndexPath:indexPath];
+        cell.titleString = [title objectAtIndex:indexPath.row];
+        cell.subTitleString = _subMDTitle[cell.titleString];
+        cell.subTitle.placeholder = [subPHTitle objectAtIndex:indexPath.row];
+        cell.subTitle.userInteractionEnabled = indexPath.row!=6? YES:NO;
+        cell.isMust = [cell.titleString isEqualToString:@"联系电话"]?YES:NO;
+        cell.showNextButton = NO;
+        return cell;
+    }else{
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS2Cell" forIndexPath:indexPath];
+        cell.titleString = @"订单车型";
+        cell.subTitleString = _custListModel.carTypeName;
+        return cell;
+    }
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (tableView != _userInfoTV) {
+        return;
+    }
+    
+    if (indexPath.row == 0) {
+        
+    }else if (indexPath.row == 6){
+        YDSearchCarModelTVC *tvc = [[YDSearchCarModelTVC alloc]initWithNibName:@"YDSearchCarModelTVC" bundle:nil];
+        tvc.SearchCarRowBlack = ^(NSString *bID, NSString *ctID, NSString *cID, NSString *name){
+            [_subMDTitle setValue:name forKey:@"保有车型"];
+            _carRel = @{@"brandsId":bID, @"carsId":ctID, @"carTypeId":cID, @"type":@0};
+            [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:(UITableViewRowAnimationNone)];
+            
+        };
+        [self.navigationController pushViewController:tvc animated:YES];
+    }else{
+        
+    }
+    
+}
+
+
+@end

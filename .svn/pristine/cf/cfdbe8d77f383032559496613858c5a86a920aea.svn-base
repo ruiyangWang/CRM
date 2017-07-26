@@ -1,0 +1,15 @@
+//
+//  YDUpdateCustomersViewController.h
+//  CRM
+//
+//  Created by YD_iOS on 16/7/19.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//  待补充客流
+
+#import <UIKit/UIKit.h>
+
+@interface YDUpdateCustomersViewController : YDViewController
+
+@property (copy, nonatomic) NSMutableArray *passengers; //待补充客流
+
+@end

@@ -1,0 +1,33 @@
+//
+//  YDCustDetail2Cell.m
+//  CRM
+//
+//  Created by ios on 16/7/27.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCustDetail2Cell.h"
+
+
+@interface YDCustDetail2Cell ()
+
+//跟进进度
+@property (weak, nonatomic) IBOutlet UILabel *fllowInfoLabel;
+
+@end
+
+@implementation YDCustDetail2Cell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    
+    self.fllowInfoLabel.text = @"线上、电话沟通";
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

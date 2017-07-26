@@ -1,0 +1,50 @@
+//
+//  YDUpdateCusInfoS3Cell.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUpdateCusInfoS3Cell.h"
+
+@interface YDUpdateCusInfoS3Cell()
+
+@property (weak, nonatomic) IBOutlet UIButton *button1;
+
+
+@end
+@implementation YDUpdateCusInfoS3Cell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+- (IBAction)clickButton:(UIButton *)sender {
+    
+    for (int i=10000; i<10005; i++) {
+        UIButton *button = (UIButton *)[self viewWithTag:i];
+        
+        if (button.tag == sender.tag) {
+            [button setBackgroundColor:[UIColor colorWithHexString:@"5265CD"]];
+            [button setTitleColor:[UIColor whiteColor] forState:(UIControlStateNormal)];
+        }else{
+            [button setBackgroundColor:[UIColor colorWithHexString:@"FAFAFA"]];
+            [button setTitleColor:[UIColor colorWithHexString:@"444444"] forState:(UIControlStateNormal)];
+        }
+    }
+    
+    if (_ChangeBlack != nil) {
+        _ChangeBlack([sender titleForState:(UIControlStateNormal)]);
+    }
+}
+
+
+@end

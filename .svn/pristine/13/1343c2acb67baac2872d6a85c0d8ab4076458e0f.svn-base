@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11542" systemVersion="16B2657" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11524"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="YDSwith">
+            <connections>
+                <outlet property="labelOFF" destination="w8k-Vx-eJt" id="lHi-g7-NI1"/>
+                <outlet property="labelON" destination="ale-sn-HNp" id="2y0-5a-r9Q"/>
+                <outlet property="swithButton" destination="r5u-gj-Fgi" id="IIJ-0e-ibm"/>
+                <outlet property="view" destination="iN0-l3-epB" id="3XA-pq-qfY"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="男士" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ale-sn-HNp">
+                    <rect key="frame" x="-42" y="-21" width="42" height="21"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="20" id="BfY-4a-0Af"/>
+                        <constraint firstAttribute="width" constant="28" id="zkM-84-YAU"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                    <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <nil key="highlightedColor"/>
+                    <variation key="default">
+                        <mask key="constraints">
+                            <exclude reference="BfY-4a-0Af"/>
+                            <exclude reference="zkM-84-YAU"/>
+                        </mask>
+                    </variation>
+                    <variation key="widthClass=compact">
+                        <mask key="constraints">
+                            <include reference="BfY-4a-0Af"/>
+                            <include reference="zkM-84-YAU"/>
+                        </mask>
+                    </variation>
+                </label>
+                <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="r5u-gj-Fgi">
+                    <rect key="frame" x="-23" y="-15" width="46" height="30"/>
+                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="38" id="Pee-rE-Xbv"/>
+                        <constraint firstAttribute="height" constant="23" id="WIB-mN-4JQ"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                            <real key="value" value="5"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                    <variation key="default">
+                        <mask key="constraints">
+                            <exclude reference="Pee-rE-Xbv"/>
+                            <exclude reference="WIB-mN-4JQ"/>
+                        </mask>
+                    </variation>
+                    <variation key="widthClass=compact">
+                        <mask key="constraints">
+                            <include reference="Pee-rE-Xbv"/>
+                            <include reference="WIB-mN-4JQ"/>
+                        </mask>
+                    </variation>
+                    <connections>
+                        <action selector="clickSwithButton:" destination="-1" eventType="touchUpInside" id="7uX-Y4-caE"/>
+                    </connections>
+                </button>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="女士" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="w8k-Vx-eJt">
+                    <rect key="frame" x="-42" y="-21" width="42" height="21"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="20" id="jJP-O2-ORn"/>
+                        <constraint firstAttribute="width" constant="28" id="zEW-v9-Fxq"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                    <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <nil key="highlightedColor"/>
+                    <variation key="default">
+                        <mask key="constraints">
+                            <exclude reference="jJP-O2-ORn"/>
+                            <exclude reference="zEW-v9-Fxq"/>
+                        </mask>
+                    </variation>
+                    <variation key="widthClass=compact">
+                        <mask key="constraints">
+                            <include reference="jJP-O2-ORn"/>
+                            <include reference="zEW-v9-Fxq"/>
+                        </mask>
+                    </variation>
+                </label>
+            </subviews>
+            <color key="backgroundColor" red="0.74901960779999999" green="0.39607843139999999" blue="0.60784313729999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="r5u-gj-Fgi" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="1xS-dR-3eF"/>
+                <constraint firstItem="w8k-Vx-eJt" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="3.5" id="L5k-EI-zxY"/>
+                <constraint firstItem="ale-sn-HNp" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="5.5" id="WdA-pw-pj9"/>
+                <constraint firstItem="ale-sn-HNp" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="3.5" id="gm6-Cn-Rjc"/>
+                <constraint firstAttribute="trailing" secondItem="w8k-Vx-eJt" secondAttribute="trailing" constant="5.5" id="iwQ-8i-6Ma"/>
+                <constraint firstItem="r5u-gj-Fgi" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="2" id="pjZ-GK-hp7"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <userDefinedRuntimeAttributes>
+                <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                    <real key="value" value="6"/>
+                </userDefinedRuntimeAttribute>
+                <userDefinedRuntimeAttribute type="number" keyPath="borderWidth">
+                    <real key="value" value="0.5"/>
+                </userDefinedRuntimeAttribute>
+                <userDefinedRuntimeAttribute type="color" keyPath="borderColor">
+                    <color key="value" red="0.81176470588235294" green="0.81176470588235294" blue="0.81176470588235294" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                </userDefinedRuntimeAttribute>
+            </userDefinedRuntimeAttributes>
+            <variation key="default">
+                <mask key="subviews">
+                    <exclude reference="ale-sn-HNp"/>
+                    <exclude reference="r5u-gj-Fgi"/>
+                    <exclude reference="w8k-Vx-eJt"/>
+                </mask>
+                <mask key="constraints">
+                    <exclude reference="1xS-dR-3eF"/>
+                    <exclude reference="pjZ-GK-hp7"/>
+                    <exclude reference="WdA-pw-pj9"/>
+                    <exclude reference="gm6-Cn-Rjc"/>
+                    <exclude reference="L5k-EI-zxY"/>
+                    <exclude reference="iwQ-8i-6Ma"/>
+                </mask>
+            </variation>
+            <variation key="widthClass=compact">
+                <mask key="subviews">
+                    <include reference="ale-sn-HNp"/>
+                    <include reference="r5u-gj-Fgi"/>
+                    <include reference="w8k-Vx-eJt"/>
+                </mask>
+                <mask key="constraints">
+                    <include reference="1xS-dR-3eF"/>
+                    <include reference="pjZ-GK-hp7"/>
+                    <include reference="WdA-pw-pj9"/>
+                    <include reference="gm6-Cn-Rjc"/>
+                    <include reference="L5k-EI-zxY"/>
+                    <include reference="iwQ-8i-6Ma"/>
+                </mask>
+            </variation>
+            <point key="canvasLocation" x="-324.5" y="-110.5"/>
+        </view>
+    </objects>
+</document>

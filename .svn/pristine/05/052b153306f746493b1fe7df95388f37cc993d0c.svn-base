@@ -1,0 +1,33 @@
+//
+//  YDCustomerListCell.m
+//  CRM
+//
+//  Created by ios on 16/7/21.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCustomerListCell.h"
+
+@implementation YDCustomerListCell
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        
+    }
+    return self;
+}
+
++ (instancetype)cellWithTabelView:(UITableView *)tableView
+{
+    static NSString *cellID = @"YDCustomerListCell";
+    
+    YDCustomerListCell *cell = [tableView dequeueReusableCellWithIdentifier:cellID];
+    if (cell == nil) {
+        cell = [[YDCustomerListCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellID];
+    }
+    return cell;
+}
+
+
+@end

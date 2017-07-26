@@ -1,0 +1,601 @@
+//
+//  YDCustomerListController.m
+//  CRM
+//
+//  Created by ios on 16/7/15.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+typedef NS_ENUM(NSInteger, YDCustomerType) {
+    YDCustomerTypeintertion,        //意向客户
+    YDCustomerTypeOrder             //订单客户
+};
+
+#define kSearchViewHeight 44.0f
+
+#import "YDCustomerListController.h"
+#import "NYSegmentedControl.h"
+#import "YDCustSearchResultView.h"
+#import "YDCreateCustView.h"
+#import "YDAddCustomerController.h"
+#import "YDCustomerDetailController.h"
+#import "MenuPopover.h"
+#import "YDCustomerListView.h"
+#import "YDOrderCusInfoVC.h"
+#import "YDSearchController.h"
+#import "YDCustSearchResultView.h"
+#import "YDDataService.h"
+#import "YDImportCustModel.h"
+#import "YDCustListModel.h"
+#import "YDTool.h"
+#import "YDIntentionInfoModel.h"
+
+
+@interface YDCustomerListController () <YDCreateCustViewDelegate,YDCustomerListViewDelegate,UISearchBarDelegate>
+
+@property (nonatomic, strong) YDCustomerListView *customerListView; //客户列表view
+
+@property (nonatomic, strong) YDCustSearchResultView *searchReustView; //搜素结果View
+
+@property (nonatomic, strong) YDCreateCustView *createCustView; //新建客户的view
+
+@property (nonatomic, assign) YDCustomerType customerType;
+
+@property (nonatomic, strong) UISearchController *searchController;
+
+@property (nonatomic, strong) YDSearchController *searchVC;
+
+@property (nonatomic, strong) YDCustSearchResultView *searchResultView;
+
+/**
+ *  加在window上的透明view，搜索状态下，搜索栏没有文字的时候出来，输入文字的时候隐藏
+ */
+@property (nonatomic, strong) UIView *maskView;
+
+
+@property (nonatomic, strong) NSMutableArray *dataArray;
+
+@property (nonatomic, strong) NSMutableArray *pinyinArray;
+
+@end
+
+@implementation YDCustomerListController
+
+
+- (instancetype)init
+{
+    if (self = [super init]) {
+        _dataArray = [NSMutableArray array];
+        _pinyinArray = [NSMutableArray array];
+    }
+    return self;
+}
+
+- (void)viewDidLoad {
+    
+    
+    [super viewDidLoad];
+    
+    self.definesPresentationContext = YES;
+    //[self setAutomaticallyAdjustsScrollViewInsets:YES];
+    [self setExtendedLayoutIncludesOpaqueBars:YES];
+    
+    [self setupNavigation];
+    
+    [self createView];
+    
+    [self addSearchBar];
+    
+    [self loadDataFromNetwork];
+}
+
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
+    [self.navigationController.navigationBar setShadowImage:[UIImage new]];
+    
+    [super viewWillAppear:animated];
+}
+
+- (void)viewDidDisappear:(BOOL)animated
+{
+    [self.createCustView removeFromSuperview];
+    self.createCustView = nil;
+    
+    [super viewDidDisappear:animated];
+}
+
+
+#pragma mark -  ==========================从网络加载数据==============================
+#pragma mark 获取意向客户列表
+- (void)loadDataFromNetwork
+{
+    NSDictionary *dic = @{
+                          //@"customerStatus":@"",
+                          //@"customerType":@"1",
+                          //@"type":@"3",
+                          };
+    NSString *messageUrl = [NSString stringWithFormat:@"%@type=list&sid=%@",kCustomerListAddress,getNSUser(@"youdao.CRM_SID")];
+    [YDDataService startRequest:dic url:messageUrl block:^(id result) {
+        NSArray *customerArray = [result objectForKey:@"var"][@"list"];
+        for (NSDictionary *dic in customerArray) {
+            YDCustListModel *model =[YDCustListModel instanceWithDict:dic];
+            [self.dataArray addObject:model];
+        }
+        //客户排序后，展示数据
+        [self customerSort];
+        
+        self.customerListView.oneDataArray = self.dataArray;
+        
+    } failBlock:^(id error) {
+        
+    }];
+    
+}
+
+#pragma mark 订单客户列表
+- (void)orderCustomerList
+{
+    [self.dataArray removeAllObjects];
+    NSDictionary *dic = @{
+                          @"customerStatus":@"5",
+                          @"customerType":@"2",
+                          @"type":@"3",
+                          };
+    NSString *messageUrl = [NSString stringWithFormat:@"%@type=list&sid=%@",kCustomerListAddress,getNSUser(@"youdao.CRM_SID")];
+    [YDDataService startRequest:dic url:messageUrl block:^(id result) {
+        NSArray *customerArray = [result objectForKey:@"var"][@"list"];
+        for (NSDictionary *dic in customerArray) {
+            YDCustListModel *model =[YDCustListModel instanceWithDict:dic];
+            [self.dataArray addObject:model];
+        }
+        //客户排序后，展示数据
+        [self customerSort];
+        
+        self.customerListView.twoDataArray = self.dataArray;
+        
+    } failBlock:^(id error) {
+        
+    }];
+}
+
+
+#pragma mark 客户排序
+- (void)customerSort
+{
+    self.dataArray = [self sortObjectsAccordingToInitialWith:self.dataArray];
+    
+   
+}
+
+#pragma mark 根据手机号查询客户信息
+- (void)customerInfoWithPhone:(NSString *)phone
+{
+    //@"15586935566"
+    NSDictionary *dic = @{@"mobile" : phone};
+    NSString *getCustUrl = [NSString stringWithFormat:@"%@sid=%@",kGetCustomerInfoAddress,getNSUser(@"youdao.CRM_SID")];
+    
+    [YDDataService startRequest:dic url:getCustUrl block:^(id result) {
+        NSDictionary *resultDic = result;
+        if ([resultDic[@"code"] isEqualToString:@"S_OK"]) {
+            //客户信息
+            NSDictionary *dic = resultDic[@"var"][@"customerInfo"];
+            YDCustListModel *custModel =[YDCustListModel instanceWithDict:dic];
+            
+            //客户意向信息
+            NSDictionary *intentionDic = resultDic[@"var"][@"intentionInfo"];
+            YDIntentionInfoModel *intentionInfoModel = [YDIntentionInfoModel instanceWithDict:intentionDic];
+            custModel.customerLevel = intentionInfoModel.customerLevel;
+            custModel.brandName = intentionInfoModel.brandsName;
+            custModel.carTypeName = intentionInfoModel.carTypeName;
+            custModel.carsName = intentionInfoModel.carsName;
+            
+            self.createCustView.customerModel = custModel;
+        } else {
+            //客户不存在
+            self.createCustView.customerModel = nil;
+        }
+        
+    } failBlock:^(id error) {
+        
+    }];
+}
+
+
+#pragma mark -  ==========================UI部分==============================
+#pragma mark 设置导航栏
+- (void)setupNavigation
+{
+    //中间view
+    NYSegmentedControl *segment = [[NYSegmentedControl alloc] initWithItems:@[@"意向客户", @"订单客户"]];
+    segment.frame = CGRectMake(0, 0, 160.0f, 33.0f);
+    segment.titleTextColor = [UIColor colorWithRed:157 green:191 blue:226];
+    segment.selectedTitleTextColor = kNavigationBackgroundColor;
+    segment.backgroundColor = [UIColor colorWithRed:62 green:122 blue:186];
+    segment.drawsGradientBackground = NO;
+    segment.borderWidth = 0;
+    segment.segmentIndicatorBorderWidth = 0;
+    segment.segmentIndicatorInset = 2.0f;
+    segment.drawsSegmentIndicatorGradientBackground = NO;
+    segment.segmentIndicatorBackgroundColor = [UIColor whiteColor];
+    segment.selectedSegmentIndex = 0;
+    [segment sizeToFit];
+    self.navigationItem.titleView = segment;
+    WEAKSELF
+    segment.sendBlock = ^(NSInteger index){
+        [weakSelf customerTypeChooseWithIndex:index];
+    };
+    
+    //右边加号
+    UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    rightButton.frame = CGRectMake(0, 0, 12.0f, 12.0f);
+    [rightButton setImage:[UIImage imageNamed:@"add_nav_right"] forState:UIControlStateNormal];
+    [rightButton setImage:[UIImage imageNamed:@"add_nav_right"] forState:UIControlStateHighlighted];
+    [rightButton addTarget:self action:@selector(rightBtnClick) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:rightButton];
+}
+
+#pragma mark 客户类型选择
+- (void)customerTypeChooseWithIndex:(NSInteger)index
+{
+    if (index == 0) {
+        self.customerType = YDCustomerTypeintertion;
+        [self.customerListView showOneTableView:YES];
+    } else {
+        self.customerType = YDCustomerTypeOrder;
+        [self.customerListView showOneTableView:NO];
+        
+        //获取订单客户
+        [self orderCustomerList];
+    }
+}
+
+#pragma mark 右边加号点击
+- (void)rightBtnClick
+{
+    WEAKSELF
+    MenuPopover *menuView = [[MenuPopover alloc] initWithMenuFrame:CGRectMake(self.view.frame.size.width - 95.5 - 28.0f, 64, 112.0f, 145.0f) menuClickBlock:^(NSInteger buttonIndex) {
+        STRONGSELF
+        switch (buttonIndex) {
+            case 0:
+                [strongSelf addCustomer];
+                break;
+                
+            default:
+                break;
+        }
+    }];
+    [menuView show];
+}
+
+#pragma mark 新建客户
+- (void)addCustomer
+{
+    [kWindow addSubview:self.createCustView];
+    
+    
+    self.tabBarController.tabBar.hidden = YES;
+    
+    [UIView animateWithDuration:0.25f animations:^{
+        _createCustView.frame = CGRectMake(0, 0, kScreenWidth, kScreenHeight);
+    } completion:^(BOOL finished) {
+        self.navigationController.navigationBarHidden = YES;
+        [_createCustView removeFromSuperview];
+        [self.view addSubview:_createCustView];
+        [self.createCustView phoneTextFieldBecomeFirstResponder];
+    }];
+}
+
+#pragma mark  - ====================创建view==============================
+- (void)createView
+{
+    [self.view addSubview:self.customerListView];
+}
+
+- (YDCustomerListView *)customerListView
+{
+    if (_customerListView == nil) {
+        _customerListView = [[YDCustomerListView alloc] init];
+        _customerListView.delegate = self;
+        _customerListView.frame = CGRectMake(0, 44.0f, kScreenWidth, kScreenHeight - 64.0f);
+    }
+    return _customerListView;
+}
+
+- (YDCustSearchResultView *)searchReustView
+{
+    if (_searchReustView == nil) {
+        _searchReustView = [[YDCustSearchResultView alloc] init];
+        _searchReustView.frame = CGRectMake(0, 64.0f, kScreenWidth, kScreenHeight - 64.0f);
+    }
+    return _searchReustView;
+}
+
+- (YDCreateCustView *)createCustView
+{
+    if (_createCustView == nil) {
+        _createCustView = [[YDCreateCustView alloc] init];
+        _createCustView.delegate = self;
+        _createCustView.backgroundColor = kNavigationBackgroundColor;
+        _createCustView.frame = CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight);
+    }
+    return _createCustView;
+}
+
+- (UIView *)maskView
+{
+    if (_maskView == nil) {
+        _maskView = [[UIView alloc] init];
+        _maskView.frame = CGRectMake(0, 64.0f, kScreenWidth, kScreenHeight);
+        _maskView.backgroundColor = [UIColor clearColor];
+    }
+    return _maskView;
+}
+
+
+#pragma - mark - =================<YDCustomerListViewDelegate>=====================
+#pragma mark 点击意向客户
+- (void)leftTableViewDidSelectCustomerId:(NSString *)custId
+{
+    YDCustomerDetailController *custDetailController = [[YDCustomerDetailController alloc] init];
+    custDetailController.hidesBottomBarWhenPushed = YES;
+    custDetailController.customerId = custId;
+    [self.navigationController pushViewController:custDetailController animated:YES];
+}
+
+#pragma mark 点击订单客户
+- (void)rightTableViewDidSelectCustomerId:(NSString *)custId
+{
+    
+    YDOrderCusInfoVC *vc = [[YDOrderCusInfoVC alloc] initWithNibName:@"YDOrderCusInfoVC" bundle:nil];
+    [vc setHidesBottomBarWhenPushed:YES];
+    [vc setExtendedLayoutIncludesOpaqueBars:YES];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+#pragma mark -  ======================搜索模块============================
+#pragma mark 添加搜索栏
+- (void)addSearchBar
+{
+    UITableView *searchTableView = [[UITableView alloc] init];
+    searchTableView.frame = CGRectMake(0, 64.0f, kScreenWidth, 44.0f);
+    searchTableView.tableHeaderView = self.searchController.searchBar;
+    [self.view addSubview:searchTableView];
+}
+
+- (YDSearchController *)searchVC
+{
+    if (_searchVC == nil) {
+        _searchVC = [[YDSearchController alloc] init];
+    }
+    return _searchVC;
+}
+
+- (UISearchController *)searchController
+{
+    if (_searchController == nil) {
+        _searchController = [[UISearchController alloc] initWithSearchResultsController:self.searchVC];
+        [_searchController.searchBar sizeToFit];
+        [_searchController.searchBar setDelegate:self];
+        [_searchController.searchBar setPlaceholder:@"搜索"];
+        _searchController.searchBar.searchBarStyle = UISearchBarStyleMinimal;
+        [_searchController.searchBar.layer setBorderWidth:0];
+        
+        // 修改UISearchBar右侧的取消按钮文字颜色及背景图片
+        for (UIView *searchbuttons in [_searchController.searchBar.subviews[0] subviews]){
+            if ([searchbuttons isKindOfClass:[UIButton class]]) {
+                UIButton *cancelButton = (UIButton*)searchbuttons;
+                // 修改文字颜色
+                [cancelButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+                [cancelButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+            }
+        }
+    }
+    return _searchController;
+}
+
+#pragma mark 搜索控制权
+
+#pragma mark 搜索框的代理方法，搜索输入框获得焦点（聚焦）
+- (YDCustSearchResultView *)searchResultView
+{
+    if (_searchResultView == nil) {
+        _searchResultView = [[YDCustSearchResultView alloc] init];
+        _searchResultView.frame = CGRectMake(0, 0, kScreenWidth, kScreenHeight);
+    }
+    return _searchResultView;
+}
+
+- (BOOL)searchBarShouldBeginEditing:(UISearchBar *)searchBar
+{
+    return YES;
+}
+
+- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
+{
+    
+    
+    searchBar.searchBarStyle = UISearchBarStyleDefault;
+    [searchBar setBarTintColor:kNavigationBackgroundColor];
+    [searchBar.layer setBorderWidth:0.5];
+    [searchBar.layer setBorderColor:kNavigationBackgroundColor.CGColor];
+    
+    
+    [searchBar setShowsCancelButton:YES animated:YES];
+    NSArray *array = [[searchBar subviews][0] subviews];
+    // 修改UISearchBar右侧的取消按钮文字颜色及背景图片
+    for (UIView *searchbuttons in array){
+        if ([searchbuttons isKindOfClass:[UIButton class]]) {
+            UIButton *cancelButton = (UIButton*)searchbuttons;
+            // 修改文字颜色
+            [cancelButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+            [cancelButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+            [cancelButton setTitle:@"取消" forState:UIControlStateNormal];
+        }
+    }
+    
+    self.tabBarController.tabBar.hidden = YES;
+    
+    [self.view addSubview:self.searchReustView];
+    
+    [kWindow addSubview:self.maskView];
+}
+
+- (BOOL)searchBarShouldEndEditing:(UISearchBar *)searchBar
+{
+    return YES;
+}
+- (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar
+{
+    
+}
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
+{
+    [self.searchVC.tableView reloadData];
+    
+    if (searchBar.text.length > 0) {
+        self.maskView.hidden = YES;
+    } else {
+        self.maskView.hidden = NO;
+    }
+    
+}
+
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar
+{
+    [searchBar.layer setBorderWidth:0.5];
+    [searchBar.layer setBorderColor:[UIColor whiteColor].CGColor];
+    searchBar.searchBarStyle = UISearchBarStyleMinimal;
+    
+    self.tabBarController.tabBar.hidden = NO;
+    [self.searchReustView removeFromSuperview];
+    self.searchReustView = nil;
+    [self.maskView removeFromSuperview];
+    self.maskView = nil;
+    
+}
+- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
+{
+    
+}
+
+
+
+#pragma mark - ==============================排序====================================
+// 按首字母分组排序数组
+-(NSMutableArray *)sortObjectsAccordingToInitialWith:(NSArray *)arr {
+    
+    // 初始化UILocalizedIndexedCollation
+    UILocalizedIndexedCollation *collation = [UILocalizedIndexedCollation currentCollation];
+    
+    //得出collation索引的数量，这里是27个（26个字母和1个#）
+    NSInteger sectionTitlesCount = [[collation sectionTitles] count];
+    //初始化一个数组newSectionsArray用来存放最终的数据，我们最终要得到的数据模型应该形如@[@[以A开头的数据数组], @[以B开头的数据数组], @[以C开头的数据数组], ... @[以#(其它)开头的数据数组]]
+    NSMutableArray *newSectionsArray = [[NSMutableArray alloc] initWithCapacity:sectionTitlesCount];
+    
+    //初始化27个空数组加入newSectionsArray
+    for (NSInteger index = 0; index < sectionTitlesCount; index++) {
+        NSMutableArray *array = [[NSMutableArray alloc] init];
+        [newSectionsArray addObject:array];
+    }
+    
+    //将每个名字分到某个section下
+    for (id custListModel in arr) {
+        //获取name属性的值所在的位置，比如"林丹"，首字母是L，在A~Z中排第11（第一位是0），sectionNumber就为11
+        NSInteger sectionNumber = [collation sectionForObject:custListModel collationStringSelector:@selector(customerName)];
+        //把name为“林丹”的p加入newSectionsArray中的第11个数组中去
+        NSMutableArray *sectionNames = newSectionsArray[sectionNumber];
+        [sectionNames addObject:custListModel];
+    }
+    
+    //对每个section中的数组按照name属性排序
+    for (NSInteger index = 0; index < sectionTitlesCount; index++) {
+        NSMutableArray *personArrayForSection = newSectionsArray[index];
+        NSArray *sortedPersonArrayForSection = [collation sortedArrayFromArray:personArrayForSection collationStringSelector:@selector(customerName)];
+        newSectionsArray[index] = sortedPersonArrayForSection;
+    }
+    
+    //删除空的数组
+    NSMutableArray *finalArr = [NSMutableArray new];
+    for (NSInteger index = 0; index < sectionTitlesCount; index++) {
+        if (((NSMutableArray *)(newSectionsArray[index])).count != 0) {
+            [finalArr addObject:newSectionsArray[index]];
+        }
+    }
+    return finalArr;
+    
+    //return newSectionsArray;
+}
+
+- (void)getNamePinYinArray
+{
+    for (int i = 0; i < self.dataArray.count; i++) {
+        YDImportCustModel *personModel = [self.dataArray[i] lastObject];
+        NSString *pinYin = [self firstCharactor:personModel.name];
+        [self.pinyinArray addObject:pinYin];
+    }
+}
+
+//获取拼音首字母(传入汉字字符串, 返回大写拼音首字母)
+- (NSString *)firstCharactor:(NSString *)aString
+{
+    //转成了可变字符串
+    NSMutableString *str = [NSMutableString stringWithString:aString];
+    //先转换为带声调的拼音
+    CFStringTransform((CFMutableStringRef)str,NULL, kCFStringTransformMandarinLatin,NO);
+    //再转换为不带声调的拼音
+    CFStringTransform((CFMutableStringRef)str,NULL, kCFStringTransformStripDiacritics,NO);
+    //转化为大写拼音
+    NSString *pinYin = [str capitalizedString];
+    //获取并返回首字母
+    return [pinYin substringToIndex:1];
+}
+
+
+#pragma - mark - =================<YDCreateCustViewDelegate>=====================
+#pragma mark 做上角返回按钮
+- (void)backFontPage
+{
+    self.navigationController.navigationBarHidden = NO;
+    [UIView animateWithDuration:0.25f animations:^{
+        _createCustView.frame = CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight);
+    } completion:^(BOOL finished) {
+        self.tabBarController.tabBar.hidden = NO;
+        [self.createCustView removeFromSuperview];
+        self.createCustView = nil;
+    }];
+}
+
+#pragma mark 下一步点击
+- (void)nextStepBtnClickWithPhone:(NSString *)phone
+{
+    [self.view endEditing:YES];
+    self.tabBarController.tabBar.hidden = NO;
+    YDAddCustomerController *addCustomerController = [[YDAddCustomerController alloc] init];
+    addCustomerController.customerPhone = phone;
+    addCustomerController.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:addCustomerController animated:YES];
+}
+
+
+#pragma mark 输入的手机号码
+- (void)phoneFromTextField:(NSString *)phone
+{
+    //判断是否是手机号
+    if ([YDTool valiMobile:phone]) {
+        [self customerInfoWithPhone:phone];
+    }
+}
+
+#pragma mark 查看客户详情
+- (void)seeCustomerDetailWithModel:(YDCustListModel *)model
+{
+    [self.view endEditing:YES];
+    self.tabBarController.tabBar.hidden = NO;
+    YDCustomerDetailController *custDetailController = [[YDCustomerDetailController alloc] init];
+    custDetailController.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:custDetailController animated:YES];
+}
+
+@end

@@ -1,0 +1,22 @@
+//
+//  YDCustCellModel.h
+//  CRM
+//
+//  Created by ios on 16/7/26.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface YDCustCellModel : NSObject
+
+@property (nonatomic, copy) NSString *cellName;
+
+@property (nonatomic, copy) NSString *title;
+
+@property (nonatomic, copy) NSString *subTitle;
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
++ (instancetype)cellModelWithDict:(NSDictionary *)dict;
+
+@end

@@ -1,0 +1,101 @@
+//
+//  YDUserSetController.m
+//  CRM
+//
+//  Created by ios on 16/8/1.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUserSetController.h"
+#import "YDTool.h"
+#import "YDCustCellModel.h"
+#import "YDUpdateCusInfoS2Cell.h"
+
+@interface YDUserSetController ()
+
+@property (nonatomic, strong) NSMutableArray *cellArray;
+
+@end
+
+@implementation YDUserSetController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    [self getCellData];
+}
+
+
+- (void)getCellData
+{
+    self.title = @"设置";
+    self.navigationController.navigationBarHidden = NO;
+    
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
+    [self.tableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    
+    self.cellArray = [NSMutableArray arrayWithArray:[YDTool cellModelArrayWithCellName:@"userSetCell"]];
+}
+
+
+#pragma mark - ==================tableview delegate==================
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return self.cellArray.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [self.cellArray[section] count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDCustCellModel *cellModel = self.cellArray[indexPath.section][indexPath.row];
+    if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS2Cell"]) {
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName];
+        cell.titleString = cellModel.title;
+        cell.subTitleString = cellModel.subTitle;
+        cell.subTitle.placeholder = cellModel.placeholder;
+        cell.showNextButton = cellModel.isShowArrow;
+        return cell;
+    }
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName];
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 49.0f;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    if (section == 0) {
+        return @"默认跟进时间";
+    }
+    return @"其他";
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

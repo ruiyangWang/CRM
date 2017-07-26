@@ -1,0 +1,168 @@
+//
+//  YDAddOrderCustController.m
+//  CRM
+//
+//  Created by ios on 16/9/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDAddOrderCustController.h"
+#import "YDCustCellModel.h"
+#import "YDUpdateCusInfoS1Cell.h"
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDUpdateCusInfoS3Cell.h"
+#import "YDUpdateCusInfoS4Cell.h"
+#import "YDUpdateCusInfoS5Cell.h"
+#import "YDTool.h"
+
+@interface YDAddOrderCustController () <UITableViewDataSource,UITableViewDelegate>
+
+@property (nonatomic, strong) UITableView *tableView;
+
+@property (nonatomic, strong) NSMutableArray *cellArray;
+
+@end
+
+@implementation YDAddOrderCustController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    [self createView];
+    
+    [self setupNavigationBar];
+    
+}
+
+
+#pragma mark - ==================UI部分==================
+- (void)createView
+{
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight - 64.0f) style:UITableViewStylePlain];
+    _tableView.dataSource = self;
+    _tableView.delegate = self;
+    _tableView.backgroundColor = kViewControllerBackgroundColor;
+    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+    [_tableView registerNib(@"YDUpdateCusInfoS1Cell")];
+    [_tableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    [_tableView registerNib(@"YDUpdateCusInfoS3Cell")];
+    [_tableView registerNib(@"YDUpdateCusInfoS4Cell")];
+    [_tableView registerNib(@"YDUpdateCusInfoS5Cell")];
+    [self.view addSubview:_tableView];
+    
+    self.cellArray = [NSMutableArray arrayWithArray:[YDTool cellModelWithCellName:@"addOrderCustomerCell"]];
+}
+
+#pragma mark 设置导航条
+- (void)setupNavigationBar
+{
+    self.title = @"新建订单客户";
+    self.navigationController.navigationBarHidden = NO;
+    
+    UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [doneButton setTitle:@"下一步" forState:UIControlStateNormal];
+    doneButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+    [doneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    doneButton.frame = CGRectMake(0, 0, 28.0f, 20.0f);
+    [doneButton addTarget:self action:@selector(rightDoneButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *doneItem = [[UIBarButtonItem alloc] initWithCustomView:doneButton];
+    self.navigationItem.rightBarButtonItem = doneItem;
+}
+
+- (void)rightDoneButtonClick
+{
+    
+}
+
+
+
+#pragma mark - ==================tableview数据源和代理方法==================
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return self.cellArray.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDCustCellModel *cellModel = self.cellArray[indexPath.row];
+    
+    if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS1Cell"]) {
+        YDUpdateCusInfoS1Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        if ([cellModel.changeButtonType isEqualToString:@"1"]) {
+            cell.cellType = CellTypeMan;
+        } else {
+            cell.cellType = CellTypeBool;
+        }
+        
+        cell.name = cellModel.title;
+        cell.subString = cellModel.subTitle;
+        cell.isMust = cellModel.isMust;
+        cell.subT.placeholder = cellModel.placeholder;
+        
+        cell.ChangeBlack = ^(NSString *str){
+            //[self setupParameterWithTitle:cellModel.title value:str];
+        };
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS2Cell"]) {
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.titleString = cellModel.title;
+        cell.subTitleString = cellModel.subTitle;
+        cell.subTitle.placeholder = cellModel.placeholder;
+        cell.showNextButton = cellModel.isShowArrow;
+        cell.isMust = cellModel.isMust;
+        cell.hidden = !cellModel.isShowCell;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS3Cell"]) {
+        YDUpdateCusInfoS3Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.titleName = cellModel.title;
+        cell.ChangeBlack = ^(NSString *str){
+            //[self setupParameterWithTitle:cellModel.title value:str];
+        };
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS4Cell"]) {
+        YDUpdateCusInfoS4Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.t = cellModel.title;
+        cell.ClickButtonBlock = ^(NSString *eType, BOOL setH, NSString *bS) {
+            if ([bS isEqualToString:@"单身"]) {
+                //[_customerInfoDic setValue:@(1) forKey:@"familyStatus"];
+            } else if ([bS isEqualToString:@"已婚"]) {
+                //[_customerInfoDic setValue:@(2) forKey:@"familyStatus"];
+            } else if ([bS isEqualToString:@"已育"]) {
+                //[_customerInfoDic setValue:@(3) forKey:@"familyStatus"];
+            }
+        };
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS5Cell"]) {
+        YDUpdateCusInfoS5Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        
+        return cell;
+    }
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+    
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 49.0f;
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

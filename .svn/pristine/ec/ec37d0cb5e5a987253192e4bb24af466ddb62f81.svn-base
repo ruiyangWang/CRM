@@ -1,0 +1,61 @@
+//
+//  ViewController.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/14.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "ViewController.h"
+#import "YDMainTabBarController.h"
+#import "YDDataService.h"
+
+@interface ViewController ()
+@property (weak, nonatomic) IBOutlet UITextField *userName;
+@property (weak, nonatomic) IBOutlet UITextField *password;
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view, typically from a nib.
+    self.view.backgroundColor = [UIColor blueColor];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (IBAction)login:(id)sender {
+    
+//    YDMainTabBarController *tvc = [[YDMainTabBarController alloc]init];
+//    [self presentViewController:tvc animated:YES completion:^{
+//        self.view.window.rootViewController = tvc;
+//    }];
+//    return;
+    
+    NSDictionary *dic = @{@"userId":@"test",@"corpId":@"10000",@"passwd":@"123456"};
+    
+    [YDDataService startRequest:dic url:kSIDRequest block:^(id result) {
+        NSLog(@"");
+        
+        if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+            NSDictionary *infoDic = [result objectForKey:@"uscLogininfo"];
+            setNSUser([infoDic objectForKey:@"sid"], @"youdao.CRM_SID");
+            
+            YDMainTabBarController *tvc = [[YDMainTabBarController alloc]init];
+            [self presentViewController:tvc animated:YES completion:^{
+                self.view.window.rootViewController = tvc;
+            }];
+        }
+        
+    } failBlock:^(id error) {
+        NSLog(@"");
+    }];
+    
+}
+
+@end

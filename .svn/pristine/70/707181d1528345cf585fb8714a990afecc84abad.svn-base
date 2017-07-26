@@ -1,0 +1,170 @@
+//
+//  YDCreateCustView.m
+//  CRM
+//
+//  Created by ios on 16/7/25.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCreateCustView.h"
+#import "YDUserInfoCell.h"
+
+
+@interface YDCreateCustView () <UITextFieldDelegate,UITableViewDataSource,UITableViewDelegate>
+@property (weak, nonatomic) IBOutlet UITextField *custPhoneTextField;
+
+@property (weak, nonatomic) IBOutlet UIButton *nextButton;
+@property (weak, nonatomic) IBOutlet UILabel *promptLabel;
+@property (weak, nonatomic) IBOutlet UIButton *appealButton; //申诉按钮
+@property (weak, nonatomic) IBOutlet UITextField *phoneTextField; //手机号码输入框
+
+@property (nonatomic, strong) UITableView *tableView;
+
+
+@end
+
+@implementation YDCreateCustView
+
+- (instancetype)init
+{
+    if (self = [super init]) {
+        self = [[[NSBundle mainBundle] loadNibNamed:@"YDCreateCustView" owner:self options:nil] lastObject];
+        [self createUI];
+    }
+    return self;
+}
+
+- (void)createUI
+{
+    self.nextButton.hidden = YES;
+    
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(5.0f, CGRectGetMaxY(self.promptLabel.frame) + 8.0f, kScreenWidth - 10.0f, 74.0f) style:UITableViewStylePlain];
+    _tableView.dataSource = self;
+    _tableView.delegate = self;
+    _tableView.hidden = YES;
+    _tableView.scrollEnabled = NO;
+    [_tableView registerNib(@"YDUserInfoCell")];
+    [self addSubview:_tableView];
+    
+    self.custPhoneTextField.delegate = self;
+    
+    _promptLabel.hidden = YES;
+    _appealButton.hidden = YES;
+}
+
+- (IBAction)backBtnClick {
+    [self.custPhoneTextField endEditing:YES];
+    if ([self.delegate respondsToSelector:@selector(backFontPage)]) {
+        [self.delegate backFontPage];
+    }
+}
+- (IBAction)nextBtnClick:(UIButton *)sender {
+    if ([self.delegate respondsToSelector:@selector(nextStepBtnClickWithPhone:)]) {
+        [self.delegate nextStepBtnClickWithPhone:_phoneTextField.text];
+    }
+}
+
+- (void)textFieldDidBeginEditing:(UITextField *)textField
+{
+
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    if (string.length == 0) {
+        _nextButton.hidden = YES;
+        _tableView.hidden = YES;
+        _promptLabel.hidden = YES;
+        _appealButton.hidden = YES;
+    }
+    if (textField.text.length == 10) {
+        if ([self.delegate respondsToSelector:@selector(phoneFromTextField:)]) {
+            [self.delegate phoneFromTextField:[NSString stringWithFormat:@"%@%@",textField.text,string]];
+        }
+    }
+    //手机号码不能超过11位数
+    if (textField.text.length >= 11 && string.length != 0) {
+        return NO;
+    } else {
+        return YES;
+    }
+}
+
+- (BOOL)textFieldShouldClear:(UITextField *)textField
+{
+    _nextButton.hidden = YES;
+    _tableView.hidden = YES;
+    _promptLabel.hidden = YES;
+    _appealButton.hidden = YES;
+    return YES;
+}
+
+#pragma mark - 显示客户信息
+- (void)setCustomerModel:(YDCustListModel *)customerModel
+{
+    _customerModel = customerModel;
+    
+    if (customerModel) {
+        
+        [_tableView reloadData];
+        
+        if (customerModel.own) {
+            //自己的客户
+            _promptLabel.text = @"此号码已有对应的客户";
+            _appealButton.hidden = YES;
+        } else {
+            //别人的客户
+            _promptLabel.text = @"该客户不是我的客户";
+            _appealButton.hidden = NO;
+        }
+        
+        _nextButton.hidden = YES;
+        _promptLabel.hidden = NO;
+        _tableView.hidden = NO;
+    } else {
+        //不是已存在的客户
+        _nextButton.hidden = NO;
+        _tableView.hidden = YES;
+        _promptLabel.hidden = YES;
+        _appealButton.hidden = YES;
+    }
+    
+    
+
+}
+
+#pragma mark - =========================tableview  代理方法====================================
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return 1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDUserInfoCell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUserInfoCell"];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    cell.custListModel = _customerModel;
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 74.0f;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (_customerModel.own) {
+        //自己的客户，进入详情
+        if ([self.delegate respondsToSelector:@selector(seeCustomerDetailWithModel:)]) {
+            [self.delegate seeCustomerDetailWithModel:_customerModel];
+        }
+    }
+}
+
+- (void)phoneTextFieldBecomeFirstResponder
+{
+    [_phoneTextField becomeFirstResponder];
+}
+
+@end

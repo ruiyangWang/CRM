@@ -1,0 +1,71 @@
+//
+//  YDCustomerListController.m
+//  CRM
+//
+//  Created by ios on 16/7/15.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCustomerListController.h"
+#import "NYSegmentedControl.h"
+
+@interface YDCustomerListController ()
+
+
+
+@end
+
+@implementation YDCustomerListController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    
+    [self setupNavigation];
+    
+}
+
+#pragma mark 设置导航栏
+- (void)setupNavigation
+{
+    
+    
+    //中间view
+    NYSegmentedControl *segment = [[NYSegmentedControl alloc] initWithItems:@[@"意向客户", @"订单客户"]];
+    segment.frame = CGRectMake(0, 0, 160.0f, 33.0f);
+    segment.titleTextColor = kNavigationBackgroundColor;
+    segment.selectedTitleTextColor = kNavigationBackgroundColor;
+    segment.backgroundColor = kNavigationBackgroundColor;
+    segment.drawsGradientBackground = NO;
+    
+    segment.segmentIndicatorInset = 2.0f;
+    segment.drawsSegmentIndicatorGradientBackground = NO;
+    segment.segmentIndicatorBackgroundColor = [UIColor whiteColor];
+    segment.selectedSegmentIndex = 0;
+    [segment sizeToFit];
+    self.navigationItem.titleView = segment;
+    
+    
+    //右边加号
+    
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+ 
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

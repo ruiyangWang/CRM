@@ -1,0 +1,24 @@
+//
+//  YDDayButton.h
+//  calendar
+//
+//  Created by YD_iOS on 16/8/12.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+typedef enum
+{
+    YDDayBlockStateNoraml = 0,
+    YDDayBlockStateSelected,
+    YDDayBlockStateMoving
+}YDDayBlockState;
+
+@interface YDDayButton : UIButton
+
+@property (nonatomic, assign) YDDayBlockState blockState;
+@property (nonatomic, strong) NSDate *blockDate;
+@property (nonatomic, assign) BOOL isSelect;
+
+@end

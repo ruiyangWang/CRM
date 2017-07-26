@@ -1,0 +1,39 @@
+//
+//  YDIntentionInfoModel.h
+//  CRM
+//
+//  Created by ios on 16/8/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+/**
+ *  客户意向信息
+ */
+#import "YDBaseModel.h"
+
+@interface YDIntentionInfoModel : YDBaseModel
+
+@property (nonatomic, copy) NSString *attr;
+@property (nonatomic, copy) NSString *brandsName;//: "宝马",
+@property (nonatomic, copy) NSString *carTypeName;//: "2016款 330i M运动型 旅行版",
+@property (nonatomic, copy) NSString *carsName;//: "3系旅行",
+@property (nonatomic, copy) NSString *competeCar1;
+@property (nonatomic, copy) NSString *competeCar2;
+@property (nonatomic, copy) NSString *concerns;//: "品牌，外形，安全",
+@property (nonatomic, copy) NSString *corpId;//: "10000",
+@property (nonatomic, copy) NSString *createTime;//: null,
+@property (nonatomic, copy) NSString *createTimeString;
+@property (nonatomic, copy) NSString *customerId;//: "1",
+@property (nonatomic, copy) NSString *customerLevel;//: "H", ----------客户意向等级
+@property (nonatomic, copy) NSString *modelId;//"id": "c0a808b1568d191c81568d2981ec0002",
+@property (nonatomic, copy) NSString *intentionCar;//--------意向车型
+@property (nonatomic, assign) BOOL isLoan;
+@property (nonatomic, strong) NSMutableArray *listCompete;//: [],---------竞争车型列表
+@property (nonatomic, copy) NSString *modifyTime;//: null,
+@property (nonatomic, copy) NSString *modifyTimeString;
+@property (nonatomic, copy) NSString *orgId;//: "10000",
+@property (nonatomic, copy) NSString *purpose;//: "商用",
+@property (nonatomic, copy) NSString *remark;//: "比较看中这辆车的性价比。",
+@property (nonatomic, strong) NSNumber *type;//type": 1
+
+@end

@@ -1,0 +1,206 @@
+//
+//  YDCustomerListController.m
+//  CRM
+//
+//  Created by ios on 16/7/15.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#define kSearchViewHeight 44.0f
+
+#import "YDCustomerListController.h"
+#import "NYSegmentedControl.h"
+#import "YDCustomerListCell.h"
+#import "KxMenu.h"
+#import "YDCustSearchResultView.h"
+#import "YDCreateCustView.h"
+#import "YDAddCustomerController.h"
+#import "YDCustomerDetailController.h"
+
+
+@interface YDCustomerListController () <YDCreateCustViewDelegate>
+
+@property (nonatomic, strong) UIView *searchBarView; //搜索按钮
+
+@property (nonatomic, strong) UIView *bgView;
+
+@property (nonatomic, strong) UIImageView *iconView;
+
+@property (nonatomic, strong) UITextField *searchTextField;
+
+@property (nonatomic, assign) BOOL isSearch;
+
+@property (nonatomic, strong) YDCustSearchResultView *searchReustView; //搜素结果View
+
+@property (nonatomic, strong) YDCreateCustView *createCustView;
+
+@end
+
+@implementation YDCustomerListController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.view.backgroundColor = [UIColor whiteColor];
+    
+    [self setupNavigation];
+    
+    [self createView];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    self.tabBarController.tabBar.hidden = NO;
+    [super viewWillAppear:animated];
+}
+
+#pragma mark 设置导航栏
+- (void)setupNavigation
+{
+    //中间view
+    NYSegmentedControl *segment = [[NYSegmentedControl alloc] initWithItems:@[@"意向客户", @"订单客户"]];
+    segment.frame = CGRectMake(0, 0, 160.0f, 33.0f);
+    segment.titleTextColor = [UIColor colorWithRed:157 / 255.0f green:191 / 255.0f blue:226 / 255.0f alpha:1.0f];
+    segment.selectedTitleTextColor = [UIColor colorWithRed:82 / 255.0f green:142 / 255.0f blue:205 / 255.0f alpha:1.0f];
+    segment.backgroundColor = [UIColor colorWithRed:62 / 255.0f green:122 / 255.0f blue:186 / 255.0f alpha:1.0f];
+    segment.drawsGradientBackground = NO;
+    segment.borderWidth = 0;
+    segment.segmentIndicatorBorderWidth = 0;
+    segment.segmentIndicatorInset = 2.0f;
+    segment.drawsSegmentIndicatorGradientBackground = NO;
+    segment.segmentIndicatorBackgroundColor = [UIColor whiteColor];
+    segment.selectedSegmentIndex = 0;
+    [segment sizeToFit];
+    self.navigationItem.titleView = segment;
+    
+    
+    //右边加号
+    UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    rightButton.frame = CGRectMake(0, 0, 12.0f, 12.0f);
+    [rightButton setImage:[UIImage imageNamed:@"add_nav_right"] forState:UIControlStateNormal];
+    [rightButton addTarget:self action:@selector(rightBtnClick) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:rightButton];
+}
+
+- (void)rightBtnClick
+{
+    NSArray *array = @[[KxMenuItem menuItem:@"新建客户" image:nil target:self action:@selector(rightItemClick)],
+                       [KxMenuItem menuItem:@"导入潜客" image:nil target:self action:@selector(rightItemClick)],
+                       [KxMenuItem menuItem:@"导入订单客户" image:nil target:self action:@selector(rightItemClick)],
+                       ];
+    KxMenu.tintColor = kNavigationBackgroundColor;
+    [KxMenu showMenuInView:kWindow fromRect:CGRectMake(kScreenWidth - 90.0f, 0, 112, 150) menuItems:array];
+}
+
+- (void)rightItemClick
+{
+    _createCustView = [[YDCreateCustView alloc] init];
+    _createCustView.delegate = self;
+    _createCustView.backgroundColor = kNavigationBackgroundColor;
+    _createCustView.frame = CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight);
+    [kWindow addSubview:_createCustView];
+    [UIView animateWithDuration:0.25f animations:^{
+        _createCustView.frame = CGRectMake(0, 0, kScreenWidth, kScreenHeight);
+    }];
+}
+
+- (void)createView
+{
+    self.isSearch = NO;
+    
+    self.tableView.frame = CGRectMake(0, CGRectGetMaxY(_searchBarView.frame), kScreenWidth, kScreenHeight - 64.0f);
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+}
+
+- (YDCustSearchResultView *)searchReustView
+{
+    if (_searchReustView == nil) {
+        _searchReustView = [[YDCustSearchResultView alloc] init];
+        _searchReustView.alpha = 0.97f;
+        _searchReustView.frame = CGRectMake(0, 64.0f, kScreenWidth, kScreenHeight - 64.0f);
+    }
+    return _searchReustView;
+}
+
+
+#pragma mark - tableView delegete
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return 20;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDCustomerListCell *cell = [YDCustomerListCell cellWithTabelView:tableView];
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return kCustomerListCellHeight;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDCustomerDetailController *custDetailController = [[YDCustomerDetailController alloc] init];
+    self.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:custDetailController animated:YES];
+}
+
+#pragma mark - search  代理方法
+- (void)willPresentSearchController:(UISearchController *)searchController
+{
+
+    self.tabBarController.tabBar.hidden = YES;
+    [kWindow addSubview:self.searchReustView];
+}
+
+- (void)didPresentSearchController:(UISearchController *)searchController
+{
+    
+}
+
+- (void)willDismissSearchController:(UISearchController *)searchController
+{
+    self.tabBarController.tabBar.hidden = NO;
+    [self.searchReustView removeFromSuperview];
+}
+
+- (void)didDismissSearchController:(UISearchController *)searchController
+{
+    
+}
+
+#pragma - mark - =================<YDCreateCustViewDelegate>=====================
+#pragma mark 做上角返回按钮
+- (void)backFontPage
+{
+    
+    [UIView animateWithDuration:0.25f animations:^{
+        _createCustView.frame = CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight);
+    } completion:^(BOOL finished) {
+        [self.createCustView removeFromSuperview];
+        self.createCustView = nil;
+    }];
+}
+
+#pragma mark 下一步点击
+- (void)nextStepBtnClick
+{
+    [kWindow endEditing:YES];
+    
+    [UIView animateWithDuration:0.25f animations:^{
+        self.createCustView.frame = CGRectMake( -kScreenWidth, 0, kScreenWidth, kScreenHeight);
+    } completion:^(BOOL finished) {
+        [self.createCustView removeFromSuperview];
+        self.createCustView = nil;
+    }];
+    
+    self.tabBarController.tabBar.hidden = YES;
+    
+
+    YDAddCustomerController *addCustomerController = [[YDAddCustomerController alloc] initWithNibName:@"YDAddCustomerController" bundle:nil];
+    addCustomerController.title = @"新建客户";
+    [self.navigationController pushViewController:addCustomerController animated:YES];
+}
+
+@end

@@ -1,0 +1,107 @@
+//
+//  YDAddFollowController.m
+//  CRM
+//
+//  Created by ios on 16/7/27.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDAddFollowController.h"
+#import "YDTool.h"
+#import "YDCustCellModel.h"
+
+@interface YDAddFollowController () <UITableViewDataSource,UITableViewDelegate>
+
+@property (weak, nonatomic) IBOutlet UITableView *tableView;
+
+@property (nonatomic, strong) NSMutableArray *cellArray;
+
+@end
+
+@implementation YDAddFollowController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+   
+    [self setupNavigationBar];
+    [self setupViewData];
+}
+
+
+#pragma mark 设置view的数据
+- (void)setupViewData
+{
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [self.tableView registerNib(@"YDOnlyTextCell")];
+    [self.tableView registerNib(@"YDTextArrowCell")];
+    [self.tableView registerNib(@"YDFollowChooseCell")];
+    [self.tableView registerNib(@"YDUpdateCusInfoS5Cell")];
+    [self.tableView registerNib(@"YDUpdateCusInfoS4Cell")];
+    
+    if (self.addFollowType == AddFollowTypeManual) {
+        //手动添加跟进
+        self.cellArray = [NSMutableArray arrayWithArray:[YDTool cellModelArrayWithCellName:@"addFollowManualCell"]];
+    } else {
+        //电话跟进
+        self.cellArray = [NSMutableArray arrayWithArray:[YDTool cellModelArrayWithCellName:@"addFollowPhoneCell"]];
+    }
+}
+
+#pragma mark 设置导航条
+- (void)setupNavigationBar
+{
+    self.title = @"添加跟进";
+    
+    UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [doneButton setTitle:@"完成" forState:UIControlStateNormal];
+    doneButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+    [doneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    doneButton.frame = CGRectMake(0, 0, 28.0f, 20.0f);
+    [doneButton addTarget:self action:@selector(rightDoneButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *doneItem = [[UIBarButtonItem alloc] initWithCustomView:doneButton];
+    self.navigationItem.rightBarButtonItem = doneItem;
+}
+
+#pragma mark 右边完成按钮点击方法
+- (void)rightDoneButtonClick
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    
+}
+
+#pragma mark - ==================tableview delegate=====================
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return self.cellArray.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [self.cellArray[section] count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDCustCellModel *cellModel = self.cellArray[indexPath.section][indexPath.row];
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName];
+
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 49.0f;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    return 5.0f;
+}
+
+
+@end

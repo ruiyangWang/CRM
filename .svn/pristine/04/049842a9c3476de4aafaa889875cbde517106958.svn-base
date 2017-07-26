@@ -1,0 +1,65 @@
+//
+//  ImportCustDBTool.m
+//  CRM
+//
+//  Created by ios on 16/9/18.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "ImportCustDBTool.h"
+#import "YDImportCustModel.h"
+
+
+@implementation ImportCustDBTool
+
+SINGLE_IMPLEMENTATION(ImportCustDBTool);
+
+/*!
+ @brief 创建或更新联系人（单个操作）
+ @param contactsList 联系人数据
+ */
+- (void)createOrUpdateImportCust:(YDImportCustModel *)importCustomer;
+{
+    
+    [self.dbQueue inDeferredTransaction:^(FMDatabase *db, BOOL *rollback) {
+        NSMutableArray *phoneArray = [NSMutableArray array];
+        FMResultSet *rs = [db executeQuery:@"SELECT * FROM YDImportCustList WHERE [phone] = ?", importCustomer.phone];
+        
+        if ([rs next])
+        {
+            NSString *phone = [rs stringForColumn:@"phone"];
+            [phoneArray addObject:phone];
+        }
+        
+        //如果表中不存在，则添加
+        if ([phoneArray indexOfObject:importCustomer.phone] == NSNotFound)
+        {
+            //添加
+            [db executeUpdate:@"INSERT INTO YDImportCustList( "
+             " [name] , "
+             " [phone] , "
+             " [isSelect] "
+             " ) VALUES (?, ?, ?)",
+             importCustomer.name,
+             importCustomer.phone,
+             importCustomer.isSelected];
+        }
+        else
+        {
+            //存在，则进行更新操作
+            [db executeUpdate:@"UPDATE YDImportCustList SET "
+             " [name] = ?,"
+             " [phone] = ?,"
+             " [isSelect] = ?,"
+             " WHERE [userId] = ? AND [dbId] = ? AND [id] = ? ",
+             importCustomer.name,
+             importCustomer.phone,
+             importCustomer.isSelected];
+        }
+        [rs close];
+        
+    }];
+}
+
+
+@end

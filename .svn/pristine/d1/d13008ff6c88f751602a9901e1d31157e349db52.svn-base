@@ -1,0 +1,71 @@
+//
+//  YDSwith.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDSwith.h"
+
+#define kColor1_ON [UIColor colorWithRed:168 / 255.0f green:168 / 255.0f blue:168 / 255.0f alpha:1.0f]
+#define kColor1_OFF [UIColor colorWithRed:168 / 255.0f green:168 / 255.0f blue:168 / 255.0f alpha:1.0f]
+#define kColor2_ON [UIColor colorWithRed:168 / 255.0f green:168 / 255.0f blue:168 / 255.0f alpha:1.0f]
+#define kColor2_OFF [UIColor colorWithRed:168 / 255.0f green:168 / 255.0f blue:168 / 255.0f alpha:1.0f]
+
+@interface YDSwith()
+
+@property (weak, nonatomic) IBOutlet UIButton *swithButton;
+
+@end
+
+@implementation YDSwith
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
+-(instancetype)initWithCoder:(NSCoder *)aDecoder{
+    if (self = [super initWithCoder:aDecoder]) {
+        [self setup];
+    }
+    return self;
+}
+
+- (void)setup{
+   [[NSBundle mainBundle]loadNibNamed:@"YDSwith" owner:self options:nil];
+    
+    self.view.frame = CGRectMake(0, 0, 77, 27);
+    [self addSubview:self.view];
+}
+
+-(void)setColorStyle:(ColorStyle)colorStyle{
+    _colorStyle = colorStyle;
+    
+    if (_colorStyle == ColorStyle1) {
+        NSLog(@"111");
+    }else{
+        NSLog(@"222");
+    }
+}
+
+- (IBAction)clickSwithButton:(UIButton *)sender {
+    
+    CGPoint buttonCent = sender.center;
+    
+    if (buttonCent.x <22) {
+        buttonCent = CGPointMake(buttonCent.x+35, buttonCent.y);
+    }else{
+        buttonCent = CGPointMake(buttonCent.x-35, buttonCent.y);
+    }
+    
+    [UIView animateWithDuration:.25 animations:^{
+        sender.center = buttonCent;
+    }];
+}
+
+
+@end

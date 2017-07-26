@@ -1,0 +1,39 @@
+//
+//  PrefixHeader.pch
+//  CRM
+//
+//  Created by YD_iOS on 16/7/14.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#endif /* PrefixHeader_pch */
+
+#import "MJRefresh.h"
+#import "MBProgressHUD.h"
+#import "UIViewController+HUD.h"
+#import "MBProgressHUD+WB.h"
+#import "UIView+Coordinate.h"
+#import "UIImage+YDWithColor.h"
+#import "UIViewController+BackButtonHandler.h"
+
+#import "YDFunction.h"
+#import "YDColor.h"
+#import "YDRequestAddress.h"
+
+#import "YDDataService.h"
+
+#import "YDViewController.h"
+#import "UIColor+HexString.h"
+#import "NSDate+YDString.h"
+
+#import "Singleton.h"  //创建单例类的宏
+
+#import <QMUIKit/QMUIKit.h>
+
+#define kWindow  [[UIApplication sharedApplication].delegate window]

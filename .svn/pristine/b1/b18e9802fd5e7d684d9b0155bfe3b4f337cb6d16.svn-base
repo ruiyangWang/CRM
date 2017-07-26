@@ -1,0 +1,41 @@
+//
+//  YDTextArrowCell.m
+//  CRM
+//
+//  Created by ios on 16/7/28.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDTextArrowCell.h"
+#import "YDCustCellModel.h"
+
+
+@interface YDTextArrowCell ()
+
+@property (weak, nonatomic) IBOutlet UILabel *titleLabel;
+
+@property (weak, nonatomic) IBOutlet UILabel *subTitleLabel;
+
+@end
+@implementation YDTextArrowCell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+- (void)setCellModel:(YDCustCellModel *)cellModel
+{
+    _cellModel = cellModel;
+    
+    self.titleLabel.text = cellModel.title;
+    self.subTitleLabel.text = cellModel.subTitle;
+}
+
+@end

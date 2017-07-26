@@ -1,0 +1,361 @@
+//
+//  YDAddCustomerController.m
+//  CRM
+//
+//  Created by ios on 16/7/25.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDAddCustomerController.h"
+#import "YDUpdateCusInfoS1Cell.h"
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDUpdateCusInfoS3Cell.h"
+#import "YDUpdateCusInfoS4Cell.h"
+#import "YDUpdateCusInfoS5Cell.h"
+#import "YDCustSectionHeaderView.h"
+#import "YDTool.h"
+#import "YDCustCellModel.h"
+#import "YDCellEditController.h"
+#import "YDSearchCarModelTVC.h"
+#import "YDBuyCarOptionController.h"
+#import "YDCustSearchResultView.h"
+
+
+
+@interface YDAddCustomerController () <UITableViewDelegate,UITableViewDataSource>
+
+@property (nonatomic, strong) YDCustSectionHeaderView *firstGroupHeaderView;
+@property (nonatomic, strong) YDCustSectionHeaderView *secondGroupHeaderView;
+@property (nonatomic, strong) UITableViewCell *s;
+
+//编辑的时候遮盖view
+@property (nonatomic, strong) YDCustSearchResultView *coverView;
+
+@property (nonatomic, strong) UITableView *myTableView;
+
+@property (nonatomic, strong) NSMutableArray *cellArray;
+
+//记住tableview原来的偏移量，编辑完成后改回来
+@property (nonatomic, assign) CGPoint oldOffset;
+
+@property (nonatomic, assign) BOOL isOpenFirstGroup;
+@property (nonatomic, assign) BOOL isOpenSecondGroup;
+
+@end
+
+@implementation YDAddCustomerController
+
+- (void)viewDidLoad {
+    
+    [super viewDidLoad];
+
+    [self createView];
+    
+    [self setupNavigationBar];
+    
+}
+
+
+
+- (void)createView
+{
+    _myTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight - 64.0f) style:UITableViewStylePlain];
+    _myTableView.dataSource = self;
+    _myTableView.delegate = self;
+    [self.view addSubview:_myTableView];
+    _myTableView.backgroundColor = kViewControllerBackgroundColor;
+    _myTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _myTableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+    [_myTableView registerNib(@"YDUpdateCusInfoS1Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS3Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS4Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS5Cell")];
+    
+    self.cellArray = [NSMutableArray arrayWithArray:[YDTool cellModelArrayWithCellName:@"addCustomerCell"]];
+    
+    _isOpenFirstGroup = NO;
+    _isOpenSecondGroup = NO;
+}
+
+#pragma mark 设置导航条
+- (void)setupNavigationBar
+{
+    self.title = @"新建客户";
+    self.navigationController.navigationBarHidden = NO;
+    
+    UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [doneButton setTitle:@"完成" forState:UIControlStateNormal];
+    doneButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+    [doneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    doneButton.frame = CGRectMake(0, 0, 28.0f, 20.0f);
+    [doneButton addTarget:self action:@selector(rightDoneButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *doneItem = [[UIBarButtonItem alloc] initWithCustomView:doneButton];
+    self.navigationItem.rightBarButtonItem = doneItem;
+}
+
+- (void)rightDoneButtonClick
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+#pragma mark - ======================Table view data source============================
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return self.cellArray.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if (section == 1 && !_isOpenFirstGroup) {
+        return 0;
+    } else if (section == 2 && !_isOpenSecondGroup) {
+        return 0;
+    }
+    return [self.cellArray[section] count];
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (indexPath.section == 0 && indexPath.row == 2) {
+        return 98;
+    } else{
+        return 49;
+    }
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    NSArray *cellArray = self.cellArray[indexPath.section];
+    YDCustCellModel *cellModel = cellArray[indexPath.row];
+    
+    if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS1Cell"]) {
+        YDUpdateCusInfoS1Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        if ([cellModel.changeButtonType isEqualToString:@"1"]) {
+            cell.cellType = CellTypeMan;
+        } else {
+            cell.cellType = CellTypeBool;
+        }
+        
+        cell.name = cellModel.title;
+        cell.subString = cellModel.subTitle;
+        cell.isMust = cellModel.isMust;
+        cell.subT.placeholder = cellModel.placeholder;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS2Cell"]) {
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.titleString = cellModel.title;
+        cell.subTitleString = cellModel.subTitle;
+        cell.subTitle.placeholder = cellModel.placeholder;
+        cell.showNextButton = cellModel.isShowArrow;
+        cell.isMust = cellModel.isMust;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS3Cell"]) {
+        YDUpdateCusInfoS3Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.titleName = cellModel.title;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS4Cell"]) {
+        YDUpdateCusInfoS4Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.t = cellModel.title;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS5Cell"]) {
+        YDUpdateCusInfoS5Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        
+        return cell;
+    }
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+    
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    
+    return 0;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    if (section == 0) {
+        return 0;
+    } else if (section == 1 || section == 2) {
+        return 49.0f;
+    }
+    return 10.0f;
+}
+
+
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    WEAKSELF
+    if (section == 1) {
+        
+        self.firstGroupHeaderView.openCellBlock = ^(BOOL isOpen){
+            weakSelf.isOpenFirstGroup = isOpen;
+            NSIndexSet *indexSet = [[NSIndexSet alloc] initWithIndex:1];
+            [weakSelf.myTableView reloadSections:indexSet withRowAnimation:UITableViewRowAnimationFade];
+        };
+        return self.firstGroupHeaderView;
+    } else if (section == 2) {
+        
+        self.secondGroupHeaderView.openCellBlock = ^(BOOL isOpen){
+            weakSelf.isOpenSecondGroup = isOpen;
+            NSIndexSet *indexSet = [[NSIndexSet alloc] initWithIndex:2];
+            [weakSelf.myTableView reloadSections:indexSet withRowAnimation:UITableViewRowAnimationFade];
+        };
+        return self.secondGroupHeaderView;
+    }
+    UIView *view = [[UIView alloc] init];
+    view.backgroundColor = kViewControllerBackgroundColor;
+    return view;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+   
+    NSArray *cellArray = self.cellArray[indexPath.section];
+    YDCustCellModel *cellModel = cellArray[indexPath.row];
+    
+    if ([cellModel.editMode isEqualToString:@"1"]) {
+        //选择车型
+        YDSearchCarModelTVC *carVC = [[YDSearchCarModelTVC alloc] init];
+        carVC.SearchCarRowBlack = ^(NSString *name){
+            cellModel.subTitle = name;
+            [self.myTableView reloadData];
+        };
+        [self.navigationController pushViewController:carVC animated:YES];
+        
+    } else if ([cellModel.editMode isEqualToString:@"2"]) {
+        //直接编辑的情况
+        
+        self.myTableView.scrollEnabled = NO;
+        
+        //记录tableview的偏移量
+        _oldOffset = tableView.contentOffset;
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+        //如果不是第一组 cell.y - 44.0f;
+        CGFloat offsetY = indexPath.section ? cell.y - 44.0f : cell.y;
+        
+        [UIView animateWithDuration:0.25 animations:^{
+            tableView.contentOffset = CGPointMake(0, offsetY);
+        }];
+        
+        if (indexPath.section == 0) {
+            [self addCovewViewWithHeight:kScreenHeight - 44.0f];
+            
+        } else {
+            [self addCovewViewWithHeight:kScreenHeight - 93.0f];
+        }
+        
+        //对两种cell的处理
+        if ([cell isKindOfClass:[YDUpdateCusInfoS1Cell class]]) {
+            YDUpdateCusInfoS1Cell *s1Cell = [tableView cellForRowAtIndexPath:indexPath];
+            s1Cell.subT.userInteractionEnabled = YES;
+            [s1Cell.subT becomeFirstResponder];
+            _s = s1Cell;
+        } else {
+            YDUpdateCusInfoS2Cell *s2Cell = [tableView cellForRowAtIndexPath:indexPath];
+            s2Cell.subTitle.userInteractionEnabled = YES;
+            [s2Cell.subTitle becomeFirstResponder];
+            _s = s2Cell;
+        }
+     
+    } else if ([cellModel.editMode isEqualToString:@"3"]) {
+        
+    
+    } else if ([cellModel.editMode isEqualToString:@"4"]){
+        //购车条件选择
+        YDBuyCarOptionController *vc = [[YDBuyCarOptionController alloc] init];
+        vc.titleString = cellModel.title;
+        vc.BackBlack = ^(NSString *name){
+            cellModel.subTitle = name;
+            [self.myTableView reloadData];
+        };
+        [self.navigationController pushViewController:vc animated:YES];
+    } else {
+    
+    }
+    
+}
+
+
+/**
+ *  添加遮盖view
+ *
+ *  @param height view底部到需要遮盖的高度
+ */
+- (void)addCovewViewWithHeight:(CGFloat)height
+{
+    if (self.coverView.y < kScreenHeight) {
+        return;
+    }
+    
+    [self.view addSubview:self.coverView];
+    
+    [UIView animateWithDuration:0.25 animations:^{
+        [self.coverView upOrDownSlideValue:-height];
+    }];
+    
+    WEAKSELF
+    self.coverView.ClickBlock = ^{
+        
+        [weakSelf removeCoverViewWithHeight:height];
+    };
+}
+
+/**
+ *  移除遮盖
+ *
+ *  @param height 遮盖的最上面到手机底部的距离
+ */
+- (void)removeCoverViewWithHeight:(CGFloat)height
+{
+    if ([_s isKindOfClass:[YDUpdateCusInfoS2Cell class]]) {
+        YDUpdateCusInfoS2Cell *cell = (YDUpdateCusInfoS2Cell *)_s;
+        cell.subTitle.userInteractionEnabled = NO;
+    } else if ([_s isKindOfClass:[YDUpdateCusInfoS1Cell class]]) {
+        YDUpdateCusInfoS1Cell *cell = (YDUpdateCusInfoS1Cell *)_s;
+        cell.subT.userInteractionEnabled = NO;
+    }
+    
+    self.myTableView.scrollEnabled = YES;
+    [self.view endEditing:YES];
+    
+    [UIView animateWithDuration:0.25 animations:^{
+        self.myTableView.contentOffset = _oldOffset;
+    }];
+    
+    [UIView animateWithDuration:0.25 animations:^{
+        [self.coverView upOrDownSlideValue:height];
+    } completion:^(BOOL finished) {
+        [self.coverView removeFromSuperview];
+        self.coverView = nil;
+    }];
+    
+}
+
+
+#pragma mark - ================懒加载====================
+- (YDCustSectionHeaderView *)firstGroupHeaderView
+{
+    if (!_firstGroupHeaderView) {
+        _firstGroupHeaderView = [YDCustSectionHeaderView custSectionHeaderViewWithTitle:@"客户信息"];
+    }
+    return _firstGroupHeaderView;
+}
+
+- (YDCustSectionHeaderView *)secondGroupHeaderView
+{
+    if (!_secondGroupHeaderView) {
+        _secondGroupHeaderView = [YDCustSectionHeaderView custSectionHeaderViewWithTitle:@"意向信息"];
+    }
+    return _secondGroupHeaderView;
+}
+
+- (YDCustSearchResultView *)coverView
+{
+    if (_coverView == nil) {
+        _coverView = [[YDCustSearchResultView alloc] init];
+        _coverView.frame = CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight);
+        
+    }
+    return _coverView;
+}
+
+@end

@@ -1,0 +1,18 @@
+//
+//  YDAddCustFlowController.h
+//  CRM
+//
+//  Created by ios on 2016/11/23.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDViewController.h"
+
+@interface YDAddCustFlowController : YDViewController
+
+@property (nonatomic, copy) NSString *customerName;
+@property (nonatomic, copy) NSString *customerPhone;
+
+@property (nonatomic, copy) NSString *passengerId;//客流id
+
+@end

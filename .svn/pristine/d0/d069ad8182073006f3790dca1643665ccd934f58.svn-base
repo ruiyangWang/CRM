@@ -1,0 +1,16 @@
+//
+//  YDGiveCarVC.h
+//  CRM
+//
+//  Created by YD_iOS on 16/8/29.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//  成功交车页面
+
+#import "YDViewController.h"
+#import "YDCustListModel.h"
+
+@interface YDGiveCarVC : YDViewController
+
+@property (nonatomic, strong) YDCustListModel *cModel;
+
+@end

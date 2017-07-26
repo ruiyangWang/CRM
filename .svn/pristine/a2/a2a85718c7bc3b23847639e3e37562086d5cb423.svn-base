@@ -1,0 +1,211 @@
+//
+//  YDTableViewController.m
+//  CRM
+//
+//  Created by ios on 16/7/19.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDTableViewController.h"
+#import "YDSearchController.h"
+
+@interface YDTableViewController () <UISearchControllerDelegate,UISearchBarDelegate>
+
+
+@property (nonatomic, strong) UISearchBar *searchBar;
+
+@property (nonatomic, strong) UISearchController *searchController;
+@property (nonatomic, strong) YDSearchController *searchVC;
+@end
+
+@implementation YDTableViewController
+
+- (instancetype)init
+{
+    if (self = [super init]) {
+        [self createTableView];
+    }
+    return self;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    _searchVC = [[YDSearchController alloc] init];
+    //[self searchForTableViewHeard];
+    self.definesPresentationContext = YES;
+    
+    [self setAutomaticallyAdjustsScrollViewInsets:YES];
+    [self setExtendedLayoutIncludesOpaqueBars:YES];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+#pragma mark -  ======================搜索模块============================
+#pragma mark 添加搜索栏
+//- (void)setSearchBarType:(SearchBarType)searchBarType
+//{
+//    _searchBarType = searchBarType;
+//    
+//}
+
+- (void)searchForTableViewHeard
+{
+    [self setupSearchBarWithFrame:CGRectMake(0, 0, kScreenWidth, 44.0f)];
+    if (_searchBar) {
+        _tableView.tableHeaderView = _searchBar;
+    }
+}
+
+#pragma mark 搜索栏
+- (void)setupSearchBarWithFrame:(CGRect)frame
+{
+    _searchBar = [[UISearchBar alloc] initWithFrame:frame];
+    _searchBar.placeholder = @"搜索";
+    _searchBar.barTintColor = kNavigationBackgroundColor;
+    _searchBar.searchBarStyle = UISearchBarStyleMinimal;
+    _searchBar.delegate = self;
+    [self setupSearchController];
+}
+
+- (void)setupSearchController
+{
+    //_searchController = [[UISearchDisplayController alloc] initWithSearchBar:_searchBar contentsController:self];
+    
+}
+
+#pragma mark -searchController delegate methods
+
+
+#pragma mark -  ======================tableView模块============================
+#pragma mark  tableView 的创建
+- (void)createTableView
+{
+    self.tableView = [[UITableView alloc] init];
+    self.tableView.dataSource = self;
+    self.tableView.delegate = self;
+    //self.tableView.backgroundColor = kViewControllerBackgroundColor;
+    self.tableView.frame = CGRectMake(0, 0, kScreenWidth, kScreenHeight);
+    [self.view addSubview:self.tableView];
+    
+    [self.tableView setTableHeaderView:self.searchController.searchBar];
+//    if (_searchBarType == SearchBarTypeTableViewHeader) {
+//        [self searchForTableViewHeard];
+//    }
+}
+
+- (UISearchController *) searchController
+{
+    if (_searchController == nil) {
+        _searchController = [[UISearchController alloc] initWithSearchResultsController:self.searchVC];
+    
+        [_searchController setSearchResultsUpdater: self.searchVC];
+        [_searchController.searchBar sizeToFit];
+        [_searchController.searchBar setDelegate:self];
+        [_searchController.searchBar setPlaceholder:@"搜索"];
+        _searchController.searchBar.searchBarStyle = UISearchBarStyleMinimal;
+        [_searchController.searchBar.layer setBorderWidth:0];
+//        [_searchController.searchBar setBarTintColor:[UIColor colorWithRed:220 green:220 blue:220]];
+//        [_searchController.searchBar.layer setBorderWidth:0.5f];
+//        [_searchController.searchBar.layer setBorderColor:[UIColor colorWithRed:220 green:220 blue:220].CGColor];
+        
+        // 修改UISearchBar右侧的取消按钮文字颜色及背景图片
+        for (UIView *searchbuttons in [_searchController.searchBar.subviews[0] subviews]){
+            if ([searchbuttons isKindOfClass:[UIButton class]]) {
+                UIButton *cancelButton = (UIButton*)searchbuttons;
+                // 修改文字颜色
+                [cancelButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+                [cancelButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+                
+                // 修改按钮背景
+//                [cancelButton setBackgroundImage:[UIImage resizedImage:@"login_btn_login.png"] forState:UIControlStateNormal];
+//                [cancelButton setBackgroundImage:nil forState:UIControlStateHighlighted];
+            }
+        }
+    }
+    return _searchController;
+}
+
+#pragma mark 搜索框的代理方法，搜索输入框获得焦点（聚焦）
+
+- (BOOL)searchBarShouldBeginEditing:(UISearchBar *)searchBar
+{
+    return YES;
+}
+
+- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
+{
+    searchBar.searchBarStyle = UISearchBarStyleDefault;
+    [searchBar setBarTintColor:kNavigationBackgroundColor];
+    [searchBar.layer setBorderWidth:0.5];
+    [searchBar.layer setBorderColor:kNavigationBackgroundColor.CGColor];
+    
+    
+    [searchBar setShowsCancelButton:YES animated:YES];
+    NSArray *array = [[searchBar subviews][0] subviews];
+    // 修改UISearchBar右侧的取消按钮文字颜色及背景图片
+    for (UIView *searchbuttons in array){
+        if ([searchbuttons isKindOfClass:[UIButton class]]) {
+            UIButton *cancelButton = (UIButton*)searchbuttons;
+            // 修改文字颜色
+            [cancelButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+            [cancelButton setTitleColor:[UIColor whiteColor] forState:UIControlStateHighlighted];
+            [cancelButton setTitle:@"取消" forState:UIControlStateNormal];
+        }
+    }
+}
+- (BOOL)searchBarShouldEndEditing:(UISearchBar *)searchBar
+{
+    return YES;
+}
+- (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar
+{
+    [_searchController.searchBar.layer setBorderWidth:0.5];
+    [_searchController.searchBar.layer setBorderColor:[UIColor whiteColor].CGColor];
+    _searchController.searchBar.searchBarStyle = UISearchBarStyleMinimal;
+}
+
+- (void)willPresentSearchController:(UISearchController *)searchController
+{
+
+}
+- (void)didPresentSearchController:(UISearchController *)searchController
+{
+    
+}
+- (void)willDismissSearchController:(UISearchController *)searchController
+{
+    
+}
+- (void)didDismissSearchController:(UISearchController *)searchController
+{
+    
+}
+
+- (void)presentSearchController:(UISearchController *)searchController
+{
+
+}
+
+
+#pragma mark -Table view data source
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+
+    return 0;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell" forIndexPath:indexPath];
+    
+    if (!cell) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
+    }
+    
+    return cell;
+}
+
+
+@end

@@ -1,0 +1,83 @@
+//
+//  YDMessageVC.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/13.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDMessageVC.h"
+#import "YDMessageCell.h"
+#import "YDMessageModel.h"
+
+@interface YDMessageVC ()
+@property (weak, nonatomic) IBOutlet UITableView *myTableView;
+@property (copy, nonatomic) NSArray *datas;
+@end
+
+@implementation YDMessageVC
+
+#pragma mark ----- vc lift cycle 生命周期
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.title = @"消息";
+    
+    [_myTableView registerNib(@"YDMessageCell")];
+    _myTableView.rowHeight=UITableViewAutomaticDimension;//表示cell的高度自适应
+    _myTableView.estimatedRowHeight=65.0f;//cell最小高度
+    _myTableView.separatorStyle = UITableViewCellSelectionStyleNone;
+        
+    NSMutableArray *mdatas = [NSMutableArray array];
+    for (int i=0; i<16; i++) {
+        YDMessageModel *model = [[YDMessageModel alloc]init];
+        if (i%2==1) {
+            model.subTitle = @"您对客户宋海鹏的战败申请已经提交至后在近期留意消息会有申请结果通。";
+        }else{
+            model.subTitle = @"您对客户宋海鹏的战败申";
+        }
+        [mdatas addObject:model];
+    }
+    _datas = mdatas;
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+#pragma mark ----- custom action for UI 界面处理有关
+#pragma mark ----- custom action for DATA 数据处理有关
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+#pragma mark - Table view data source
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return _datas.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDMessageCell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDMessageCell"];
+    YDMessageModel *model = [_datas objectAtIndex:indexPath.row];
+    cell.subLabel.text = model.subTitle;
+    
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    
+}
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

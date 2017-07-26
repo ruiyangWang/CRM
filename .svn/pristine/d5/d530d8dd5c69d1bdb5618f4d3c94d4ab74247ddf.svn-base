@@ -1,0 +1,67 @@
+//
+//  YDSearchIntentionTVC.m
+//  CRM
+//
+//  Created by YD_iOS on 16/8/1.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDSearchIntentionTVC.h"
+
+@interface YDSearchIntentionTVC ()
+
+@property (nonatomic, copy)NSArray *datas;
+
+@end
+
+@implementation YDSearchIntentionTVC
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.title = @"选择意向级别";
+    
+    _datas = @[@"H级",@"A级",@"B级",@"C级",@"战败"];
+    self.tableView.tableFooterView = [[UIView alloc]init];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - Table view data source
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return _datas.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"reuseIdentifier"];
+    
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc]initWithStyle:(UITableViewCellStyleDefault) reuseIdentifier:@"reuseIdentifier"];
+    }
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    // Configure the cell...
+    cell.textLabel.text = _datas[indexPath.row];
+    
+    return cell;
+}
+
+
+#pragma mark - Table view delegate
+
+// In a xib-based application, navigation from a table can be handled in -tableView:didSelectRowAtIndexPath:
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    if (self.ClickCellBlack != nil) {
+        NSString *s = [_datas objectAtIndex:indexPath.row];
+        self.ClickCellBlack(s);
+    }
+    
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+
+@end

@@ -1,0 +1,21 @@
+//
+//  YDUpdateCustomersInfoVC.h
+//  CRM
+//
+//  Created by YD_iOS on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//  补充客流（新增）
+
+#import <UIKit/UIKit.h>
+#import "YDCustListModel.h"
+
+@interface YDUpdateCustomersInfoVC : YDViewController
+
+@property (nonatomic, copy) NSString *phoneNO;//客流电话
+@property (nonatomic, copy) NSString *mId;//客流id
+@property (nonatomic, strong) YDCustListModel *cModel;
+
+@property (nonatomic, copy) NSString *custName; //有报价的才有客户名，有客户名的报价事件是查看报价
+@property (nonatomic, strong) NSDictionary *quote; //报价信息
+
+@end

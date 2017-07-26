@@ -1,0 +1,61 @@
+//
+//  YDCustDetail2Cell.m
+//  CRM
+//
+//  Created by ios on 16/7/27.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCustDetail2Cell.h"
+
+
+@interface YDCustDetail2Cell ()
+
+/**
+ *  跟进进度
+ */
+@property (weak, nonatomic) IBOutlet UILabel *fllowInfoLabel;
+
+/**
+ *  月份
+ */
+@property (weak, nonatomic) IBOutlet UILabel *monthLabel;
+
+/**
+ *  日
+ */
+@property (weak, nonatomic) IBOutlet UILabel *dayLabel;
+
+/**
+ *  跟进事件
+ */
+@property (weak, nonatomic) IBOutlet UILabel *eventLabel;
+
+/**
+ *  客户等级标签
+ */
+@property (weak, nonatomic) IBOutlet UILabel *custGradeLabel;
+
+/**
+ *  客户进度标签
+ */
+@property (weak, nonatomic) IBOutlet UILabel *custEventLabel;
+
+@end
+
+@implementation YDCustDetail2Cell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    
+    self.fllowInfoLabel.text = @"线通的时间我企鹅";
+    
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

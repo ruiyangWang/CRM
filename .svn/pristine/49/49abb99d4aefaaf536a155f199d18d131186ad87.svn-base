@@ -1,0 +1,236 @@
+//
+//  YDOrderCusInfoVC.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/29.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDOrderCusInfoVC.h"
+#import "YDUpdateCusInfoS1Cell.h"
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDUpdateCusInfoS4Cell.h"
+#import "YDSearchCarModelTVC.h"
+#import "YDGiveCarVC.h"
+#import "YDCancelOrderVC.h"
+
+@interface YDOrderCusInfoVC (){
+    NSArray *title;
+    NSArray *subPHTitle;
+    NSMutableDictionary *_subMDTitle;
+    NSDictionary *_carRel;//保有车型
+}
+
+@property (weak, nonatomic) IBOutlet UIButton *editButton;
+@property (weak, nonatomic) IBOutlet UITableView *userInfoTV;
+@property (weak, nonatomic) IBOutlet UITableView *orderInfoTV;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *x_userInfoTV;
+@property (weak, nonatomic) IBOutlet UIView *lineView;
+@property (weak, nonatomic) IBOutlet UIView *buttonsBGView;
+
+@end
+
+@implementation YDOrderCusInfoVC
+
+#pragma mark ----- vc lift cycle 生命周期
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.title = @"宋海鹏";
+    
+    [_userInfoTV registerNib(@"YDUpdateCusInfoS1Cell")];
+    [_userInfoTV registerNib(@"YDUpdateCusInfoS2Cell")];
+    [_userInfoTV registerNib(@"YDUpdateCusInfoS4Cell")];
+    
+    [_orderInfoTV registerNib(@"YDUpdateCusInfoS2Cell")];
+    
+    title = @[@"",@"联系电话",@"出生日期",@"身份证号码",@"微信/QQ",@"",@"保有车型",@"居住地址"];
+    subPHTitle = @[@"",@"请填写电话号码",@"请选择出生日期",@"请填写身份证号",@"请填写联系方式",@"",@"请选择车型",@"请选择地址"];
+    
+    _subMDTitle = [NSMutableDictionary dictionary];
+    [_subMDTitle setValue:_custListModel.customerName forKey:@"客户名称"];
+    [_subMDTitle setValue:_custListModel.gender forKey:@"客户性别"];
+    [_subMDTitle setValue:_custListModel.customerPhone forKey:@"联系电话"];
+    [_subMDTitle setValue:_custListModel.birthday forKey:@"出生日期"];
+    [_subMDTitle setValue:_custListModel.idNumber forKey:@"身份证号码"];
+    [_subMDTitle setValue:_custListModel.qq forKey:@"QQ"];
+    [_subMDTitle setValue:_custListModel.weixin forKey:@"微信"];
+    [_subMDTitle setValue:_custListModel.familyStatus forKey:@"家庭状况"];
+    [_subMDTitle setValue:_custListModel.address forKey:@"地址"];
+    
+    _userInfoTV.tableFooterView = [[UIView alloc]initWithFrame:CGRectZero];
+
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+- (IBAction)changeButton:(UIButton *)sender {
+    CGFloat move;
+    NSString *buttonTitle = [sender titleForState:(UIControlStateNormal)];
+    if ([buttonTitle isEqualToString:@"基本资料"] && _x_userInfoTV.constant<0) {
+        move = kScreenWidth;
+    }else if ([buttonTitle isEqualToString:@"订单信息"] && _x_userInfoTV.constant>-1){
+        move = -kScreenWidth;
+    }else
+        return;
+    
+    _userInfoTV.hidden = NO;
+    
+    [UIView animateWithDuration:.25 animations:^{
+        _lineView.center = CGPointMake(_lineView.center.x-move/2, _lineView.center.y);
+        _x_userInfoTV.constant += move;
+        [_userInfoTV layoutIfNeeded];
+        [_orderInfoTV layoutIfNeeded];
+        [_buttonsBGView layoutIfNeeded];
+    } completion:^(BOOL finished) {
+        _userInfoTV.hidden = move<0 ? YES : NO ;
+    }];
+}
+- (IBAction)editInfo:(UIButton *)sender {
+    NSString *bt = [sender titleForState:(UIControlStateNormal)];
+    
+    if ([bt isEqualToString:@"编辑资料"]) {
+        [sender setTitle:@"保存" forState:(UIControlStateNormal)];
+        _userInfoTV.userInteractionEnabled = YES;
+        
+    }else{
+        //保存信息
+        [self saveUserInfo];
+    }
+}
+- (IBAction)giveCar:(id)sender {
+    YDGiveCarVC *vc = [[YDGiveCarVC alloc] initWithNibName:@"YDGiveCarVC" bundle:nil];
+    vc.cModel = _custListModel;
+    [self.navigationController pushViewController:vc animated:YES];
+}
+- (IBAction)cancelOrder:(id)sender {
+    YDCancelOrderVC *vc = [[YDCancelOrderVC alloc]initWithNibName:@"YDCancelOrderVC" bundle:nil];
+    vc.cModel = _custListModel;
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+#pragma mark ----- custom action for UI 界面处理有关
+#pragma mark ----- custom action for DATA 数据处理有关
+- (void)saveUserInfo{
+    
+    if ([_subMDTitle[@"客户名称"] length] == 0) {
+        [self showHint:@"客户姓名不能为空"];return;
+    }
+    
+    if ([_subMDTitle[@"联系电话"] length] == 0) {
+        [self showHint:@"客户姓名不能为空"];return;
+    }
+    
+    if(_carRel == nil){
+        [self showHint:@"保有车型不能为空"];return;
+    }
+    
+    //保存用户信息
+    NSString *url = [NSString stringWithFormat:@"%@type=update&sid=%@",kAddCustomerAddress,getNSUser(@"youdao.CRM_SID")];
+    NSMutableDictionary *mDic = [NSMutableDictionary dictionary];
+    
+    NSDictionary *customerInfo = [NSMutableDictionary dictionary];
+    [customerInfo setValue:_custListModel.modelId forKey:@"id"];
+    [customerInfo setValue:_subMDTitle[@"客户名称"] forKey:@"customerName"];
+    [customerInfo setValue:_subMDTitle[@"联系电话"] forKey:@"customerPhone"];
+    [customerInfo setValue:[NSString stringWithFormat:@"%@",_subMDTitle[@"客户性别"]] forKey:@"gender"];
+    [mDic setValue:customerInfo forKey:@"customerInfo"];
+    
+    if (_carRel != nil) {
+        [mDic setValue:@[_carRel] forKey:@"carRel"];
+    }
+    
+//    _carRel = @{@"brandsId":_custListModel.brandName, @"carsId":@(ctID), @"carTypeId":@(cID), @"type":@0};
+
+    
+    
+    [self showHudInView:self.view hint:@""];
+    [YDDataService startRequest:mDic url:url block:^(id result) {
+        [self hideHud];
+        if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+            [self showHint:@"修改成功"];
+            [_editButton setTitle:@"编辑资料" forState:(UIControlStateNormal)];
+            _userInfoTV.userInteractionEnabled = NO;
+        }else{
+            [self showHint:@"修改失败"];
+        }
+        
+    } failBlock:^(id error) {
+        [self hideHud];
+        [self showHint:@"修改失败"];
+    }];
+}
+
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+#pragma mark - Table view data source
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if (tableView == _userInfoTV) {
+        return 8;
+    }else
+        return 1;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (tableView == _userInfoTV) {
+        if (indexPath.row == 0) {
+            YDUpdateCusInfoS1Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS1Cell" forIndexPath:indexPath];
+            cell.cellType = CellTypeMan;
+            cell.subString = _subMDTitle[@"客户名称"];
+            cell.onORoff = [_subMDTitle[@"客户性别"] boolValue];
+            cell.isMust = YES;
+            return cell;
+        }else if(indexPath.row == 5){
+            YDUpdateCusInfoS4Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS4Cell" forIndexPath:indexPath];
+            cell.t = @"家庭状况";
+            cell.eventType = _subMDTitle[@"家庭状况"];
+            cell.ClickButtonBlock = ^(NSString *eType, BOOL setH, NSString *bS){
+                NSDictionary *dd = @{@"000":@"0", @"100":@"1", @"010":@"2", @"001":@"3"};
+                _subMDTitle[@"家庭状况"] = dd[eType];
+            };
+            return cell;
+        }
+        
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS2Cell" forIndexPath:indexPath];
+        cell.titleString = [title objectAtIndex:indexPath.row];
+        cell.subTitleString = _subMDTitle[cell.titleString];
+        cell.subTitle.placeholder = [subPHTitle objectAtIndex:indexPath.row];
+        cell.subTitle.userInteractionEnabled = indexPath.row!=6? YES:NO;
+        cell.isMust = [cell.titleString isEqualToString:@"联系电话"]?YES:NO;
+        cell.showNextButton = NO;
+        return cell;
+    }else{
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS2Cell" forIndexPath:indexPath];
+        cell.titleString = @"订单车型";
+        cell.subTitleString = _custListModel.carTypeName;
+        return cell;
+    }
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (tableView != _userInfoTV) {
+        return;
+    }
+    
+    if (indexPath.row == 0) {
+        
+    }else if (indexPath.row == 6){
+        YDSearchCarModelTVC *tvc = [[YDSearchCarModelTVC alloc]initWithNibName:@"YDSearchCarModelTVC" bundle:nil];
+        tvc.SearchCarRowBlack = ^(NSString *bID, NSString *ctID, NSString *cID, NSString *name){
+            [_subMDTitle setValue:name forKey:@"保有车型"];
+            _carRel = @{@"brandsId":bID, @"carsId":ctID, @"carTypeId":cID, @"type":@0};
+            [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:(UITableViewRowAnimationNone)];
+            
+        };
+        [self.navigationController pushViewController:tvc animated:YES];
+    }else{
+        
+    }
+    
+}
+
+
+@end

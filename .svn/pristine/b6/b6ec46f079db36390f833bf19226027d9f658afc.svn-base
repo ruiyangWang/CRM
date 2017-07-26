@@ -1,0 +1,78 @@
+//
+//  YDCustListModel.h
+//  CRM
+//
+//  Created by ios on 16/8/17.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDBaseModel.h"
+
+typedef NS_ENUM(NSInteger, CustListCustType) {
+    CustListCustTypeDefault, //默认意向客户
+    CustListCustTypeOrder,  //订单客户
+    CustListCustTypeImport //导入客户
+};
+
+@interface YDCustListModel : YDBaseModel
+
+@property (nonatomic, copy) NSString *address;//居住地址
+@property (nonatomic, copy) NSString *attr;
+@property (nonatomic, copy) NSString *birthday;//出生日期
+@property (nonatomic, copy) NSString *birthdayString;//出生日期字符串格式
+@property (nonatomic, copy) NSString *brandName;//品牌名称
+@property (nonatomic, copy) NSString *carTypeName;//车型名称
+@property (nonatomic, copy) NSString *carsName;//车系名称
+@property (nonatomic, copy) NSString *corpId;//企业ID
+@property (nonatomic, copy) NSString *countBy;
+@property (nonatomic, copy) NSString *createTime;//创建时间
+@property (nonatomic, copy) NSString *createTimeString;//创建时间字符串格式
+@property (nonatomic, copy) __block NSString *customerLevel;//客户意向等级
+@property (nonatomic, copy) NSString *customerName;//柳冬
+@property (nonatomic, copy) NSString *customerPhone;//客户号码
+@property (nonatomic, copy) NSNumber *customerStatus;//客户状态: 1潜客客户; 2战败客户(1,2为意向客户状态); 3下订; 4取消订单; 5提车(3,4,5为订单客户状态)
+@property (nonatomic, copy) NSNumber *customerType;//客户类型: 1意向客户; 2订单客户
+@property (nonatomic, copy) NSString *familyStatus;//家庭情况: 1单身; 2已婚; 3已育
+@property (nonatomic, copy) NSString *flag;//记录标识: 1封存; 2使用中
+@property (nonatomic, copy) NSString *gender;//性别: 0女; 1男 
+@property (nonatomic, copy) NSString *modelId;//客户主键ID
+@property (nonatomic, copy) NSString *idNumber;//身份证号
+@property (nonatomic, copy) NSString *isDrive;//是否开车: 0否; 1是
+@property (nonatomic, copy) NSString *memberId;//所属销售顾问ID
+@property (nonatomic, copy) NSString *memberName;//所属销售顾问名称
+@property (nonatomic, copy) NSString *modifyTime;//修改时间
+@property (nonatomic, copy) NSString *modifyTimeString;//修改时间字符串格式
+@property (nonatomic, copy) NSString *orgId;//组织ID
+@property (nonatomic, copy) NSString *orgName;//组织名称
+@property (nonatomic, copy) NSString *qq;//QQ号码
+@property (nonatomic, copy) NSString *searchKey;//搜索字段
+@property (nonatomic, copy) NSString *weixin;//微信号码
+@property (nonatomic, copy) NSString *currFollowTime; //上次跟进时间
+@property (nonatomic, copy) NSString *nextFollowTimeString; //下次跟进时间
+@property (nonatomic, copy) NSString *takeCarTimeString; //提车时间
+@property (nonatomic, copy) NSString *takeCarTime;
+@property (nonatomic, copy) NSString *lastFollowTime; 
+@property (nonatomic, copy) NSString *type;
+@property (nonatomic, copy) NSString *quoteMoney;//报价
+@property (nonatomic, copy) NSString *eventType;//事件状态: 报价 试驾 下定 用111表示全选
+@property (nonatomic, assign) BOOL own; //是否是自己的客户
+@property (nonatomic, copy) NSString *customerId;
+
+//11.2新加子段
+@property (nonatomic, copy) NSString *remark;
+@property (nonatomic, copy) NSString *listTimeString;
+@property (nonatomic, copy) NSString *lastFollowTimeString;
+
+//订单客户订单时间
+@property (nonatomic, copy) NSString *underOrderTime; //下订时间
+@property (nonatomic, copy) NSString *overTime; // 交车时间
+@property (nonatomic, copy) NSString *cannelTime; // 取订时间
+
+@property (nonatomic, assign) CustListCustType custType;
+
+//11.22添加 待跟进客户添加跟进时需要默认的
+@property (nonatomic, copy) NSString *brandsId;//品牌ID
+@property (nonatomic, copy) NSString *carTypeId;//车型ID
+@property (nonatomic, copy) NSString *carsId;//车系Id
+
+@end

@@ -1,0 +1,22 @@
+//
+//  NSString+Json.h
+//  YDCalculateTool
+//
+//  Created by YD_iOS on 16/6/13.
+//  Copyright © 2016年 ios. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface NSString (Json)
+-(NSString *)deleteSpecialCode;
+
+/**
+ *  将json字符串 转换为字典
+ *
+ *  @param jsonString <#jsonString description#>
+ *
+ *  @return <#return value description#>
+ */
++ (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString ;
+@end

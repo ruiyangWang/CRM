@@ -1,0 +1,15 @@
+//
+//  YDFollowupDateView.h
+//  CRM
+//
+//  Created by YD_iOS on 16/7/27.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface YDFollowupDateView : UIView
+
+@property (strong, nonatomic) IBOutlet UIView *view;
+
+@end

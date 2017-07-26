@@ -1,0 +1,143 @@
+//
+//  YDOrderCusInfoVC.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/29.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDOrderCusInfoVC.h"
+#include "YDUpdateCusInfoS1Cell.h"
+#include "YDUpdateCusInfoS2Cell.h"
+#include "YDUpdateCusInfoS4Cell.h"
+#import "YDSearchCarModelTVC.h"
+
+@interface YDOrderCusInfoVC (){
+    NSArray *title;
+    NSArray *subTitle;
+    NSArray *subPHTitle;
+}
+
+@property (weak, nonatomic) IBOutlet UITableView *userInfoTV;
+@property (weak, nonatomic) IBOutlet UITableView *orderInfoTV;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *x_userInfoTV;
+@property (weak, nonatomic) IBOutlet UIView *lineView;
+@property (weak, nonatomic) IBOutlet UIView *buttonsBGView;
+
+@end
+
+@implementation YDOrderCusInfoVC
+
+#pragma mark ----- vc lift cycle 生命周期
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.title = @"宋海鹏";
+    
+    [_userInfoTV registerNib(@"YDUpdateCusInfoS1Cell")];
+    [_userInfoTV registerNib(@"YDUpdateCusInfoS2Cell")];
+    [_userInfoTV registerNib(@"YDUpdateCusInfoS4Cell")];
+    
+    [_orderInfoTV registerNib(@"YDUpdateCusInfoS2Cell")];
+    
+    title = @[@"",@"联系电话",@"出生日期",@"身份证号码",@"微信/QQ",@"",@"保有车型",@"居住地址"];
+    subTitle = @[@"",@"15012733698",@"",@"",@"",@"",@"",@""];
+    subPHTitle = @[@"",@"请填写电话号码",@"请选择出生日期",@"请填写身份证号",@"请填写联系方式",@"",@"请选择车型",@"请选择地址"];
+    
+    _userInfoTV.tableFooterView = [[UIView alloc]initWithFrame:CGRectZero];
+
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+- (IBAction)changeButton:(UIButton *)sender {
+    CGFloat move;
+    NSString *buttonTitle = [sender titleForState:(UIControlStateNormal)];
+    if ([buttonTitle isEqualToString:@"基本资料"] && _x_userInfoTV.constant<0) {
+        move = kScreenWidth;
+    }else if ([buttonTitle isEqualToString:@"订单信息"] && _x_userInfoTV.constant>-1){
+        move = -kScreenWidth;
+    }else
+        return;
+    
+    [UIView animateWithDuration:.25 animations:^{
+        _lineView.center = CGPointMake(_lineView.center.x-move/2, _lineView.center.y);
+        _x_userInfoTV.constant += move;
+        [_userInfoTV layoutIfNeeded];
+        [_orderInfoTV layoutIfNeeded];
+        [_buttonsBGView layoutIfNeeded];
+    }];
+}
+
+#pragma mark ----- custom action for UI 界面处理有关
+#pragma mark ----- custom action for DATA 数据处理有关
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+#pragma mark - Table view data source
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if (tableView == _userInfoTV) {
+        return 8;
+    }else
+        return 1;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (tableView == _userInfoTV) {
+        if (indexPath.row == 0) {
+            YDUpdateCusInfoS1Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS1Cell" forIndexPath:indexPath];
+            cell.cellType = CellTypeMan;
+            cell.subString = @"李思";
+            return cell;
+        }else if(indexPath.row == 5){
+            YDUpdateCusInfoS4Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS4Cell" forIndexPath:indexPath];
+            cell.t = @"家庭状况";
+            return cell;
+        }
+        
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS2Cell" forIndexPath:indexPath];
+        cell.titleString = [title objectAtIndex:indexPath.row];
+        cell.subTitleString = [subTitle objectAtIndex:indexPath.row];
+        cell.subTitle.placeholder = [subPHTitle objectAtIndex:indexPath.row];
+        cell.subTitle.userInteractionEnabled = indexPath.row!=6? YES:NO;
+        cell.showNextButton = NO;
+        return cell;
+    }else{
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS2Cell" forIndexPath:indexPath];
+        cell.titleString = @"订单车型";
+        cell.subTitleString = @"2016新款霸道 3.5l v6";
+        return cell;
+    }
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (tableView != _userInfoTV) {
+        return;
+    }
+    
+    if (indexPath.row == 0) {
+        
+    }else if (indexPath.row == 6){
+        YDSearchCarModelTVC *tvc = [[YDSearchCarModelTVC alloc]initWithNibName:@"YDSearchCarModelTVC" bundle:nil];
+        tvc.SearchCarRowBlack = ^(NSString *name){
+            NSMutableArray *mA = [NSMutableArray arrayWithArray:subTitle];
+            mA[6] = name;
+            subTitle = mA;
+            [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:(UITableViewRowAnimationNone)];
+            
+        };
+        [self.navigationController pushViewController:tvc animated:YES];
+    }else{
+        
+    }
+    
+}
+
+
+@end

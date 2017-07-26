@@ -1,0 +1,81 @@
+//
+//  PrefixHeader.pch
+//  CRM
+//
+//  Created by YD_iOS on 16/7/14.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#endif /* PrefixHeader_pch */
+
+#import "MJRefresh.h"
+#import "MBProgressHUD.h"
+
+
+#import "YDFunction.h"
+#import "YDColor.h"
+#import "YDRequestAddress.h"
+#import "YDDataService.h"
+#import "YDViewController.h"
+
+#import "YDRequestManaget.h"
+
+//分类
+#import "NSString+Json.h"
+#import "NSDictionary+JsonString.h"
+#import "UIColor+HexString.h"
+#import "NSDate+YDString.h"
+#import "UIView+Coordinate.h"
+#import "UIImage+YDWithColor.h"
+#import "UIViewController+HUD.h"
+#import "MBProgressHUD+WB.h"
+
+
+#import "Singleton.h"  //创建单例类的宏
+
+
+#import <NIMSDK/NIMSDK.h>
+#import "NTESGlobalMacro.h"
+#import "NIMKit.h"
+
+#import <CocoaLumberjack/CocoaLumberjack.h>
+
+#define kWindow  [[UIApplication sharedApplication].delegate window]
+
+#ifdef DEBUG
+static DDLogLevel ddLogLevel = DDLogLevelVerbose;
+#else
+static DDLogLevel ddLogLevel = DDLogLevelInfo;
+#endif
+
+#define NTES_USE_CLEAR_BAR - (BOOL)useClearBar{return YES;}
+
+#define NTES_FORBID_INTERACTIVE_POP - (BOOL)forbidInteractivePop{return YES;}
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+//定义并导入CoCoaLumberJack框架
+#define LOG_LEVEL_DEF ddLogLevel
+#import <CocoaLumberjack.h>
+
+//通过DEBUG模式设置全局日志等级，DEBUG时为Verbose，所有日志信息都可以打印，否则Error，只打印
+#ifdef DEBUG
+static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
+#else
+static const DDLogLevel ddLogLevel = DDLogLevelError;
+#endif
+
+#endif /* PrefixHeader_pch */
+
+#ifdef DEBUG
+#define DLog(format, ...) DDLogError((@"[文件名:%s]" "[函数名:%s]" "[行号:%d]" format), __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
+#else
+#define DLog(...);
+#endif

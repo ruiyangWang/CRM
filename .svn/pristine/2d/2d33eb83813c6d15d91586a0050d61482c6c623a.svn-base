@@ -1,0 +1,192 @@
+//
+//  YDUpdateFollowupVC.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/25.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUpdateFollowupVC.h"
+#import "YDSearchIntentionTVC.h"
+#import "YDSearchCarModelTVC.h"
+#import "YDPriceListInfoVC.h"
+
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDUpdateCusInfoS4Cell.h"
+#import "YDUpdateCusInfoS5Cell.h"
+
+#import "YDPickView.h"
+
+@interface YDUpdateFollowupVC (){
+    NSArray *title;
+    NSMutableArray *subTitle;
+    
+    UIView *enableView;//当前响应键盘的view
+    CGFloat oldTableCenterY;//保存tableview的y轴中心点
+}
+
+@property (weak, nonatomic) IBOutlet UITableView *myTableView;
+@property (weak, nonatomic) IBOutlet UIButton *layerView;//编辑cell时，遮挡tableview的层
+
+@end
+
+@implementation YDUpdateFollowupVC
+
+#pragma mark ----- vc lift cycle 生命周期
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    
+    self.title = @"补充本次跟进";
+    
+    _myTableView.rowHeight = 49;
+    [_myTableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS4Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS5Cell")];
+    _myTableView.tableHeaderView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 1, 0.1)];
+    
+    title = @[@[@"客户级别",@"意向车型",@"",@"查看报价"],@[@"下次跟进时间",@""]];
+    NSArray *sa = @[[NSMutableArray arrayWithArray:@[_cModel.customerLevel,_cModel.carTypeName,@"",@"¥201899"]],
+                 [NSMutableArray arrayWithArray:@[@"",@""]]];
+    subTitle = [NSMutableArray arrayWithArray:sa];
+    
+    
+    UIBarButtonItem *rightBItem = [[UIBarButtonItem alloc]initWithTitle:@"完成" style:(UIBarButtonItemStylePlain) target:self action:@selector(clickOKButton)];
+    self.navigationItem.rightBarButtonItem = rightBItem;
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+- (void)clickOKButton{
+    //新增跟进信息
+    
+    NSString *url = [NSString stringWithFormat:@"%@",kCrmAddFollow];
+    NSDictionary *dic = @{};
+    
+    [self showHudInView:self.view hint:@""];
+    [YDDataService startRequest:dic url:url block:^(id result) {
+        [self hideHud];
+        
+        if ([[result objectForKey:@"code"] isEqualToString:@""]) {
+            [self showHint:@"新增跟进信息失败"];
+
+        }else{
+            [self showHint:@"新增跟进信息失败"];
+        }
+        
+    } failBlock:^(id error) {
+        [self hideHud];
+        [self showHint:@"新增跟进信息失败"];
+    }];
+}
+- (IBAction)clickLayerView:(UIButton *)sender {
+    [self tableViewAnimate_centerY:oldTableCenterY showKB:NO];
+}
+
+#pragma mark ----- custom action for UI 界面处理有关
+- (void)tableViewAnimate_centerY:(NSInteger)y showKB:(BOOL)b{
+    
+    [UIView animateWithDuration:.25 animations:^{
+        _myTableView.center = CGPointMake(kScreenWidth/2, y);
+        _layerView.alpha = b?1:0;
+    }];
+    
+    if (b) {
+        enableView.userInteractionEnabled = YES;
+        [enableView becomeFirstResponder];
+    }else{
+        enableView.userInteractionEnabled = NO;
+        [self.view endEditing:YES];
+    }
+}
+
+#pragma mark ----- custom action for DATA 数据处理有关
+
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+
+#pragma mark - Table view data source
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return 2;
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if(section == 0){
+        return 4;
+    }else{
+        return 2;
+    }
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    WEAKSELF
+    if (indexPath.section == 0 && indexPath.row == 2) {
+        YDUpdateCusInfoS4Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS4Cell" forIndexPath:indexPath];
+        cell.t = @"事件";
+        return cell;
+    }else if (indexPath.section == 1 && indexPath.row == 1){
+        YDUpdateCusInfoS5Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS5Cell" forIndexPath:indexPath];
+        return cell;
+    }
+    
+    YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS2Cell" forIndexPath:indexPath];
+    cell.titleString = [[title objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+    cell.subTitleString = [[subTitle objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+    if (indexPath.section == 1) {
+        cell.showNextButton = NO;
+    }
+    if (indexPath.section == 1 && indexPath.row == 0) {
+        YDPickView *pView = [[YDPickView alloc] initWithView:cell.subTitle type:1];
+        pView.ClickFinishButtonBlock = ^(NSString *str, NSDate *date){
+            //收键盘 tableview移回原位
+            [weakSelf tableViewAnimate_centerY:oldTableCenterY showKB:NO];
+            //更新数据 UI
+            subTitle[1][0] = [NSDate stringWithDate:date format:@"yyyy年MM月dd日"];
+            [_myTableView reloadData];
+        };
+        
+        cell.subTitle.inputView = pView;
+    }
+    return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (indexPath.section == 0) {
+        if (indexPath.row == 0) {
+            YDSearchIntentionTVC *vc = [[YDSearchIntentionTVC alloc]initWithNibName:@"YDSearchIntentionTVC" bundle:nil];
+            vc.ClickCellBlack = ^(NSString *str ){
+                subTitle[0][0] = str;
+                [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+            };
+            [self.navigationController pushViewController:vc animated:YES];
+        }else if (indexPath.row == 1){
+            YDSearchCarModelTVC *tvc = [[YDSearchCarModelTVC alloc]initWithNibName:@"YDSearchCarModelTVC" bundle:nil];
+            tvc.SearchCarRowBlack = ^(NSInteger bID, NSInteger cID, NSInteger ctID, NSString *name){
+                subTitle[0][1] = name;
+                [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:(UITableViewRowAnimationNone)];
+            };
+            [self.navigationController pushViewController:tvc animated:YES];
+        }else if (indexPath.row == 3){
+            YDPriceListInfoVC *vc = [[YDPriceListInfoVC alloc]initWithNibName:@"YDPriceListInfoVC" bundle:nil];
+            [self.navigationController pushViewController:vc animated:YES];
+        }
+    }else if(indexPath.section == 1){
+        oldTableCenterY = tableView.center.y;
+        
+        if (indexPath.row == 0) {
+            YDUpdateCusInfoS2Cell *cell = [tableView cellForRowAtIndexPath:indexPath];
+            enableView = cell.subTitle;
+            [self tableViewAnimate_centerY:tableView.center.y-(cell.center.y-24.5) showKB:YES];
+            
+        }else if (indexPath.row == 1){
+            YDUpdateCusInfoS5Cell *cell = [tableView cellForRowAtIndexPath:indexPath];
+            enableView = cell.textInfo;
+            [self tableViewAnimate_centerY:tableView.center.y-(cell.center.y-24.5) showKB:YES];
+        }
+    }
+    
+}
+
+
+@end

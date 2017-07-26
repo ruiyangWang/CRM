@@ -1,0 +1,28 @@
+//
+//  YDCreateCustView.h
+//  CRM
+//
+//  Created by ios on 16/7/25.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@protocol YDCreateCustViewDelegate <NSObject>
+
+/**
+ *  返回上一页
+ */
+- (void)backFontPage;
+
+/**
+ *  下一步按钮点击
+ */
+- (void)nextStepBtnClick;
+
+@end
+
+@interface YDCreateCustView : UIView
+
+@property (nonatomic, weak) id<YDCreateCustViewDelegate> delegate;
+@end

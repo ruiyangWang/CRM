@@ -1,0 +1,21 @@
+//
+//  ImportCustDBTool.h
+//  CRM
+//
+//  Created by ios on 16/9/18.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "DBManager.h"
+
+@class YDImportCustModel;
+@interface ImportCustDBTool : DBManager
+
+SINGLE_INTERFACE(ImportCustDBTool)
+
+/*!
+ @brief 创建或更新导入的意向客户（单个操作）
+ */
+- (void)createOrUpdateImportCust:(YDImportCustModel *)importCustomer;
+
+@end

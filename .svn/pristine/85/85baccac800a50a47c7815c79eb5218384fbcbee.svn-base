@@ -1,0 +1,21 @@
+//
+//  YDUpdateCusInfoS2Cell.h
+//  CRM
+//
+//  Created by YD_iOS on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface YDUpdateCusInfoS2Cell : UITableViewCell
+
+@property (weak, nonatomic) IBOutlet UILabel *title;
+@property (weak, nonatomic) IBOutlet UILabel *subTitle;
+
+@property (nonatomic, copy) NSString *titleString;
+@property (nonatomic, copy) NSString *subTitleString;
+
+@property (nonatomic, assign) BOOL showNextButton;
+
+@end

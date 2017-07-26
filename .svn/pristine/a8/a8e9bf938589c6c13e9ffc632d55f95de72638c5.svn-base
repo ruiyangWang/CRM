@@ -1,0 +1,47 @@
+//
+//  YDFollowInfoModel.h
+//  CRM
+//
+//  Created by ios on 16/8/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+
+/**
+ *  客户跟进信息
+ */
+#import "YDBaseModel.h"
+
+@interface YDFollowInfoModel : YDBaseModel
+
+
+@property (nonatomic, copy) NSString *attr;
+@property (nonatomic, copy) NSString *carTypeName; //2016款 330i M运动型 旅行版,
+@property (nonatomic, copy) NSString *corpId; //10000,
+@property (nonatomic, copy) NSString *createTime; //2016-08-17 18;00;22,
+@property (nonatomic, copy) NSString *createTimeString; //2016-08-17 18;00;22,
+@property (nonatomic, copy) NSString *currFollowTime; //2016-08-17 18;00;02,
+@property (nonatomic, copy) NSString *currFollowTimeString; //2016-08-17 18;00;02,
+@property (nonatomic, copy) NSString *customerId; //1,
+@property (nonatomic, copy) NSString *customerLevel; //H,
+@property (nonatomic, copy) NSString *defeatApply; //,
+@property (nonatomic, copy) NSString *eventType; //2,
+@property (nonatomic, copy) NSString *followMemId;// f216ae1aa77b4168b35ae262a0ff772b,
+@property (nonatomic, copy) NSNumber *followWay; //1,------------跟进方式
+@property (nonatomic, copy) NSString *modelId; //2,
+@property (nonatomic, copy) NSString *memberName;// 测试用户41,
+@property (nonatomic, copy) NSString *modifyTime;// 2016-08-18 18;00;24,
+@property (nonatomic, copy) NSString *modifyTimeString; //2016-08-18 18;00;24,
+@property (nonatomic, copy) NSString *nextFollowTime;// 2016-08-19 18;00;03,
+@property (nonatomic, copy) NSString *nextFollowTimeString;// 2016-08-19 18;00;03,
+@property (nonatomic, copy) NSString *orgId; //10000,
+@property (nonatomic, copy) NSString *passengerCode;
+@property (nonatomic, copy) NSString *passengerId;
+@property (nonatomic, copy) NSString *remark;
+@property (nonatomic, copy) NSString *takeCarTime;
+@property (nonatomic, copy) NSString *takeCarTimeString;
+@property (nonatomic, copy) NSString *type; //1,
+@property (nonatomic, copy) NSString *underOrderTime;
+@property (nonatomic, copy) NSString *underOrderTimeString;
+
+@end

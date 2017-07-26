@@ -1,0 +1,42 @@
+//
+//  YDCustomerModel.h
+//  CRM
+//
+//  Created by ios on 16/8/23.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDBaseModel.h"
+#import "YDCustInfoModel.h"
+#import "YDIntentionInfoModel.h"
+#import "YDFollowInfoModel.h"
+#import "YDDefeatInfoModel.h"
+#import "YDCarInfoModel.h"
+
+@class YDCustInfoModel,YDIntentionInfoModel,YDFollowInfoModel,YDDefeatInfoModel;
+@interface YDCustomerModel : YDBaseModel
+
+@property (nonatomic, strong) YDCustInfoModel *customerInfo;
+
+@property (nonatomic, strong) YDIntentionInfoModel *intentionInfo;
+
+@property (nonatomic, strong) NSMutableArray *listArray; //跟进信息列表
+
+@property (nonatomic, strong) NSMutableArray *listApplyArray;
+
+/*
+ attr = "";
+ brandsId = 10001;
+ carTypeId = af3c983cea7a40bab363b1e3aab93558;
+ carsId = 101;
+ createTime = "2016-08-2518:20:50";
+ customerId = c0a808b156b416368156b55610600026;
+ modelId = c0a808b156c117318156c1376a6f0003;
+ type = 0;
+ */
+@property (nonatomic, strong) NSMutableArray *carRel;
+
+@property (nonatomic, strong) id followInfo;
+
+
+@end

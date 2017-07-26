@@ -1,0 +1,94 @@
+//
+//  YDSearchCarModelTVC.m
+//  CRM
+//
+//  Created by YD_iOS on 16/8/1.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDSearchCarModelTVC.h"
+#import "YDChineseString.h"
+
+@interface YDSearchCarModelTVC ()
+
+@property(nonatomic, copy)NSDictionary *datas;
+@property(nonatomic, copy)NSMutableArray *indexArray;
+@property(nonatomic, copy)NSMutableArray *letterDatas;
+@property(nonatomic, copy)NSMutableArray *showDatas;
+
+@end
+
+@implementation YDSearchCarModelTVC
+
+#pragma mark ----- vc lift cycle 生命周期
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.title = @"选择车型";
+    UIView *navBGView = [self.navigationController.navigationBar viewWithTag:30000];
+    [self.navigationController.navigationBar sendSubviewToBack:navBGView];
+    
+    _indexArray = [NSMutableArray array];
+    _letterDatas = [NSMutableArray array];
+    
+    _datas = @{@"哈弗":@[@{@"h9":@[@"2015 5周年豪华版",@"2016 5周年豪华版"]},@{@"h8":@[@"1周年豪华版",@"2周年豪华版"]},@{@"h7":@[@"111豪华版",@"222豪华版"]}],
+               @"海马":@[@{@"m9":@[@"2015 5周年豪华版",@"2016 5周年豪华版"]}],
+               @"法拉利":@[@{@"f9":@[@"2015 5周年豪华版",@"2016 5周年豪华版"]},@{@"f8":@[@"1周年豪华版",@"2周年豪华版"]}]};
+    
+    _indexArray = [YDChineseString indexArray:_datas.allKeys];
+    _letterDatas = [YDChineseString letterSortArray:_datas.allKeys];
+    
+    _showDatas = [[NSMutableArray alloc] initWithArray:_letterDatas copyItems:YES];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+#pragma mark ----- custom action for UI 界面处理有关
+#pragma mark ----- custom action for DATA 数据处理有关
+
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+#pragma mark - Table view data source
+
+-(NSArray<NSString *> *)sectionIndexTitlesForTableView:(UITableView *)tableView{
+    return _indexArray;
+}
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    return _indexArray[section];
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return _indexArray.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return [_showDatas[section] count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"reuseIdentifier"];
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:(UITableViewCellStyleDefault) reuseIdentifier:@"reuseIdentifier"];
+    }
+    // Configure the cell...
+    cell.textLabel.text = _showDatas[indexPath.section][indexPath.row];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+
+    return cell;
+}
+
+// In a xib-based application, navigation from a table can be handled in -tableView:didSelectRowAtIndexPath:
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    NSLog(@"");
+    
+}
+
+
+
+@end

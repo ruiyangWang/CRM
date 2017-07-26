@@ -1,0 +1,20 @@
+//
+//  YDFollowupDateView.h
+//  CRM
+//
+//  Created by YD_iOS on 16/7/27.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface YDFollowupDateView : UIView
+
+@property (strong, nonatomic) IBOutlet UIView *view;
+
+@property (nonatomic, strong) void (^ClickButtonBlock) (YDFollowupDateView *fView);
+
+@property (nonatomic, assign) NSInteger howRow;//显示数量
+@property (nonatomic, assign) NSInteger hRow;//当前高亮的row
+
+@end

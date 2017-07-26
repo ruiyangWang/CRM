@@ -1,0 +1,254 @@
+//
+//  YDSearchCarModelTVC.m
+//  CRM
+//
+//  Created by YD_iOS on 16/8/1.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDSearchCarModelTVC.h"
+#import "YDChineseString.h"
+#import "YDSearchCarModelCell.h"
+
+@interface YDSearchCarModelTVC (){
+    NSString *_seleString;//点击cell的title
+    NSIndexPath *_index;//点击cell index
+}
+
+@property(nonatomic, copy)NSMutableDictionary *datas;
+@property(nonatomic, copy)NSMutableArray *indexArray;
+@property(nonatomic, copy)NSMutableArray *letterDatas;
+@property(nonatomic, copy)NSMutableArray *showDatas;
+
+@property (copy, nonatomic)NSMutableDictionary *listBrands;//品牌字典
+@property (copy, nonatomic)NSMutableDictionary *listCars;//车系字典
+@property (copy, nonatomic)NSMutableDictionary *listCarType;//车名数组
+
+@end
+
+@implementation YDSearchCarModelTVC
+
+#pragma mark ----- vc lift cycle 生命周期
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.title = @"选择车型";
+    UIView *navBGView = [self.navigationController.navigationBar viewWithTag:30000];
+    [self.navigationController.navigationBar sendSubviewToBack:navBGView];
+    
+    [self.tableView registerNib(@"YDSearchCarModelCell")];
+    
+    _datas = [NSMutableDictionary dictionary];
+    _indexArray = [NSMutableArray array];
+    _letterDatas = [NSMutableArray array];
+    _listBrands = [NSMutableDictionary dictionary];
+    _listCars = [NSMutableDictionary dictionary];
+    _listCarType = [NSMutableDictionary dictionary];
+    
+    [self findCarData:@{@"brandsId":@"",@"carsId":@"",@"type":@"all"}];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+#pragma mark ----- custom action for UI 界面处理有关
+#pragma mark ----- custom action for DATA 数据处理有关
+//查车
+- (void)findCarData:(NSDictionary *)dic{
+    
+    NSString *url = [NSString stringWithFormat:@"%@sid=%@",kChooseBrands,getNSUser(@"youdao.CRM_SID")];
+    
+    WEAKSELF
+    [self showHudInView:self.view hint:@""];
+    [YDDataService startRequest:dic url:url block:^(id result) {
+        [self hideHud];
+        if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+            
+            NSDictionary *varDic = [result objectForKey:@"var"];
+            
+            if ([[varDic objectForKey:@"listBrands"] count] > 0) {
+                for (NSDictionary *dic in [varDic objectForKey:@"listBrands"]) {
+                    [_listBrands setObject:dic forKey:[dic objectForKey:@"brandsName"]];
+                    
+                    [_datas setObject:@[] forKey:[dic objectForKey:@"brandsName"]];
+                }
+                
+                _indexArray = [YDChineseString indexArray:_datas.allKeys];
+                _letterDatas = [YDChineseString letterSortArray:_datas.allKeys];
+                
+                _showDatas = [[NSMutableArray alloc] initWithArray:_letterDatas copyItems:YES];
+                
+                [weakSelf.tableView reloadData];
+                
+            }else if ([[varDic objectForKey:@"listCars"]count] > 0){
+                
+                NSMutableArray *carMA = [NSMutableArray array ];
+                for (NSDictionary *dic in [varDic objectForKey:@"listCars"]) {
+                    [_listCars setObject:dic forKey:[dic objectForKey:@"carsName"]];
+                    
+                    [carMA addObject:[NSMutableDictionary dictionaryWithDictionary:@{[dic objectForKey:@"carsName"]:@[]}]];
+                }
+                
+                [_datas setObject:carMA forKey:_seleString];
+                
+                [weakSelf tableView:weakSelf.tableView didSelectRowAtIndexPath:_index];
+                
+            }else if ([[varDic objectForKey:@"listCarType"]count] > 0){
+
+                NSString *bName;
+                
+                NSMutableArray *carTypeMA = [NSMutableArray array ];
+                for (NSDictionary *dic in [varDic objectForKey:@"listCarType"]) {
+                    bName = [dic objectForKey:@"brandsName"];
+                    [_listCarType setObject:dic forKey:[dic objectForKey:@"modelsName"]];
+                    
+                    [carTypeMA addObject:[dic objectForKey:@"modelsName"]];
+                }
+                
+                NSMutableArray *ma  = [_datas objectForKey:bName];
+                
+                for (NSMutableDictionary *mDic in ma) {
+                    if ([mDic.allKeys[0] isEqualToString:_seleString]) {
+                        [mDic setObject:carTypeMA forKey:_seleString]; break;
+                    }
+                }
+                
+                [weakSelf tableView:weakSelf.tableView didSelectRowAtIndexPath:_index];
+
+            }
+    
+        }else
+            [self showHint:@"查询失败"];
+        
+    } failBlock:^(id error) {
+        [self hideHud];
+        [self showHint:@"查询失败"];
+    }];
+}
+
+- (NSDictionary *)dicWithShowData:(NSIndexPath *)indexPath{
+    NSDictionary *dic;
+    id title = _showDatas[indexPath.section][indexPath.row];
+    
+    if ([title isKindOfClass:[NSString class]]) {
+        dic = @{@"title":title,@"subTitle":_datas[title]?@"品牌":@"车型",@"subData":_datas[title]};
+        
+    }else{
+        dic = @{@"title":[((NSDictionary *)title).allKeys firstObject],@"subTitle":@"车系",@"subData":[((NSDictionary *)title).allValues firstObject]};
+    }
+    return dic;
+}
+
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+#pragma mark - Table view data source
+
+-(NSArray<NSString *> *)sectionIndexTitlesForTableView:(UITableView *)tableView{
+    return _indexArray;
+}
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    return _indexArray[section];
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return _indexArray.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return [_showDatas[section] count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    YDSearchCarModelCell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDSearchCarModelCell" forIndexPath:indexPath];
+    
+    NSDictionary *showDic = [self dicWithShowData:indexPath];
+    cell.t = showDic[@"title"];
+    cell.subT = showDic[@"subTitle"];
+    cell.subDate = showDic[@"subData"];
+    
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    NSDictionary *cellDic = [self dicWithShowData:indexPath];
+    
+    if (![cellDic[@"subTitle"] isEqualToString:@"车型"] && [[cellDic objectForKey:@"subData"] count] == 0) {
+        //请求 再次进入这个方法
+        
+        _seleString = [cellDic objectForKey:@"title"];
+        _index = indexPath;
+        
+        if ([[cellDic objectForKey:@"subTitle"]isEqualToString:@"品牌"]) {
+            
+            NSDictionary *d = [_listBrands objectForKey:_seleString];
+            [self findCarData:@{@"brandsId":[d objectForKey:@"modelId"],@"carsId":@"",@"type":@"all"}];
+            
+        }else if ([[cellDic objectForKey:@"subTitle"] isEqualToString:@"车系"]){
+            
+            NSDictionary *d = [_listCars objectForKey:_seleString];
+            [self findCarData:@{@"brandsId":[d objectForKey:@"brandsId"], @"carsId":[d objectForKey:@"modelId"], @"type":@"all"}];
+        }
+        
+        return;
+    }
+    
+    if([cellDic[@"subTitle"] isEqualToString:@"车型"]){
+        if (self.SearchCarRowBlack != nil) {
+            NSDictionary *d = [_listCarType objectForKey:cellDic[@"title"]];
+            NSString *bID = d[@"brandsId"];
+            NSString *cID = d[@"carsId"];
+            NSString *ctID = d[@"carTypeId"];
+            self.SearchCarRowBlack(bID, cID, ctID, cellDic[@"title"]);
+        }
+        [self.navigationController popViewControllerAnimated:YES];
+    }else{
+        
+        if (indexPath.row != [_showDatas[indexPath.section] count]-1) {
+
+            NSIndexPath * nextIndexPath = [NSIndexPath indexPathForRow:indexPath.row+1 inSection:indexPath.section];
+            NSDictionary *nextCellDic = [self dicWithShowData:nextIndexPath];
+            
+            BOOL b1 = [cellDic[@"subTitle"] isEqualToString:@"品牌"] && [nextCellDic[@"subTitle"] isEqualToString:@"车系"];
+            BOOL b2 = [cellDic[@"subTitle"] isEqualToString:@"车系"] && [nextCellDic[@"subTitle"] isEqualToString:@"车型"];
+            
+            if (b1 | b2) {
+                
+                do {
+                    NSLog(@"移除下一个数据后，判断是否存在下一个，然后判断subT是否相等");
+                    
+                    NSMutableArray *mArray = _showDatas[indexPath.section];
+                    [mArray removeObjectAtIndex:indexPath.row+1];
+                    if (indexPath.row == [_showDatas[indexPath.section] count]-1) {
+                        break;
+                    }
+                    
+                    nextCellDic = [self dicWithShowData:nextIndexPath];
+                    
+                } while (![cellDic[@"subTitle"] isEqualToString:nextCellDic[@"subTitle"]]);
+                
+                [tableView reloadSections:[[NSIndexSet alloc] initWithIndex:indexPath.section] withRowAnimation:(UITableViewRowAnimationFade)];
+                return;
+            }
+        }
+        
+        NSArray *subDataA = cellDic[@"subData"];
+        NSMutableArray *mArray = [NSMutableArray arrayWithArray:_showDatas[indexPath.section]];
+        NSIndexSet *indexSet = [[NSIndexSet alloc]initWithIndexesInRange:NSMakeRange(indexPath.row+1, subDataA.count)];
+        [mArray insertObjects:subDataA atIndexes:indexSet];
+        
+        [_showDatas insertObject:mArray atIndex:indexPath.section];
+        [_showDatas removeObjectAtIndex:indexPath.section+1];
+        
+        [tableView reloadSections:[[NSIndexSet alloc] initWithIndex:indexPath.section] withRowAnimation:(UITableViewRowAnimationFade)];
+    }
+}
+
+@end

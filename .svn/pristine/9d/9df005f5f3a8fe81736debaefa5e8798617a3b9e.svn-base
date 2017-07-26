@@ -1,0 +1,290 @@
+//
+//  YDUserSetController.m
+//  CRM
+//
+//  Created by ios on 16/8/1.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUserSetController.h"
+#import "YDTool.h"
+#import "YDCustCellModel.h"
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDOnlyTextController.h"
+
+@interface YDUserSetController () <UIActionSheetDelegate>
+
+@property (nonatomic, strong) NSMutableArray *cellArray;
+
+@property (nonatomic, copy) NSString *type;
+
+@property (nonatomic, copy) NSString *customerId;
+
+@property (nonatomic, strong) NSMutableDictionary *custLevelDic;
+
+@property (nonatomic, assign) NSInteger selectIndex;
+
+@end
+
+@implementation YDUserSetController
+
+
+- (instancetype)init
+{
+    if (self = [super init]) {
+        _custLevelDic = [NSMutableDictionary dictionary];
+    }
+    return self;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    [self getCellData];
+    
+    [self loadDataFormNetwork];
+}
+
+
+- (void)getCellData
+{
+    self.title = @"设置";
+    self.navigationController.navigationBarHidden = NO;
+    
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
+    self.tableView.backgroundColor = kViewControllerBackgroundColor;
+    
+    [self.tableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    
+    self.cellArray = [NSMutableArray arrayWithArray:[YDTool cellModelArrayWithCellName:@"userSetCell"]];
+}
+
+
+/**
+ *  字典转json字符串
+ */
+- (NSString*)dictionaryToJson:(NSDictionary *)dic
+
+{
+    
+    NSError *parseError = nil;
+    
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dic options:NSJSONWritingPrettyPrinted error:&parseError];
+    
+    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    
+}
+
+/**
+ *  json字符串转字典
+ */
+- (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString {
+    if (jsonString == nil) {
+        return nil;
+    }
+    
+    jsonString = [jsonString stringByReplacingOccurrencesOfString:@"&quot;" withString:@"\""];
+    
+    NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *err;
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData
+                                                        options:NSJSONReadingMutableContainers
+                                                          error:&err];
+    if(err) {
+        NSLog(@"json解析失败：%@",err);
+        return nil;
+    }
+    return dic;
+}
+
+#pragma mark - 获取数据
+- (void)loadDataFormNetwork
+{
+    NSDictionary *dic = @{};
+    
+    NSString *getMessageUrl = [NSString stringWithFormat:@"%@sid=%@",kGetCustomerLevelAddress,getNSUser(@"youdao.CRM_SID")];
+    
+    [YDDataService startRequest:dic url:getMessageUrl block:^(id result) {
+        
+        if ([result[@"code"] isEqualToString:@"S_OK"]) {
+            NSDictionary *resultDic = result[@"var"];
+            
+            if (![resultDic[@"memberconfig"] isKindOfClass:[NSNull class]]) {
+                
+                NSString *jsonString = resultDic[@"memberconfig"][@"val"];
+                _custLevelDic = [NSMutableDictionary dictionaryWithDictionary:[self dictionaryWithJsonString:jsonString]];
+                
+                _type = @"update";
+                _customerId = resultDic[@"memberconfig"][@"modelId"];
+                
+            } else {
+                
+                NSString *jsonString = resultDic[@"baseconfig"][@"val"];
+                _custLevelDic = [NSMutableDictionary dictionaryWithDictionary:[self dictionaryWithJsonString:jsonString]];
+                
+                _type = @"save";
+            }
+            
+        }
+        
+        [self showCustomerLevent];
+        
+    } failBlock:^(id error) {
+        
+    }];
+}
+
+- (void)showCustomerLevent
+{
+    for (YDCustCellModel *cellModel in _cellArray[0]) {
+        if ([cellModel.title isEqualToString:@"H级"]) {
+            cellModel.subTitle = [NSString stringWithFormat:@"%@日", _custLevelDic[@"H"]];
+        } else if ([cellModel.title isEqualToString:@"A级"]) {
+            cellModel.subTitle = [NSString stringWithFormat:@"%@日", _custLevelDic[@"A"]];
+        } else if ([cellModel.title isEqualToString:@"B级"]) {
+            cellModel.subTitle = [NSString stringWithFormat:@"%@日", _custLevelDic[@"B"]];
+        } else if ([cellModel.title isEqualToString:@"C级"]) {
+            cellModel.subTitle = [NSString stringWithFormat:@"%@日", _custLevelDic[@"C"]];
+        }
+    }
+    
+    [self.tableView reloadData];
+}
+
+
+#pragma mark - ==================tableview delegate==================
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return self.cellArray.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [self.cellArray[section] count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDCustCellModel *cellModel = self.cellArray[indexPath.section][indexPath.row];
+    if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS2Cell"]) {
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName];
+        cell.titleString = cellModel.title;
+        cell.subTitleString = cellModel.subTitle;
+        cell.subTitle.placeholder = cellModel.placeholder;
+        cell.showNextButton = cellModel.isShowArrow;
+        return cell;
+    }
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName];
+    return cell;
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (indexPath.section == 0) {
+        _selectIndex = indexPath.row;
+        UIActionSheet *sheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:nil otherButtonTitles:@"1日", @"2日",@"3日",@"4日", @"5日" ,@"6日", @"7日",@"8日",@"9日",@"10日", nil];
+        sheet.delegate = self;
+        [sheet showInView:self.view];
+    } else {
+        YDOnlyTextController *messageVC = [[YDOnlyTextController alloc] init];
+        [self.navigationController pushViewController:messageVC animated:YES];
+    }
+}
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == 10) {
+        return;
+    }
+    
+    YDCustCellModel *cellModel = _cellArray[0][_selectIndex];
+    cellModel.subTitle = [NSString stringWithFormat:@"%ld天", buttonIndex + 1];
+    [self.tableView reloadData];
+    
+    if ([cellModel.title isEqualToString:@"H级"]) {
+        [_custLevelDic setValue:@(buttonIndex + 1) forKey:@"H"];
+    } else if ([cellModel.title isEqualToString:@"A级"]) {
+        [_custLevelDic setValue:@(buttonIndex + 1) forKey:@"A"];
+    } else if ([cellModel.title isEqualToString:@"B级"]) {
+        [_custLevelDic setValue:@(buttonIndex + 1) forKey:@"B"];
+    } else if ([cellModel.title isEqualToString:@"C级"]) {
+        [_custLevelDic setValue:@(buttonIndex + 1) forKey:@"C"];
+    }
+    
+    NSDictionary *dic = @{ @"val" : [self dictionaryToJson:_custLevelDic],
+                           @"id" : _customerId
+                           };
+    
+    
+    NSString *getMessageUrl = [NSString stringWithFormat:@"%@type=%@&sid=%@",kSetCustomerLevelAddress,_type,getNSUser(@"youdao.CRM_SID")];
+    
+    [YDDataService startRequest:dic url:getMessageUrl block:^(id result) {
+        
+        if ([result[@"code"] isEqualToString:@"S_OK"]) {
+            
+            
+        }
+        
+    } failBlock:^(id error) {
+        
+    }];
+}
+
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 49.0f;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    UILabel *label = [[UILabel alloc] init];
+    label.font = [UIFont systemFontOfSize:14.0f];
+    label.frame = CGRectMake(25.0f, 0, 200.0f, 35.0f);
+    
+    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, 35.0f)];
+    view.backgroundColor = kViewControllerBackgroundColor;
+    [view addSubview:label];
+    
+    if (section == 0) {
+        label.text = @"默认跟进时间";
+    } else {
+        label.text = @"其他";
+    }
+    
+    return view;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return 35.0f;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    return 1;
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

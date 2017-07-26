@@ -1,0 +1,38 @@
+//
+//  YDFollowApplyModel.h
+//  CRM
+//
+//  Created by ios on 16/10/21.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDBaseModel.h"
+
+@interface YDFollowApplyModel : YDBaseModel
+
+@property (nonatomic, copy) NSString *applyMemberId;
+@property (nonatomic, copy) NSString *applyMemberName;
+@property (nonatomic, copy) NSString *attr;
+@property (nonatomic, copy) NSString *corpId;
+@property (nonatomic, copy) NSString *countBy;
+@property (nonatomic, copy) NSString *createTime;
+@property (nonatomic, copy) NSString *createTimeString;
+@property (nonatomic, copy) NSString *customerId;
+@property (nonatomic, copy) NSString *customerName;
+@property (nonatomic, copy) NSString *customerPhone;
+@property (nonatomic, copy) NSString *modelId;
+@property (nonatomic, copy) NSString *memberId;
+@property (nonatomic, copy) NSString *memberName;
+@property (nonatomic, copy) NSString *modelsName;
+@property (nonatomic, copy) NSString *modifyTime;
+@property (nonatomic, copy) NSString *modifyTimeString;
+@property (nonatomic, copy) NSString *orgId;
+@property (nonatomic, copy) NSString *orgName;
+@property (nonatomic, copy) NSString *reason;
+@property (nonatomic, copy) NSString *result;
+@property (nonatomic, copy) NSString *searchKey;
+@property (nonatomic, strong) NSNumber *status;
+@property (nonatomic, strong) NSNumber *type;
+@property (nonatomic, strong) NSMutableArray *applyMembers;
+@end
+

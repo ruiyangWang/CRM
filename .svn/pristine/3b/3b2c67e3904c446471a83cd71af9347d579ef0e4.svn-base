@@ -1,0 +1,72 @@
+//
+//  YDFollowArchivesCell.m
+//  CRM
+//
+//  Created by ios on 16/10/21.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDFollowArchivesCell.h"
+#import "YDFollowArchivesModel.h"
+
+
+@interface YDFollowArchivesCell ()
+
+@property (nonatomic, strong) UILabel *monthLabel;
+@property (nonatomic, strong) UILabel *dayLabel;
+@property (nonatomic, strong) UIView *dateView;
+
+@end
+
+@implementation YDFollowArchivesCell
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self createUI];
+    }
+    return self;
+}
+
+- (void)createUI
+{
+    //日期，放在一个view上（dateView）
+    _dateView = [[UIView alloc] init];
+    _dateView.frame = CGRectMake(0, 0, 70.0f, 40.0f);
+    [self addSubview:_dateView];
+    
+    _monthLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 37.0f, 21.0f)];
+    _monthLabel.text = @"12月";
+    _monthLabel.font = [UIFont systemFontOfSize:12.0f];
+    [_dateView addSubview:_monthLabel];
+    
+    UIImageView *dateLineImageView = [[UIImageView alloc] initWithFrame:CGRectMake(28.0f, 5.0f, 20.0f, 28.0f)];
+    dateLineImageView.image = [UIImage imageNamed:@"tilt_line_date"];
+    [_dateView addSubview:dateLineImageView];
+    
+    _dayLabel = [[UILabel alloc] initWithFrame:CGRectMake(37.0f, 21.0f, 32.0f, 18.0f)];
+    _dayLabel.text = @"29";
+    _dayLabel.font = [UIFont systemFontOfSize:12.0f];
+    [_dateView addSubview:_dayLabel];
+    
+}
+
+
+- (void)setFollowArchivesModel:(YDFollowArchivesModel *)followArchivesModel
+{
+    _followArchivesModel = followArchivesModel;
+
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

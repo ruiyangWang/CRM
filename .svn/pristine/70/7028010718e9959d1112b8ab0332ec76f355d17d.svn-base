@@ -1,0 +1,28 @@
+PODS:
+  - FMDB (2.6.2):
+    - FMDB/standard (= 2.6.2)
+  - FMDB/standard (2.6.2)
+  - Masonry (1.0.1)
+  - MBProgressHUD (0.9.2)
+  - SDWebImage (3.8.1):
+    - SDWebImage/Core (= 3.8.1)
+  - SDWebImage/Core (3.8.1)
+  - XTSafeCollection (1.0.5)
+
+DEPENDENCIES:
+  - FMDB
+  - Masonry (~> 1.0.1)
+  - MBProgressHUD (~> 0.9.2)
+  - SDWebImage (~> 3.8.0)
+  - XTSafeCollection
+
+SPEC CHECKSUMS:
+  FMDB: 854a0341b4726e53276f2a8996f06f1b80f9259a
+  Masonry: a1a931a0d08870ed8ae415a2ea5ea68ebcac77df
+  MBProgressHUD: 1569cf7ace17a8bac47aabfbb8580a49690386d1
+  SDWebImage: 35f9627a3e44b4f292a8a8ce6a531fa488239b91
+  XTSafeCollection: c76a5d96f5c68457055ca4b35df7fbe97532d235
+
+PODFILE CHECKSUM: d67e815ef4a63444b877be469cf35e9f73754376
+
+COCOAPODS: 1.0.1

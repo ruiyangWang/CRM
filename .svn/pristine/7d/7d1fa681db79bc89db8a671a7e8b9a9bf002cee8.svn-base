@@ -1,0 +1,63 @@
+//
+//  YDEnterPhoneNO.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/21.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDEnterPhoneNO.h"
+#import "YDUserInfoCell.h"
+
+@interface YDEnterPhoneNO()<UITableViewDelegate,UITableViewDataSource>
+
+@property (weak, nonatomic) IBOutlet UITableView *myTableView;
+
+@end
+
+@implementation YDEnterPhoneNO
+
+#pragma mark ----- vc lift cycle 生命周期
+
+-(void)awakeFromNib{
+    self.frame = CGRectMake (0, 0, kScreenWidth, kScreenHeight);
+    [_myTableView registerNib:[UINib nibWithNibName:@"YDUserInfoCell" bundle:nil] forCellReuseIdentifier:@"YDUserInfoCell"];
+    
+    _myTableView.delegate = self;
+    _myTableView.dataSource = self;
+}
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+- (IBAction)nextButton:(id)sender {
+    if (_ClickNextButton != nil) {
+        _ClickNextButton(_phoneTF.text);
+    }
+}
+
+#pragma mark ----- custom action for UI 界面处理有关
+#pragma mark ----- custom action for DATA 数据处理有关
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+#pragma mark - Table view data source
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return 1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    YDUserInfoCell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUserInfoCell" forIndexPath:indexPath];
+    
+    if (cell == nil) {
+        cell = [[[NSBundle mainBundle] loadNibNamed:@"YDUserInfoCell" owner:nil options:nil] lastObject];
+    }
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (_ClickUserInfo != nil) {
+        _ClickUserInfo();
+    }
+}
+
+@end

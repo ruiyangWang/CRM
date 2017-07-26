@@ -1,0 +1,21 @@
+//
+//  YDCircleProgressView.h
+//  CRM
+//
+//  Created by YD_iOS on 16/7/26.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface YDCircleProgressView : UIView
+
+@property (nonatomic, assign) CGFloat progress;
+
+- (void)setUI;
+- (void)removeView;
+- (void)reLoadUI;
+
+@property (nonatomic, assign) CGFloat lineWidth;
+
+@end

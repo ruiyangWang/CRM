@@ -1,0 +1,72 @@
+//
+//  YDUserInfoController.m
+//  CRM
+//
+//  Created by ios on 16/8/1.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUserInfoController.h"
+#import "YDTool.h"
+#import "YDCustCellModel.h"
+#import "YDOnlyTextCell.h"
+
+@interface YDUserInfoController ()
+
+@property (nonatomic, strong) NSMutableArray *cellArray;
+
+
+@end
+
+@implementation YDUserInfoController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    
+    [self getCellData];
+}
+
+- (void)getCellData
+{
+    self.title = @"个人信息";
+    self.navigationController.navigationBarHidden = NO;
+    
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
+    [self.tableView registerNib(@"YDOnlyTextCell")];
+    
+    self.cellArray = [NSMutableArray arrayWithArray:[YDTool cellModelWithCellName:@"userInfoCell"]];
+}
+
+#pragma mark - ==================tableview delegate==================
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return self.cellArray.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDCustCellModel *cellModel = self.cellArray[indexPath.row];
+    if ([cellModel.cellName isEqualToString:@"YDOnlyTextCell"]) {
+        YDOnlyTextCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName];
+        cell.cellModel = cellModel;
+        return cell;
+    }
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName];
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 49.0f;
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+@end

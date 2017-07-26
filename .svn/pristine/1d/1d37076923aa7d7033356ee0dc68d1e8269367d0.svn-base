@@ -1,0 +1,114 @@
+//
+//  ViewController.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/14.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "ViewController.h"
+#import "YDMainTabBarController.h"
+#import "YDDataService.h"
+
+@interface ViewController ()
+
+@end
+
+@implementation ViewController
+
+#pragma mark ----- vc lift cycle 生命周期
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view, typically from a nib.
+    self.view.backgroundColor = [UIColor colorWithHexString:@"528ECD"];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (IBAction)login:(id)sender {
+    
+//    [self checkVersion];
+//    return;
+    
+//    YDMainTabBarController *tvc = [[YDMainTabBarController alloc]init];
+//    [self presentViewController:tvc animated:YES completion:^{
+//        self.view.window.rootViewController = tvc;
+//    }];
+//    return;
+    
+    NSDictionary *dic = @{@"userId":@"test",@"corpId":@"10000",@"passwd":@"123456"};
+    
+    [self showHudInView:kWindow hint:@""];
+    [YDDataService startRequest:dic url:kSIDRequest block:^(id result) {
+
+        [self hideHud];
+        
+        if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+            NSDictionary *infoDic = [result objectForKey:@"uscLogininfo"];
+            setNSUser([infoDic objectForKey:@"sid"], @"youdao.CRM_SID");
+            
+            YDMainTabBarController *tvc = [[YDMainTabBarController alloc]init];
+            [self presentViewController:tvc animated:YES completion:^{
+                self.view.window.rootViewController = tvc;
+            }];
+        }else{
+            [self showHint:@"登录失败"];
+        }
+        
+    } failBlock:^(id error) {
+        [self hideHud];
+        [self showHint:@"登录失败"];
+    }];
+    
+}
+
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+#pragma mark ----- custom action for UI 界面处理有关
+
+#pragma mark ----- custom action for DATA 数据处理有关
+//版本判断
+- (void)checkVersion{
+    
+    [self showHudInView:self.view hint:@""];
+    [YDDataService startRequest:@{} url:@"http://192.168.8.111/~yd_ios/index.xml" block:^(id result) {
+        [self hideHud];
+        if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+            [self showHint:@"成功"];
+            
+            NSString *newVersion = [result objectForKey:@"version"];
+            newVersion = [newVersion stringByReplacingOccurrencesOfString:@"."withString:@"0"];
+            NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+            NSString *version = [infoDictionary objectForKey:@"CFBundleVersion"];
+            version = [version stringByReplacingOccurrencesOfString:@"."withString:@"0"];
+            if ([newVersion integerValue] > [version integerValue]) {
+                
+                [self showHint:@"有更新"];;
+                
+//                NSString *pURL = @"https://www.dropbox.com/s/0a6hiyps6xs2dl2/crmapp.plist";
+                NSString *pURL = @"https://local.server.com/crmapp.plist";
+                NSString *dURL = [NSString stringWithFormat:@"itms-services://?action=download-manifest&url=%@",pURL];
+                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:dURL]];
+                exit(0);
+                
+            }else
+                [self showHint:@"没有更新"];
+            
+        }else{
+            [self showHint:@"失败"];
+        }
+        
+    } failBlock:^(id error) {
+        [self hideHud];
+        [self showHint:@"失败"];
+    }];
+}
+
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+
+
+@end

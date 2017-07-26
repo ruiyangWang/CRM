@@ -1,0 +1,29 @@
+//
+//  YDFollowArchivesModel.h
+//  CRM
+//
+//  Created by ios on 16/10/21.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDBaseModel.h"
+
+@interface YDFollowArchivesModel : YDBaseModel
+
+@property (nonatomic, copy) NSString *action;
+@property (nonatomic, copy) NSString *content; //变更记录的主要内容
+@property (nonatomic, copy) NSString *corpId;
+@property (nonatomic, copy) NSString *createdAt;
+@property (nonatomic, copy) NSString *createdAtBegin;
+@property (nonatomic, copy) NSString *createdAtEnd;
+@property (nonatomic, copy) NSString *createdAtString;
+@property (nonatomic, copy) NSString *modelId;
+@property (nonatomic, copy) NSString *sender;
+@property (nonatomic, copy) NSString *senderOrgId;
+@property (nonatomic, copy) NSString *senderOrgName;
+@property (nonatomic, copy) NSString *target;
+@property (nonatomic, copy) NSString *targetType;
+@property (nonatomic, strong) NSNumber *type;
+
+@end
+

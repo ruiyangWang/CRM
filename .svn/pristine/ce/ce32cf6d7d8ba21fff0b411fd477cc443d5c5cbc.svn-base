@@ -1,0 +1,27 @@
+//
+//  YDCustSearchResultTableView.m
+//  CRM
+//
+//  Created by ios on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCustSearchResultView.h"
+
+@implementation YDCustSearchResultView
+
+- (instancetype)init
+{
+    if (self = [super init]) {
+        [self createUI];
+        self.backgroundColor = [UIColor whiteColor];
+        self.alpha = 0.98f;
+    }
+    return self;
+}
+
+- (void)createUI
+{
+    
+}
+@end

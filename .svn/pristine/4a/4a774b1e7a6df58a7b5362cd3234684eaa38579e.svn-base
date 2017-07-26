@@ -1,0 +1,17 @@
+//
+//  YDSearchCarModelTVC.h
+//  CRM
+//
+//  Created by YD_iOS on 16/8/1.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//  选择意向车型页面
+
+#import <UIKit/UIKit.h>
+
+@interface YDSearchCarModelTVC : UITableViewController
+
+@property (nonatomic, assign) BOOL isALL;
+
+@property (nonatomic, strong) void (^SearchCarRowBlack) (NSString *name);
+
+@end

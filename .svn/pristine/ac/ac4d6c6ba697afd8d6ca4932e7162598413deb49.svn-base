@@ -1,0 +1,23 @@
+PODS:
+  - Masonry (1.0.1)
+  - MBProgressHUD (0.9.2)
+  - SDWebImage (3.8.1):
+    - SDWebImage/Core (= 3.8.1)
+  - SDWebImage/Core (3.8.1)
+  - XTSafeCollection (1.0.4)
+
+DEPENDENCIES:
+  - Masonry (~> 1.0.1)
+  - MBProgressHUD (~> 0.9.2)
+  - SDWebImage (~> 3.8.0)
+  - XTSafeCollection
+
+SPEC CHECKSUMS:
+  Masonry: a1a931a0d08870ed8ae415a2ea5ea68ebcac77df
+  MBProgressHUD: 1569cf7ace17a8bac47aabfbb8580a49690386d1
+  SDWebImage: 35f9627a3e44b4f292a8a8ce6a531fa488239b91
+  XTSafeCollection: d5eacdca3655547bf8ee413d709cf1772b780aa5
+
+PODFILE CHECKSUM: da6f358b1591f980d3be13f11770d11d0181d35f
+
+COCOAPODS: 1.0.1

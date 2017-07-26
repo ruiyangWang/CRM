@@ -1,0 +1,463 @@
+//
+//  YDViewController.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/21.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDViewController.h"
+#import "YDCustCellModel.h"
+#import "YDSearchCarModelTVC.h"
+#import "YDUpdateCusInfoS1Cell.h"
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDCustSearchResultView.h"
+#import "YDCalendarPicker.h"
+#import "YDBuyCarOptionController.h"
+#import "YDPickView.h"
+#import "YDAddressChooseController.h"
+#import "YDRemarksController.h"
+#import "MBProgressHUD.h"
+#import "YDCalendarPickerDaysOwner.h"
+
+@interface YDViewController ()
+
+
+//记住tableview原来的偏移量，编辑完成后改回来
+@property (nonatomic, assign) CGPoint oldOffset;
+
+@property (nonatomic, strong) UITableViewCell *tempCell;
+
+//编辑的时候遮盖view
+@property (nonatomic, strong) YDCustSearchResultView *coverView;
+
+//时间选择器
+@property (nonatomic, strong) YDCalendarPicker *calendarPicker;
+
+@end
+
+@implementation YDViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.view.backgroundColor = kViewControllerBackgroundColor;
+    
+    //添加的蓝色不透明背景，有时候会挡住title
+    UIView *navBGView = [self.navigationController.navigationBar viewWithTag:30000];
+    [self.navigationController.navigationBar sendSubviewToBack:navBGView];
+    
+    //防止tableview 或 scrollview 自动下移64
+    self.automaticallyAdjustsScrollViewInsets = NO;
+
+
+}
+
+
+
+#pragma mark - ==========================编辑客户的几种方法==================================
+#pragma mark  选择车型
+- (void)chooseCarWithTableView:(UITableView *)tableView cellModel:(YDCustCellModel *)cellModel chooseBlock:(CarChooseBlock)block
+{
+
+    if ([_tempCell isKindOfClass:[YDUpdateCusInfoS2Cell class]]) {
+        YDUpdateCusInfoS2Cell *cell = (YDUpdateCusInfoS2Cell *)_tempCell;
+        cell.subTitle.userInteractionEnabled = NO;
+    } else if ([_tempCell isKindOfClass:[YDUpdateCusInfoS1Cell class]]) {
+        YDUpdateCusInfoS1Cell *cell = (YDUpdateCusInfoS1Cell *)_tempCell;
+        cell.subT.userInteractionEnabled = NO;
+    }
+    
+    [tableView endEditing:YES];
+    //选择车型
+    YDSearchCarModelTVC *carVC = [[YDSearchCarModelTVC alloc] init];
+    
+    //只有意向车型不是全局的
+    if ([cellModel.title isEqualToString:@"意向车型"]) {
+        carVC.isALL = NO;
+    } else {
+        carVC.isALL = YES;
+    }
+    
+    carVC.SearchCarRowBlack = ^(NSString *bID, NSString *ctID, NSString *cID, NSString *name){
+        cellModel.subTitle = name;
+        [tableView reloadData];
+        
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+        [dic setValue:bID forKey:@"brandsId"];
+        [dic setValue:ctID forKey:@"carsId"];
+        [dic setValue:cID forKey:@"carTypeId"];
+        if (block) {
+            block(dic);
+        }
+    };
+    [self.navigationController pushViewController:carVC animated:YES];
+}
+
+#pragma mark 直接编辑
+- (void)directEditWithTableView:(UITableView *)tableView cellModel:(YDCustCellModel *)cellModel indexPath:(NSIndexPath *)indexPath hearderHeight:(NSArray *)heightArray chooseBlock:(BackStringBlock)block
+{
+    
+    //记录tableview的偏移量
+    _oldOffset = tableView.contentOffset;
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    //如果不是第一组 cell.y - 44.0f;
+    CGFloat offsetY = indexPath.section ? cell.y - 44.0f : cell.y;
+    
+    [UIView animateWithDuration:0.25 animations:^{
+        tableView.contentOffset = CGPointMake(0, offsetY);
+    }];
+    
+    [self addCoverWithHeightArray:heightArray indexPath:indexPath tableView:tableView];
+    
+    //对两种cell的处理
+    if ([cell isKindOfClass:[YDUpdateCusInfoS1Cell class]]) {
+        YDUpdateCusInfoS1Cell *s1Cell = [tableView cellForRowAtIndexPath:indexPath];
+        s1Cell.subT.userInteractionEnabled = YES;
+        [s1Cell.subT becomeFirstResponder];
+        s1Cell.ChangeBlack = ^(NSString *str){
+            
+            cellModel.subTitle = str;
+            
+            if (block) {
+                block(str);
+            }
+        };
+        s1Cell.EndEditBlack = ^(NSString *str){
+            
+            if (block) {
+                block(str);
+            }
+            //[self removeCoverViewWithHeight:kScreenHeight - 44.0f tableView:tableView];
+        };
+        _tempCell = s1Cell;
+    } else {
+        YDUpdateCusInfoS2Cell *s2Cell = [tableView cellForRowAtIndexPath:indexPath];
+        if ([cellModel.title isEqualToString:@"报价金额"]) {
+            s2Cell.subTitle.keyboardType = UIKeyboardTypeDecimalPad;
+        }
+        s2Cell.subTitle.userInteractionEnabled = YES;
+        [s2Cell.subTitle becomeFirstResponder];
+        
+        s2Cell.EndEditBlack = ^(YDUpdateCusInfoS2Cell *cell, NSString *str){
+           
+            cellModel.subTitle = str;
+            
+            if (block) {
+                block(str);
+            }
+            
+            //[self removeCoverViewWithHeight:kScreenHeight - 44.0f tableView:tableView];
+        };
+        _tempCell = s2Cell;
+    }
+}
+
+#pragma mark 日历选择
+- (void)calendarPickerWithTableView:(UITableView *)tableView cellModel:(YDCustCellModel *)cellModel indexPath:(NSIndexPath *)indexPath hearderHeight:(NSArray *)heightArray chooseBlock:(BackStringBlock)block
+{
+    //时间选择
+    //tableView.scrollEnabled = NO;
+    
+    //记录tableview的偏移量
+    _oldOffset = tableView.contentOffset;
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    //如果不是第一组 cell.y - 44.0f;
+    CGFloat offsetY = (indexPath.section == 1 || indexPath.section == 2 )? cell.y - 44.0f : cell.y;
+    
+    //[self addCoverWithHeightArray:heightArray indexPath:indexPath tableView:tableView];
+    
+    self.calendarPicker.selectDateString = cellModel.subTitle;
+    
+    [self.view addSubview:self.calendarPicker];
+    
+    //日历高度
+    CGFloat height = ((CGFloat)kScreenWidth/7) * 4 + 30.0f;
+    
+    [UIView animateWithDuration:0.25 animations:^{
+        tableView.contentOffset = CGPointMake(0, offsetY);
+        self.calendarPicker.frame = CGRectMake(0, kScreenHeight - height - 64.0f, kScreenWidth, height);
+    }];
+    
+    WEAKSELF
+    self.calendarPicker.ClickDateButton = ^(YDCalendarPicker *calendar, NSDate *date ){
+        
+        [weakSelf removeCalendar];
+        
+        NSDate *nowDate = [NSDate new];
+        NSTimeInterval secondsInterval= [nowDate timeIntervalSinceDate:date];
+        
+        //客户的创建时间
+        NSString* dateStr = cellModel.custmoerCreateTime;
+        NSDateFormatter* formater = [[NSDateFormatter alloc] init];
+        [formater setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+        NSDate* custCreateDate = [formater dateFromString:dateStr];
+        
+        if ([cellModel.title isEqualToString:@"跟进时间"]) {
+            if (secondsInterval < 0) {
+                [MBProgressHUD showTips:@"跟进时间不能选择今天以后" toView:weakSelf.view];
+                return;
+                
+                
+            }
+            //86400如果写成0就无法选择今天，86400是一天的秒数
+            if ([custCreateDate timeIntervalSinceDate:date] > 86400) {
+                [MBProgressHUD showTips:@"跟进时间不能小于客户创建时间" toView:weakSelf.view];
+                return;
+            }
+            
+        }
+        
+        if ([cellModel.title isEqualToString:@"下次跟进时间"]) {
+            if (secondsInterval > 0) {
+                [MBProgressHUD showTips:@"下次跟进时间不能选择今天以前" toView:weakSelf.view];
+                return;
+            }
+        }
+        
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        //zzz表示时区，zzz可以删除，这样返回的日期字符将不包含时区信息。 HH:mm:ss zzz
+        [dateFormatter setDateFormat:@"yyyy-MM-dd"];
+        NSString *destDateString = [dateFormatter stringFromDate:date];
+        cellModel.subTitle = destDateString;
+        [tableView reloadData];
+        if (block) {
+            block(destDateString);
+        }
+        
+        //[weakSelf removeCoverViewWithHeight:kScreenHeight - 44.0f tableView:tableView];
+        
+    };
+}
+
+#pragma mark 购车条件选择
+- (void)buyCarOptionWithTableView:(UITableView *)tableView cellModel:(YDCustCellModel *)cellModel chooseBlock:(BackStringBlock)block
+{
+    YDBuyCarOptionController *vc = [[YDBuyCarOptionController alloc] init];
+    vc.titleString = cellModel.title;
+    vc.BackBlack = ^(NSString *name){
+        cellModel.subTitle = name;
+        [tableView reloadData];
+        if (block) {
+            block(name);
+        }
+    };
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+#pragma mark 时间（年）选择
+- (void)dateChooseWithTableView:(UITableView *)tableView cellModel:(YDCustCellModel *)cellModel indexPath:(NSIndexPath *)indexPath hearderHeight:(NSArray *)heightArray chooseBlock:(BackStringBlock)block
+{
+    //时间选择
+    //tableView.scrollEnabled = NO;
+    
+    //记录tableview的偏移量
+    _oldOffset = tableView.contentOffset;
+    YDUpdateCusInfoS2Cell *cell = (YDUpdateCusInfoS2Cell *)[tableView cellForRowAtIndexPath:indexPath];
+    //如果不是第一组 cell.y - 44.0f;
+    CGFloat offsetY = (indexPath.section == 1 || indexPath.section == 2 )? cell.y - 44.0f : cell.y;
+    
+    [self addCoverWithHeightArray:heightArray indexPath:indexPath tableView:tableView];
+    
+    [UIView animateWithDuration:0.25 animations:^{
+        tableView.contentOffset = CGPointMake(0, offsetY);
+    }];
+    
+    
+    YDPickView *pView = [[YDPickView alloc] initWithView:cell.subTitle type:1];
+    cell.subTitle.inputView = pView;
+    _tempCell = cell;
+    cell.subTitle.userInteractionEnabled = YES;
+    [cell.subTitle becomeFirstResponder];
+    
+    WEAKSELF
+    pView.ClickFinishButtonBlock = ^(NSString *str, NSDate *date){
+    
+        
+        NSString *dateString = [NSDate stringWithDate:date format:@"yyyy-MM-dd"];
+        cell.subTitleString = dateString;
+        //[tableView reloadData];
+        
+        if (block) {
+            block(dateString);
+        }
+        [weakSelf.view endEditing:YES];
+        //[weakSelf removeCoverViewWithHeight:kScreenHeight - 44.0f tableView:tableView];
+    };
+    
+    
+    
+}
+
+#pragma mark 地址选择
+- (void)addressChooseWithTableView:(UITableView *)tableView cellModel:(YDCustCellModel *)cellModel indexPath:(NSIndexPath *)indexPath chooseBlock:(BackStringBlock)block
+{
+    //选择车型
+    YDAddressChooseController *carVC = [[YDAddressChooseController alloc] init];
+    carVC.ChangeBlock = ^(NSString *address){
+        cellModel.subTitle = address;
+        [tableView reloadData];
+        if (block) {
+            block(address);
+        }
+    };
+    [self.navigationController pushViewController:carVC animated:YES];
+}
+
+#pragma mark 备注填写
+- (void)remarksWithTableView:(UITableView *)tableView cellModel:(YDCustCellModel *)cellModel indexPath:(NSIndexPath *)indexPath chooseBlock:(BackStringBlock)block
+{
+    
+    YDRemarksController *remarksVC = [[YDRemarksController alloc] init];
+    remarksVC.title = cellModel.title;
+    remarksVC.ChangeBlock = ^(NSString *remarks){
+        cellModel.subTitle = remarks;
+        [tableView reloadData];
+        if (block) {
+            block(remarks);
+        }
+    };
+    [self.navigationController pushViewController:remarksVC animated:YES];
+}
+
+
+#pragma 添加遮盖高度的处理
+- (void)addCoverWithHeightArray:(NSArray *)heightArray indexPath:(NSIndexPath *)indexPath tableView:(UITableView *)tableView
+{
+    CGFloat hearderHeight = 0;
+    switch (indexPath.section) {
+        case 0:
+        {
+            NSNumber *heightNumber = heightArray[0];
+            hearderHeight = [heightNumber floatValue];
+        }
+            break;
+        case 1:
+        {
+            NSNumber *heightNumber = heightArray[1];
+            hearderHeight = [heightNumber floatValue];
+        }
+            break;
+        case 2:
+        {
+            NSNumber *heightNumber = heightArray[2];
+            hearderHeight = [heightNumber floatValue];
+        }
+            break;
+        case 3:
+        {
+            NSNumber *heightNumber = heightArray[3];
+            hearderHeight = [heightNumber floatValue];
+        }
+            break;
+        default:
+            break;
+    }
+    
+    
+    [self removeCalendar];
+    
+    //[self addCovewViewWithHeight:kScreenHeight - hearderHeight tableView:tableView];
+
+}
+
+- (void)removeCalendar
+{
+    [UIView animateWithDuration:0.25 animations:^{
+        
+        self.calendarPicker.frame = CGRectMake(0, kScreenHeight, kScreenWidth, 220.0f);
+        
+    } completion:^(BOOL finished) {
+        
+        [self.calendarPicker removeFromSuperview];
+        self.calendarPicker = nil;
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:kDateChooseCancleNotification object:nil];
+    }];
+}
+
+/**
+ *  添加遮盖view
+ *
+ *  @param height view底部到需要遮盖的高度
+ */
+- (void)addCovewViewWithHeight:(CGFloat)height tableView:(UITableView *)tableView
+{
+    if (self.coverView.y < kScreenHeight) {
+        return;
+    }
+    
+    [self.view addSubview:self.coverView];
+    
+    [UIView animateWithDuration:0.25 animations:^{
+        [self.coverView upOrDownSlideValue:-height];
+    }];
+    
+    WEAKSELF
+    self.coverView.ClickBlock = ^{
+        
+        [weakSelf removeCoverViewWithHeight:height tableView:tableView];
+    };
+}
+
+/**
+ *  移除遮盖
+ *
+ *  @param height 遮盖的最上面到手机底部的距离
+ */
+- (void)removeCoverViewWithHeight:(CGFloat)height tableView:(UITableView *)tableView
+{
+    if ([_tempCell isKindOfClass:[YDUpdateCusInfoS2Cell class]]) {
+        YDUpdateCusInfoS2Cell *cell = (YDUpdateCusInfoS2Cell *)_tempCell;
+        cell.subTitle.userInteractionEnabled = NO;
+    } else if ([_tempCell isKindOfClass:[YDUpdateCusInfoS1Cell class]]) {
+        YDUpdateCusInfoS1Cell *cell = (YDUpdateCusInfoS1Cell *)_tempCell;
+        cell.subT.userInteractionEnabled = NO;
+    }
+    
+    tableView.scrollEnabled = YES;
+    [self.view endEditing:YES];
+    
+    [UIView animateWithDuration:0.25 animations:^{
+        tableView.contentOffset = _oldOffset;
+        [self.coverView upOrDownSlideValue:height];
+        self.calendarPicker.frame = CGRectMake(0, kScreenHeight, kScreenWidth, 220.0f);
+        
+    } completion:^(BOOL finished) {
+        [self.coverView removeFromSuperview];
+        self.coverView = nil;
+        
+        [self.calendarPicker removeFromSuperview];
+        self.calendarPicker = nil;
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:kDateChooseCancleNotification object:nil];
+    }];
+    
+}
+
+/**
+ *  遮盖初始化
+ *
+ *  @return 返回遮盖
+ */
+- (YDCustSearchResultView *)coverView
+{
+    if (_coverView == nil) {
+        _coverView = [[YDCustSearchResultView alloc] init];
+        _coverView.frame = CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight);
+        
+    }
+    return _coverView;
+}
+
+- (YDCalendarPicker *)calendarPicker
+{
+    if (_calendarPicker == nil) {
+        _calendarPicker = [[YDCalendarPicker alloc] initWithFrame:CGRectMake(0, kScreenHeight, kScreenWidth, 220)];
+        CGFloat yOffset = (kScreenWidth / 7.0f) * 14 - 10.0f;
+        _calendarPicker.tableView.contentOffset = CGPointMake(0, yOffset);
+    }
+    return _calendarPicker;
+}
+
+@end

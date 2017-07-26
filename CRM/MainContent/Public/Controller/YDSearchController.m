@@ -1,0 +1,148 @@
+//
+//  YDSearchController.m
+//  CRM
+//
+//  Created by ios on 16/7/28.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDSearchController.h"
+#import "YDSearchCell.h"
+#import "YDCustListModel.h"
+
+@interface YDSearchController () 
+
+@end
+
+@implementation YDSearchController
+
+- (void) viewDidLoad
+{
+    [super viewDidLoad];
+   
+    self.view.backgroundColor = [UIColor clearColor];
+    self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+    
+    [self.tableView registerNib(@"YDSearchCell")];
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+}
+
+- (void) viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+}
+
+- (void) viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    [UIApplication sharedApplication].statusBarStyle = UIStatusBarStyleDefault;
+}
+
+- (void) viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    
+    [UIApplication sharedApplication].statusBarStyle = UIStatusBarStyleLightContent;
+}
+
+
+#pragma mark - 数据源
+- (void)setDataArray:(NSMutableArray *)dataArray
+{
+    _dataArray = dataArray;
+    
+    if ([[dataArray firstObject] count] == 0) {
+        YDCustListModel *custModel = [[YDCustListModel alloc] init];
+        custModel.customerName = @"无";
+        NSMutableArray *array = [dataArray firstObject];
+        [array addObject:custModel];
+    }
+    
+    if ([[dataArray lastObject] count] == 0) {
+        YDCustListModel *custModel = [[YDCustListModel alloc] init];
+        custModel.customerName = @"无";
+        NSMutableArray *array = [dataArray lastObject];
+        [array addObject:custModel];
+    }
+    
+    [self.tableView reloadData];
+}
+
+
+#pragma mark - UITableViewDataSource
+- (NSInteger) numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return self.dataArray.count;
+}
+
+- (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [self.dataArray[section] count];
+}
+
+
+- (UITableViewCell *) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDCustListModel *custModel = self.dataArray[indexPath.section][indexPath.row];
+    
+    YDSearchCell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDSearchCell"];
+    cell.custModel = custModel;
+    
+    return cell;
+}
+
+#pragma mark - UITableViewDelegate
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
+    YDCustListModel *custModel = self.dataArray[indexPath.section][indexPath.row];
+    if ([custModel.customerName isEqualToString:@"无"]) return;
+    
+    if (self.BackCustBlock) {
+        self.BackCustBlock(custModel);
+    }
+}
+
+- (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 49.0f;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    UIView *headerView = [[UIView alloc] init];
+    headerView.backgroundColor = kViewControllerBackgroundColor;
+    
+    UILabel *titleLabel = [[UILabel alloc] init];
+    titleLabel.frame = CGRectMake(25.0f, 0, 200.0f, 35.0f);
+    titleLabel.font = [UIFont systemFontOfSize:14.0f];
+    [headerView addSubview:titleLabel];
+    
+    if (section == 0) {
+        titleLabel.text = @"意向客户";
+    } else {
+        titleLabel.text = @"订单客户";
+    }
+    
+    return headerView;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return 35.0f;
+}
+
+
+#pragma mark - UISearchResultsUpdating
+- (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
+//    NSString *searchText = searchController.searchBar.text;
+//    [_data removeAllObjects];
+//    for (TLUser *user in _friendsArray) {
+//        if ([user.userID containsString:searchText] || [user.username containsString:searchText] || [user.nikename containsString:searchText] || [user.pinyin containsString:searchText] || [user.initial containsString:searchText]) {
+//            [_data addObject:user];
+//        }
+//    }
+//    [self.tableView reloadData];
+}
+@end

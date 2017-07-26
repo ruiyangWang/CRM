@@ -1,0 +1,59 @@
+//
+//  YDCustSectionHeaderView.m
+//  CRM
+//
+//  Created by ios on 16/7/25.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCustSectionHeaderView.h"
+
+@interface YDCustSectionHeaderView ()
+{
+    BOOL _isOpen;
+}
+@property (weak, nonatomic) IBOutlet UILabel *infoLabel;
+@property (weak, nonatomic) IBOutlet UIImageView *arrowImageView;
+
+@property (weak, nonatomic) IBOutlet UILabel *lineLabel;
+
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *lineHeight;
+
+@end
+
+@implementation YDCustSectionHeaderView
+
++ (instancetype)custSectionHeaderViewWithTitle:(NSString *)title
+{
+    YDCustSectionHeaderView *view = [[YDCustSectionHeaderView alloc] init];
+    view.infoLabel.text = title;
+    return view;
+}
+
+- (instancetype)init
+{
+    if (self = [super init]) {
+        self = [[[NSBundle mainBundle] loadNibNamed:@"YDCustSectionHeaderView" owner:self options:nil] lastObject];
+        [self createUI];
+    }
+    return self;
+}
+
+- (void)createUI
+{
+    self.infoLabel.textColor = [UIColor colorWithRed:98 green:114 blue:130];
+    
+    self.lineLabel.backgroundColor = kTableViewLineColor;
+    self.lineHeight.constant = 0.5f;
+    
+    _isOpen = NO;
+}
+- (IBAction)buttonClick:(UIButton *)sender {
+    
+    _isOpen = !_isOpen;
+    
+    if (self.openCellBlock) {
+        self.openCellBlock(_isOpen);
+    }
+}
+@end

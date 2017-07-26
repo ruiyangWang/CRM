@@ -1,0 +1,25 @@
+//
+//  YDTool.h
+//  YDCalculateTool
+//
+//  Created by ios on 16/6/7.
+//  Copyright © 2016年 ios. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+@interface YDTool : NSObject
+
+///
++ (NSString *)arrayToStringWithArray:(NSArray *)arr;
++ (NSString *)arrayToStringWithDic:(NSDictionary *)dic;
+
+/**
+ *  判断手机号码格式是否正确
+ */
++ (BOOL)valiMobile:(NSString *)mobile;
+
+
++ (NSArray *)cellModelArrayWithCellName:(NSString *)cellName;
+@end

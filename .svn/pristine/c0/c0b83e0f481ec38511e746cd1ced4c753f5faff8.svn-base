@@ -1,0 +1,37 @@
+//
+//  YDPassengerModel.m
+//  CRM
+//
+//  Created by YD_iOS on 16/8/18.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDPassengerModel.h"
+
+@implementation YDPassengerModel
+
+- (instancetype)initWithDic:(NSDictionary *)dic{
+    if (self = [super init]) {
+        
+        _modelId = [dic objectForKey:@"modelId"];
+        _memberId = [dic objectForKey:@"memberId"];
+        _quoteId = [dic objectForKey:@"quoteId"];
+        _memberName = [dic objectForKey:@"memberName"];
+        _createTime = [dic objectForKey:@"createTime"];
+        _createDate = [NSDate dateWithString:_createTime format:@"yyyy-MM-dd HH:mm:ss"];
+        _count = [[dic objectForKey:@"count"] integerValue];
+        _hasQuote = [[dic objectForKey:@"hasQuote"] integerValue];
+        _customerId = [dic objectForKey:@"customerId"];
+        _customerName = [dic objectForKey:@"customerName"];
+        _customerPhone = [dic objectForKey:@"customerPhone"];
+        _isInten = [[dic objectForKey:@"isInten"] integerValue];
+        _lastCarsId = [dic objectForKey:@"lastCarsId"];
+        _lastBrandId = [dic objectForKey:@"lastBrandId"];
+        _lastCartypeId = [dic objectForKey:@"lastCartypeId"];
+        _lastCartypeName = [dic objectForKey:@"lastCartypeName"];
+    }
+    
+    return self;
+}
+
+@end

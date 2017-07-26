@@ -1,0 +1,49 @@
+//
+//  YDUpdateCusInfoS4Cell.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUpdateCusInfoS4Cell.h"
+
+@interface YDUpdateCusInfoS4Cell()
+
+@property (weak, nonatomic) IBOutlet UIButton *button1;
+
+
+@end
+
+@implementation YDUpdateCusInfoS4Cell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+    
+    _buttonType = [NSMutableArray arrayWithArray:@[@1, @0, @0]];
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+- (IBAction)clickButton:(UIButton *)sender {
+    NSLog(@"");
+    
+    BOOL buttonIsH = [_buttonType[sender.tag-10000] boolValue];
+    if (!buttonIsH) {
+        sender.backgroundColor = kHBackgroundColor;
+        [sender setTitleColor:[UIColor whiteColor] forState:(UIControlStateNormal)];
+        [_buttonType replaceObjectAtIndex:sender.tag-10000 withObject:@1];
+    }else{
+        sender.backgroundColor = kGrayButtonBackgroundColor;
+        [sender setTitleColor:[UIColor blackColor] forState:(UIControlStateNormal)];
+        [_buttonType replaceObjectAtIndex:sender.tag-10000 withObject:@0];
+    }
+}
+
+
+@end

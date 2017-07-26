@@ -1,0 +1,277 @@
+//
+//  YDSalesListViewController.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/19.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDSalesListViewController.h"
+#import "YDOrderCusInfoVC.h"
+
+#import "YDSalesModel.h"
+
+#import "YDUserInfoCell.h"
+#import "YDSalesCell.h"
+#import "YDCircleProgressView.h"
+#import "NYSegmentedControl.h"
+#import "YDCustomerDetailController.h"
+
+@interface YDSalesListViewController (){
+    NSArray *_animateLayers;
+}
+
+@property (weak, nonatomic) IBOutlet UIView *navView;
+@property (strong, nonatomic) IBOutlet UIView *headerView;
+@property (weak, nonatomic) IBOutlet UIImageView *moveImageView;
+@property (weak, nonatomic) IBOutlet UITableView *myTableView;
+@property (weak, nonatomic) IBOutlet UITableView *t1;
+@property (weak, nonatomic) IBOutlet UITableView *t2;
+@property (weak, nonatomic) IBOutlet UITableView *t3;
+@property (weak, nonatomic) IBOutlet UIView *tBGView;
+
+
+@property (weak, nonatomic) IBOutlet YDCircleProgressView *followUpcpView;
+@property (weak, nonatomic) IBOutlet YDCircleProgressView *getCarcpView;
+@property (weak, nonatomic) IBOutlet YDCircleProgressView *listcpView;
+@property (weak, nonatomic) IBOutlet UILabel *fLabel;
+@property (weak, nonatomic) IBOutlet UILabel *gLabel;
+@property (weak, nonatomic) IBOutlet UILabel *lLabel;
+
+@property (copy, nonatomic) NSMutableArray *weekDatas;//周数据
+@property (copy, nonatomic) NSArray *weekSalesScale;//周销售总览比例
+@property (copy, nonatomic) NSArray *weektext;//周显示值
+
+@property (copy, nonatomic) NSArray *showDatas;//显示数据
+@property (copy, nonatomic) NSArray *showSalesScale;//显示销售总览比例
+@property (copy, nonatomic) NSArray *showtext;//显示值
+
+
+@end
+
+@implementation YDSalesListViewController
+
+#pragma mark ----- vc lift cycle 生命周期
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.title = @"销售总览";
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    
+    _weekDatas = [NSMutableArray array];
+    _showDatas = [NSMutableArray array ];
+    
+    _showDatas = _monthDatas;
+    _showSalesScale = _salesScale;
+    _showtext = _textData;
+    _animateLayers = @[_followUpcpView, _getCarcpView, _listcpView];
+
+    [self updateUI];
+    
+    NYSegmentedControl *segment = [[NYSegmentedControl alloc] initWithItems:@[@"月数据", @"周数据"]];
+    segment.frame = CGRectMake(0, 0, 160.0f, 33.0f);
+    segment.center = CGPointMake(kScreenWidth/2.0f + 10.0f, 32);
+    segment.titleTextColor = [UIColor colorWithRed:157 green:191 blue:226];
+    segment.selectedTitleTextColor = kNavigationBackgroundColor;
+    segment.backgroundColor = [UIColor colorWithRed:62 green:122 blue:186];
+    segment.drawsGradientBackground = NO;
+    segment.borderWidth = 0;
+    segment.segmentIndicatorBorderWidth = 0;
+    segment.segmentIndicatorInset = 2.0f;
+    segment.drawsSegmentIndicatorGradientBackground = NO;
+    segment.segmentIndicatorBackgroundColor = [UIColor whiteColor];
+    segment.selectedSegmentIndex = 0;
+    [segment sizeToFit];
+    [_navView addSubview: segment];
+  
+    segment.sendBlock = ^(NSInteger index){
+        NSLog(@"");
+    };
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    self.navigationController.navigationBar.translucent = YES;
+}
+
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    
+    [self reloadLayer];
+}
+-(void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
+    //
+    NSArray *arr = @[_followUpcpView, _getCarcpView, _listcpView];
+    for (YDCircleProgressView *cpView in arr) {
+        [cpView removeView];
+    }
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+- (IBAction)changeList:(UIButton *)sender {
+    
+    NSArray *tbgviewcenterxs = @[@(kScreenWidth*1.5), @(kScreenWidth*0.5), @(kScreenWidth*-0.5)];
+    
+    UIView *nowView = _animateLayers[sender.tag-10000];
+    [UIView animateWithDuration:.25 animations:^{
+        _moveImageView.center = CGPointMake(nowView.center.x, _moveImageView.center.y);
+        _tBGView.center = CGPointMake([tbgviewcenterxs[sender.tag-10000] integerValue], _tBGView.center.y);
+    }];
+}
+
+#pragma mark ----- custom action for UI 界面处理有关
+- (void)updateUI{
+    
+    [_myTableView registerNib(@"YDUserInfoCell") ];
+    [_t1 registerNib(@"YDUserInfoCell") ];
+    [_t2 registerNib(@"YDUserInfoCell") ];
+    [_t3 registerNib(@"YDSalesCell") ];
+    
+    _headerView.frame = CGRectMake(0, 0, kScreenWidth, 222);
+    _myTableView.tableHeaderView = _headerView;    
+}
+//圆环做动画
+- (void)reloadLayer{
+    
+    if (_showDatas.count == 0) {
+        return;
+    }
+    
+    NSArray *arr = @[_followUpcpView, _getCarcpView, _listcpView];
+    for (int i = 0; i<arr.count; i++) {
+        YDCircleProgressView *cpView = arr[i];
+        CGFloat lp = [_salesScale[i] floatValue];
+        if (cpView.progress > 0) {
+            [cpView reLoadUI];
+        }else{
+            [cpView setUI];
+            cpView.progress += lp;
+        }
+    }
+    
+    _fLabel.text = [NSString stringWithFormat:@"%@",_showtext[0]];
+    _gLabel.text = [NSString stringWithFormat:@"%@",_showtext[1]];
+    _lLabel.text = [NSString stringWithFormat:@"%@",_showtext[2]];
+}
+
+#pragma mark ----- custom action for DATA 数据处理有关
+
+/**
+ @param type 1代表月数据／2代表周数据
+ */
+- (void)loadDataFromNetworkWithType:(NSInteger)type
+{
+    NSString *url = [NSString stringWithFormat:@"%@date=month&sid=%@",kCrmSalesOverview,getNSUser(@"youdao.CRM_SID")];
+    if (type == 1) {
+        url = [NSString stringWithFormat:@"%@date=month&sid=%@",kCrmSalesOverview,getNSUser(@"youdao.CRM_SID")];
+    } else {
+        url = [NSString stringWithFormat:@"%@date=week&sid=%@",kCrmSalesOverview,getNSUser(@"youdao.CRM_SID")];
+    }
+    
+    [YDDataService startSyncRequest:@{} url:url block:^(id result) {
+        
+        if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+            
+            NSDictionary *d = result[@"var"];
+            
+            //月跟进
+            NSMutableArray *addCusList = [NSMutableArray array];
+            NSInteger addTotalCount = [d[@"addTotalCount"] integerValue];
+            addTotalCount = MAX(1, addTotalCount);
+            
+            //交车数
+            NSMutableArray *giveCarList = [NSMutableArray array ];
+            NSInteger giveCarCount = [d[@"orderTotalCount"] integerValue];
+            giveCarCount = MAX(1, giveCarCount);
+            
+            for (NSDictionary *dic in d[@"addCustomerList"]) {
+                YDCustListModel *sModel = [[YDCustListModel alloc]initWithDict:dic];
+                [addCusList addObject:sModel];
+                
+                if ([sModel.customerStatus integerValue] == 5) {
+                    [giveCarList addObject:sModel];
+                }
+            }
+            
+            //排名
+            NSMutableArray *rankList = [NSMutableArray array];
+            NSInteger rankCount = 0;
+            for (int i=0; i<[[d objectForKey:@"rankList"] count]; i++) {
+                NSDictionary *dic = [[d objectForKey:@"rankList"] objectAtIndex:i];
+                YDSalesModel *sm = [[YDSalesModel alloc] initWithDict:dic];
+                [rankList addObject:sm];
+                
+                if ([dic[@"memberId"] isEqualToString:d[@"currMemId"]]) {
+                    rankCount = i + 1;
+                }
+            }
+            
+            _monthDatas = @[addCusList, giveCarList, rankList];
+            _salesScale = @[@(addCusList.count/addTotalCount), @(giveCarList.count/giveCarCount), @(rankCount/MAX(1, rankList.count))];
+            _textData = @[@(addCusList.count), @(giveCarList.count), @(rankCount)];
+            
+            [self.myTableView reloadData];
+        }
+        
+    } failBlock:^(id error) {
+        NSLog(@"获取销售总览失败");
+    }];
+}
+
+
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+#pragma mark - Table view data source
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return [_showDatas[tableView.tag-30000] count];
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (tableView.tag == 30002) {
+        YDSalesCell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDSalesCell" forIndexPath:indexPath];
+        NSArray *d = _showDatas[tableView.tag - 30000];
+        YDSalesModel *m = d[indexPath.row];
+        m.badge = [NSString stringWithFormat:@"%ld",indexPath.row+1];
+        cell.m = m;
+        return cell;
+
+    }else{
+        YDUserInfoCell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUserInfoCell" forIndexPath:indexPath];
+        
+        NSArray *d = _showDatas[tableView.tag - 30000];
+        YDCustListModel *custModel = d[indexPath.row];
+        cell.custListModel = custModel;
+        
+        return cell;
+    }
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (tableView.tag == 30002) return;
+    //取出模型
+    NSArray *d = _showDatas[tableView.tag - 30000];
+    YDCustListModel *custModel = d[indexPath.row];
+    
+    if ([custModel.customerType integerValue] == 1) {
+        //意向客户
+        YDCustomerDetailController *vc = [[YDCustomerDetailController alloc] init];
+        vc.customerId = custModel.modelId;
+        [self.navigationController pushViewController:vc animated:YES];
+    } else {
+        //订单客户
+        YDOrderCusInfoVC *vc = [[YDOrderCusInfoVC alloc] initWithNibName:@"YDOrderCusInfoVC" bundle:nil];
+        vc.customerID = custModel.modelId;
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+
+}
+
+@end

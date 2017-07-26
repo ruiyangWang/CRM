@@ -1,0 +1,234 @@
+//
+//  YDFollowRecordController.m
+//  CRM
+//
+//  Created by ios on 16/7/28.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDFollowRecordController.h"
+#import "YDTool.h"
+#import "YDCustCellModel.h"
+#import "YDFollowInfoModel.h"
+#import "YDPriceListInfoVC.h"
+
+//cell
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDUpdateCusInfoS4Cell.h"
+#import "YDUpdateCusInfoS5Cell.h"
+#import "YDFollowChooseCell.h"
+
+#import "YDQuoteModel.h"
+
+
+@interface YDFollowRecordController () <UITableViewDataSource,UITableViewDelegate>
+
+@property (nonatomic, strong) UITableView *tableView;
+
+@property (nonatomic, strong) NSMutableArray *cellArray;
+
+@end
+
+@implementation YDFollowRecordController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    [self createView];
+    
+    [self setupViewData];
+    
+}
+
+
+#pragma mark 设置view
+- (void)createView
+{
+    self.title = @"查看跟进";
+    
+    self.tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight) style:UITableViewStyleGrouped];
+    self.tableView.dataSource = self;
+    self.tableView.delegate = self;
+    [self.view addSubview:self.tableView];
+    
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [self.tableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    [self.tableView registerNib(@"YDFollowChooseCell")];
+    [self.tableView registerNib(@"YDUpdateCusInfoS5Cell")];
+    [self.tableView registerNib(@"YDUpdateCusInfoS4Cell")];
+    self.cellArray = [NSMutableArray arrayWithArray:[YDTool cellModelArrayWithCellName:@"followRecordCell"]];
+    
+}
+
+- (void)setupViewData
+{
+    
+    if (_followInfoModel.eventType.length == 0) {
+        //如果没有事件，去掉报价金额
+        NSMutableArray *groupArray = self.cellArray[1];
+        [groupArray removeObjectAtIndex:3];
+    }
+  
+    for (NSArray *sectionArray in _cellArray) {
+        for (YDCustCellModel *cellModel in sectionArray) {
+            if ([cellModel.title isEqualToString:@"跟进时间"]) {
+                cellModel.subTitle = [_followInfoModel.currFollowTime substringToIndex:10];
+            } else if ([cellModel.title isEqualToString:@"客户级别"]) {
+                cellModel.subTitle = _followInfoModel.customerLevel;
+            } else if ([cellModel.title isEqualToString:@"意向车型"]) {
+                cellModel.subTitle = _followInfoModel.carTypeName;
+            } else if ([cellModel.title isEqualToString:@"事件"]) {
+                cellModel.subTitle = _followInfoModel.eventType;
+            } else if ([cellModel.title isEqualToString:@"报价金额"]) {
+                cellModel.subTitle = [NSString stringWithFormat:@"%@", _followInfoModel.quoteMoney];
+            } else if ([cellModel.title isEqualToString:@"下次跟进时间"]) {
+                cellModel.subTitle = [_followInfoModel.nextFollowTime substringToIndex:10];
+            } else if ([cellModel.title isEqualToString:@"备注"]) {
+                cellModel.subTitle = _followInfoModel.remark;
+            }
+        }
+    }
+    
+    if (_followInfoModel.searchQuote) {
+        //如果有报价
+        [self loadQuoteListFromNetwork];
+    }
+}
+
+#pragma mark - 请求数据
+#pragma mark 获取报价列表
+- (void)loadQuoteListFromNetwork
+{
+    
+    NSMutableArray *secondArray = self.cellArray[1];
+    [secondArray removeLastObject];
+    
+    [YDDataService startRequest:@{@"customerId" : _followInfoModel.customerId}
+                            url:[NSString stringWithFormat:@"%@sid=%@", kQuoteListAddress, getNSUser(kCRM_SIDKey)]
+                          block:^(id result) {
+        
+                              if ([result[@"code"] isEqualToString:@"S_OK"]) {
+                                  NSArray *resultArray = result[@"var"];
+                                  for (NSDictionary *dic in resultArray) {
+                                      YDQuoteModel *model = [YDQuoteModel instanceWithDict:dic];
+                                      YDCustCellModel *cellModel = [[YDCustCellModel alloc] init];
+                                      cellModel.title = @"查看报价";
+                                      cellModel.subTitle = [NSString stringWithFormat:@"¥%@", model.actualBidAmount];
+                                      cellModel.isShowArrow = YES;
+                                      cellModel.isShowCell = YES;
+                                      cellModel.cellName = @"YDUpdateCusInfoS2Cell";
+                                      cellModel.placeholder = model.modelId;
+                                      [secondArray addObject:cellModel];
+                                  }
+                                  
+                              }
+                              [self.tableView reloadData];
+    }
+                      failBlock:^(id error) {
+        
+    }];
+}
+
+#pragma mark - ==================tableview delegate=====================
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return self.cellArray.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [self.cellArray[section] count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDCustCellModel *cellModel = self.cellArray[indexPath.section][indexPath.row];
+    
+    if ([cellModel.cellName isEqualToString:@"YDFollowChooseCell"]) {
+        YDFollowChooseCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        if ([_followInfoModel.followWay integerValue] == 2) {
+            cell.selectIndex = 1;
+        }
+        cell.userInteractionEnabled = NO;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS2Cell"]) {
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.titleString = cellModel.title;
+        cell.subTitleString = cellModel.subTitle;
+        cell.subTitle.placeholder = cellModel.placeholder;
+        cell.showNextButton = cellModel.isShowArrow;
+        return cell;
+    }  else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS4Cell"]) {
+        YDUpdateCusInfoS4Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.t = cellModel.title;
+        cell.eventType = cellModel.subTitle;
+        cell.userInteractionEnabled = NO;
+        //如果无事件
+        if (cellModel.subTitle.length == 0) {
+            cell.noEventTextField.hidden = NO;
+            cell.noEventLabel.hidden = NO;
+        } else {
+            cell.noEventTextField.hidden = YES;
+            cell.noEventLabel.hidden = YES;
+        }
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS5Cell"]) {
+        YDUpdateCusInfoS5Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.textInfo.placeholder = cellModel.placeholder;
+        cell.textInfo.text = cellModel.subTitle.length > 0 ? cellModel.subTitle : @"";
+        return cell;
+    }
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName];
+    
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 49.0f;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return 0.1f;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    if (section == 0) {
+        return 0.1f;
+    }
+    return 5.0f;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+    YDCustCellModel *cellModel = self.cellArray[indexPath.section][indexPath.row];
+    if ([cellModel.title isEqualToString:@"查看报价"]) {
+        YDPriceListInfoVC *VC = [[YDPriceListInfoVC alloc] init];
+        YDQuoteModel *model = [[YDQuoteModel alloc] init];
+        model.modelId = cellModel.placeholder;
+        VC.qutoeModel = model;
+        [self.navigationController pushViewController:VC animated:YES];
+    }
+
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

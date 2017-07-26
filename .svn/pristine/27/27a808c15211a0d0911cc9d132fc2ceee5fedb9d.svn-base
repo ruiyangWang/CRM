@@ -1,0 +1,161 @@
+//
+//  YDUpdateCusInfoS2Cell.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUpdateCusInfoS2Cell.h"
+
+@interface YDUpdateCusInfoS2Cell()<UITextFieldDelegate>
+
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *nextButtonW;
+@property (weak, nonatomic) IBOutlet UIView *blueMake;
+
+@property (nonatomic, strong) UIToolbar *doneToolBar; //数字键盘上需要添加的
+
+@end
+
+@implementation YDUpdateCusInfoS2Cell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+    
+    _subTitle.delegate = self;
+
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+-(void)setTitleString:(NSString *)titleString{
+    _titleString = titleString;
+    _title.text = titleString;
+    
+    //默认值
+    self.textLongest = 1000;
+    self.subTitle.keyboardType = UIKeyboardTypeDefault;
+    self.isShowDoneTool = NO;
+    
+    //联系电话限制
+    if ([_title.text isEqualToString:@"联系电话"]) {
+        self.textLongest = 11;
+        self.subTitle.keyboardType = UIKeyboardTypeNumberPad;
+        self.isShowDoneTool = YES;
+    }
+    //身份证号限制
+    if ([_title.text isEqualToString:@"身份证号"]) {
+        self.textLongest = 18;
+    }
+    //报价金额限制
+    if ([_title.text isEqualToString:@"报价金额"]) {
+        self.subTitle.keyboardType = UIKeyboardTypeNumberPad;
+        self.isShowDoneTool = YES;
+    }
+    
+}
+-(void)setSubTitleString:(NSString *)subTitleString{
+    _subTitleString = subTitleString;
+    _subTitle.text = subTitleString;
+    
+    
+}
+-(void)setShowNextButton:(BOOL)showNextButton{
+    _showNextButton = showNextButton;
+    
+    if (!showNextButton) {
+        _nextButtonW.constant = 0;
+    }else
+        _nextButtonW.constant = 10;
+}
+-(void)setUd:(BOOL)ud{
+    _ud = ud;
+    
+//    self.subTitle.userInteractionEnabled = ud;
+}
+-(void)setIsMust:(BOOL)isMust{
+    _isMust = isMust;
+    
+    _blueMake.alpha = isMust?1:0;
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField{
+//    if (_EndEditBlack != nil) {
+//        _EndEditBlack(self, textField.text);
+//    }
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [textField endEditing:YES];
+    
+    if (self.ReturnBlack) {
+        self.ReturnBlack();
+    }
+    
+    return YES;
+}
+
+- (void)setIsShowDoneTool:(BOOL)isShowDoneTool
+{
+    _isShowDoneTool = isShowDoneTool;
+    
+    if (isShowDoneTool) {
+        self.subTitle.inputAccessoryView = self.doneToolBar;
+    } else {
+        self.subTitle.inputAccessoryView = nil;
+    }
+}
+
+- (UIToolbar *)doneToolBar
+{
+    if (_doneToolBar == nil) {
+        _doneToolBar = [[UIToolbar alloc] init];
+        _doneToolBar.frame = CGRectMake(0, 0, kScreenWidth, 25.0f);
+        _doneToolBar.backgroundColor = [UIColor whiteColor];
+        _doneToolBar.clipsToBounds = YES;
+        
+        UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeSystem];
+        [doneButton setTitle:@"完成" forState:UIControlStateNormal];
+        doneButton.titleLabel.font = [UIFont systemFontOfSize:12.0f];
+        doneButton.frame = CGRectMake(kScreenWidth - 50.0f, 0, 50.0f, 25.0f);
+        [doneButton addTarget:self action:@selector(toolbarDoneButtonClick) forControlEvents:UIControlEventTouchUpInside];
+        [_doneToolBar addSubview:doneButton];
+    }
+    return _doneToolBar;
+}
+
+- (void)toolbarDoneButtonClick
+{
+    if (self.EndEditBlack) {
+        self.EndEditBlack(self, _subTitle.text);
+    }
+}
+#pragma mark - UITextFieldDelegate
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    
+    if (self.EndEditBlack) {
+        self.EndEditBlack(self, _subTitle.text);
+    }
+    
+    if (textField == self.subTitle) {
+        if (string.length == 0) return YES;
+        
+        NSInteger existedLength = textField.text.length;
+        NSInteger selectedLength = range.length;
+        NSInteger replaceLength = string.length;
+        if (existedLength - selectedLength + replaceLength > self.textLongest) {
+            return NO;
+        }
+    }
+    
+    return YES;
+}
+
+@end

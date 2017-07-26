@@ -1,0 +1,41 @@
+//
+//  YDOnlyTextCell.m
+//  CRM
+//
+//  Created by ios on 16/7/27.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDOnlyTextCell.h"
+#import "YDCustCellModel.h"
+
+@interface YDOnlyTextCell ()
+
+@property (weak, nonatomic) IBOutlet UILabel *titleLabel;
+
+@property (weak, nonatomic) IBOutlet UILabel *subTitleLabel;
+
+@end
+@implementation YDOnlyTextCell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+    
+}
+
+- (void)setCellModel:(YDCustCellModel *)cellModel
+{
+    _cellModel = cellModel;
+    
+    self.titleLabel.text = cellModel.title;
+    self.subTitleLabel.text = cellModel.subTitle;
+}
+
+@end

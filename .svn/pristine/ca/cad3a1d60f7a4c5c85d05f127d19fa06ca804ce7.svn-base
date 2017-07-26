@@ -1,0 +1,116 @@
+//
+//  DBManager.m
+//  CRM
+//
+//  Created by ios on 16/9/18.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "DBManager.h"
+
+@interface DBManager ()
+
+
+
+//数据库完整路径
+@property (strong, nonatomic, readonly) NSString *dbPath;
+
+/*!
+ @brief     判断文件是否存在，不存在时创建
+ @return    BOOL DB文件是否存在
+ */
+- (BOOL)isDBExists;
+
+
+@end
+
+@implementation DBManager
+
+SINGLE_IMPLEMENTATION(DBManager);
+
+
+@synthesize dbQueue = _dbQueue;
+
+
+- (NSString *)dbPath
+{
+    NSString *docsdir = [NSSearchPathForDirectoriesInDomains( NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+    NSFileManager *filemanage = [NSFileManager defaultManager];
+    BOOL isDir;
+    BOOL exit =[filemanage fileExistsAtPath:docsdir isDirectory:&isDir];
+    if (!exit || !isDir) {
+        [filemanage createDirectoryAtPath:docsdir withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    NSString *dbpath = [docsdir stringByAppendingPathComponent:@"db.sqlite"];
+    return dbpath;
+}
+
+- (FMDatabaseQueue *)dbQueue
+{
+    if (_dbQueue == nil)
+    {
+        _dbQueue = [[FMDatabaseQueue alloc] initWithPath:self.dbPath];
+    }
+    return _dbQueue;
+}
+
+-(void) inDatabase:(void(^)(FMDatabase*))block
+{
+    [self.dbQueue inDatabase:^(FMDatabase *db){
+        block(db);
+    }];
+}
+
+-(void) inTransaction:(void (^)(FMDatabase *db, BOOL *rollback))block
+{
+    [self.dbQueue inTransaction:^(FMDatabase *db, BOOL *rollback){
+        block(db,rollback);
+    }];
+}
+
+- (id)init
+{
+    if ((self = [super init]))
+    {
+        [self createDataBase];
+    }
+    return self;
+}
+
+
+/**
+ *	创建表
+ */
+- (void)createDataBase
+{
+    [[DBManager sharedDBManager] inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        
+        //导入意向客户表
+//        [db executeUpdate:@" "
+//         " CREATE TABLE [YDImportCustModel] ( "
+//         "[name] TEXT, "
+//         "[phone] TEXT, "
+//         "[isSelect] INTEGER, "
+//         ")"];
+        [db executeUpdate:@" CREATE TABLE if not exists YDImportCustList( name TEXT, phone TEXT, isSelect INTEGER, )"];
+        
+    }];
+    
+}
+
+- (BOOL)isDBExists
+{
+    return [[NSFileManager defaultManager] fileExistsAtPath:self.dbPath];
+}
+
+
++ (void)removeDBFile
+{
+    //[[NSFileManager defaultManager] removeItemAtPath:[self dbPa] error:nil];
+}
+
+
+
+
+
+@end

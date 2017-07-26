@@ -1,0 +1,108 @@
+//
+//  YDSalesListViewController.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/19.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDSalesListViewController.h"
+#import "YDOrderCusInfoVC.h"
+
+#import "YDUserInfoCell.h"
+#import "YDCircleProgressView.h"
+
+@interface YDSalesListViewController (){
+    NSArray *_animateLayers;
+}
+
+@property (strong, nonatomic) IBOutlet UIView *headerView;
+@property (weak, nonatomic) IBOutlet UIImageView *moveImageView;
+@property (weak, nonatomic) IBOutlet UITableView *myTableView;
+@property (weak, nonatomic) IBOutlet YDCircleProgressView *followUpcpView;
+@property (weak, nonatomic) IBOutlet YDCircleProgressView *getCarcpView;
+@property (weak, nonatomic) IBOutlet YDCircleProgressView *listcpView;
+
+@end
+
+@implementation YDSalesListViewController
+
+#pragma mark ----- vc lift cycle 生命周期
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.title = @"销售总览";
+    self.automaticallyAdjustsScrollViewInsets = NO;
+
+    [self updateUI];
+}
+
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    
+    //
+    _animateLayers = @[_followUpcpView, _getCarcpView, _listcpView];
+    for (YDCircleProgressView *cpView in _animateLayers) {
+        if (cpView.progress > 0) {
+            [cpView reLoadUI];
+        }else{
+            [cpView setUI];
+            cpView.progress += 60/360.0;
+        }
+    }
+}
+-(void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
+    //
+    NSArray *arr = @[_followUpcpView, _getCarcpView, _listcpView];
+    for (YDCircleProgressView *cpView in arr) {
+        [cpView removeView];
+    }
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+- (IBAction)changeList:(UIButton *)sender {
+    
+    UIView *nowView = _animateLayers[sender.tag-10000];
+    [UIView animateWithDuration:.25 animations:^{
+        _moveImageView.center = CGPointMake(nowView.center.x, _moveImageView.center.y);
+    }];
+}
+
+#pragma mark ----- custom action for UI 界面处理有关
+- (void)updateUI{
+    
+    [_myTableView registerNib(@"YDUserInfoCell") ];
+    
+    _headerView.frame = CGRectMake(0, 0, kScreenWidth, 222);
+    _myTableView.tableHeaderView = _headerView;    
+}
+
+#pragma mark ----- custom action for DATA 数据处理有关
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+#pragma mark - Table view data source
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return 6;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    YDUserInfoCell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUserInfoCell" forIndexPath:indexPath];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    YDOrderCusInfoVC *vc = [[YDOrderCusInfoVC alloc]initWithNibName:@"YDOrderCusInfoVC" bundle:nil];
+    [vc setHidesBottomBarWhenPushed:YES];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+@end

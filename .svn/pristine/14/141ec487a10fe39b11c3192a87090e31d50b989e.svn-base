@@ -1,0 +1,36 @@
+//
+//  YDTool.h
+//  YDCalculateTool
+//
+//  Created by ios on 16/6/7.
+//  Copyright © 2016年 ios. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#import <AddressBook/AddressBook.h>
+
+@interface YDTool : NSObject
+
+///
++ (NSString *)arrayToStringWithArray:(NSArray *)arr;
++ (NSString *)arrayToStringWithDic:(NSDictionary *)dic;
+
+/**
+ *  判断手机号码格式是否正确
+ */
++ (BOOL)valiMobile:(NSString *)mobile;
+
+
+/**
+ *  group类型tableview使用的数组（数组包含数组，下级数组包含cell模型）
+ */
++ (NSArray *)cellModelArrayWithCellName:(NSString *)cellName;
+
+/**
+ *  pline类型tableview使用的数组（数组包含cell模型）
+ */
++ (NSArray *)cellModelWithCellName:(NSString *)cellName;
+
++ (void)CheckAddressBookAuthorization:(void (^)(bool isAuthorized))block;
+@end

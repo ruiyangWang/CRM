@@ -1,0 +1,74 @@
+//
+//  YDAppealSettleVC.m
+//  CRM
+//
+//  Created by YD_iOS on 16/8/4.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDAppealSettleVC.h"
+#import "YDUpdateCusInfoS2Cell.h"
+
+@interface YDAppealSettleVC (){
+    NSArray *titles;
+    NSArray *subTitles;
+}
+
+@property (weak, nonatomic) IBOutlet UITableView *myTableView;
+
+@end
+
+@implementation YDAppealSettleVC
+
+#pragma mark ----- vc lift cycle 生命周期
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.title = @"申诉处理";
+    
+    _myTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [_myTableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    _myTableView.tableFooterView = [[UIView alloc]init];
+
+    titles = @[@[@"申请时间"],@[@"原销售顾问",@"申请人1",@"申请人2"],@[@"处理结果",@"处理意见"]];
+    subTitles = @[@[@"6月30日 周日"],@[@"宋海鹏",@"李锦记",@"徐福记"],@[@"重新分配",@"什么情况啊"]];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+#pragma mark ----- custom action for UI 界面处理有关
+#pragma mark ----- custom action for DATA 数据处理有关
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return [titles count];
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return [titles[section] count];
+}
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+    UIView *view = [[UIView alloc]init];
+    return view;
+}
+- (nullable UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section{
+    UIView *view = [[UIView alloc]init];
+    return view;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS2Cell" forIndexPath:indexPath];
+    cell.titleString = titles[indexPath.section][indexPath.row];
+    cell.subTitleString = subTitles[indexPath.section][indexPath.row];
+    cell.showNextButton = NO;
+    return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    NSLog(@"");
+}
+@end

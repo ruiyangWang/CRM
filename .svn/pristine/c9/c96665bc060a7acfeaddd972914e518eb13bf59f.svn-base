@@ -1,0 +1,21 @@
+//
+//  YDPickView.m
+//  CRM
+//
+//  Created by YD_iOS on 16/8/3.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDPickView.h"
+
+@implementation YDPickView
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
+
+@end

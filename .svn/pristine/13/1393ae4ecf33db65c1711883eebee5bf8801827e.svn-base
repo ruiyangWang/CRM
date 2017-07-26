@@ -1,0 +1,40 @@
+//
+//  YDSearchCarModelCell.m
+//  CRM
+//
+//  Created by YD_iOS on 16/8/2.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDSearchCarModelCell.h"
+
+@interface YDSearchCarModelCell()
+
+@property (weak, nonatomic) IBOutlet UILabel *title;
+@property (weak, nonatomic) IBOutlet UILabel *subTitle;
+
+
+@end
+@implementation YDSearchCarModelCell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+-(void)setT:(NSString *)t{
+    _t = t;
+    _title.text = t;
+}
+-(void)setSubT:(NSString *)subT{
+    _subT = subT;
+    _subTitle.text = subT;
+}
+
+@end

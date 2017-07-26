@@ -1,0 +1,51 @@
+//
+//  YDCustCellModel.h
+//  CRM
+//
+//  Created by ios on 16/7/26.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+
+typedef NS_ENUM(NSInteger, EditMode) {
+    EditModePush,
+    EditModeEdit
+};
+@interface YDCustCellModel : NSObject
+
+@property (nonatomic, copy) NSString *cellName;
+
+@property (nonatomic, copy) NSString *title;
+
+@property (nonatomic, copy) NSString *subTitle;
+
+/**
+ *  提示语
+ */
+@property (nonatomic, copy) NSString *placeholder;
+
+
+
+/**
+ *  是否可以更改
+ */
+@property (nonatomic, assign) BOOL isChange;
+
+/**
+ *  是否必填
+ */
+@property (nonatomic, assign) BOOL isMust;
+
+
+
+/**
+ *  cell值的设置方式
+ */
+@property (nonatomic, assign) EditMode *editMode;
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
++ (instancetype)cellModelWithDict:(NSDictionary *)dict;
+
+@end

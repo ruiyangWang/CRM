@@ -1,0 +1,46 @@
+//
+//  YDCustListModel.h
+//  CRM
+//
+//  Created by ios on 16/8/17.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDBaseModel.h"
+
+@interface YDCustListModel : YDBaseModel
+
+@property (nonatomic, copy) NSString *address;
+@property (nonatomic, copy) NSString *attr;
+@property (nonatomic, copy) NSString *birthday;
+@property (nonatomic, copy) NSString *birthdayString;
+@property (nonatomic, copy) NSString *brandName;
+@property (nonatomic, copy) NSString *carTypeName;
+@property (nonatomic, copy) NSString *carsName;
+@property (nonatomic, copy) NSString *corpId;
+@property (nonatomic, copy) NSString *countBy;
+@property (nonatomic, copy) NSString *createTime;
+@property (nonatomic, copy) NSString *createTimeString;
+@property (nonatomic, copy) NSString *customerLevel;
+@property (nonatomic, copy) NSString *customerName;
+@property (nonatomic, copy) NSString *customerPhone;
+@property (nonatomic, copy) NSString *customerStatus;
+@property (nonatomic, copy) NSString *customerType;
+@property (nonatomic, copy) NSString *familyStatus;
+@property (nonatomic, copy) NSString *flag;
+@property (nonatomic, copy) NSString *gender;
+@property (nonatomic, copy) NSString *modelId;
+@property (nonatomic, copy) NSString *idNumber;
+@property (nonatomic, copy) NSString *isDrive;
+@property (nonatomic, copy) NSString *memberId;
+@property (nonatomic, copy) NSString *memberName;
+@property (nonatomic, copy) NSString *modifyTime;
+@property (nonatomic, copy) NSString *modifyTimeString;
+@property (nonatomic, copy) NSString *orgId;
+@property (nonatomic, copy) NSString *orgName;
+@property (nonatomic, copy) NSString *qq;
+@property (nonatomic, copy) NSString *searchKey;
+@property (nonatomic, copy) NSString *weixin;
+
+
+@end

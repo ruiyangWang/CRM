@@ -1,0 +1,98 @@
+//
+//  YDEnterPhoneNO.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/21.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDEnterPhoneNO.h"
+#import "YDUserInfoCell.h"
+
+@interface YDEnterPhoneNO()<UITableViewDelegate,UITableViewDataSource>
+
+@property (weak, nonatomic) IBOutlet UITableView *myTableView;
+@property (weak, nonatomic) IBOutlet UILabel *dateTimeLabel;
+@property (weak, nonatomic) IBOutlet UILabel *countLabel;
+
+@end
+
+@implementation YDEnterPhoneNO
+
+#pragma mark ----- vc lift cycle 生命周期
+
+-(void)awakeFromNib{
+    self.frame = CGRectMake (0, 0, kScreenWidth, kScreenHeight);
+    [_myTableView registerNib:[UINib nibWithNibName:@"YDUserInfoCell" bundle:nil] forCellReuseIdentifier:@"YDUserInfoCell"];
+    
+    _myTableView.delegate = self;
+    _myTableView.dataSource = self;
+}
+#pragma mark ----- get and setter 属性的set和get方法
+-(void)setPModel:(YDPassengerModel *)pModel{
+    _pModel = pModel;
+    
+    NSString *dateStr = [NSDate stringWithDate:pModel.createDate format:@"MM月dd日"];
+    NSString *am_pm_Str = [NSDate compareDate:pModel.createDate];
+    NSString *timeStr = [NSDate stringWithDate:pModel.createDate format:@"HH:mm"];
+    _dateTimeLabel.text = [NSString stringWithFormat:@"%@ %@ %@",dateStr, am_pm_Str, timeStr];
+    
+    _countLabel.text = [NSString stringWithFormat:@"%ld 人",(long)pModel.count];
+}
+-(void)setCModel:(YDCustListModel *)cModel{
+    _cModel = cModel;
+    [_myTableView reloadData];
+    
+    [UIView animateWithDuration:.25 animations:^{
+        _myTableView.center = CGPointMake(_myTableView.center.x, _myTableView.center.y-62);
+        _myTableView.alpha = 1;
+    }];
+}
+
+#pragma mark ----- event Response 事件响应(手势 通知)
+- (IBAction)nextButton:(id)sender {
+    if (_ClickNextButton != nil) {
+        _ClickNextButton(_phoneTF.text);
+    }
+}
+
+#pragma mark ----- custom action for UI 界面处理有关
+- (void)showView{
+    _phoneTF.text = @"";
+    [UIView animateWithDuration:.35 animations:^{
+        self.center = CGPointMake(kScreenWidth/2, kScreenHeight/2);
+    }];
+}
+- (void)hiddenView{
+    [_phoneTF endEditing:YES];
+    [UIView animateWithDuration:.35 animations:^{
+        self.center = CGPointMake(kScreenWidth/2, kScreenHeight*1.5);
+    }];
+}
+#pragma mark ----- custom action for DATA 数据处理有关
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+#pragma mark - Table view data source
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return 1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    YDUserInfoCell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUserInfoCell" forIndexPath:indexPath];
+    
+    if (cell == nil) {
+        cell = [[[NSBundle mainBundle] loadNibNamed:@"YDUserInfoCell" owner:nil options:nil] lastObject];
+    }
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    cell.custListModel = _cModel;
+
+    return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if (_ClickUserInfo != nil) {
+        _ClickUserInfo(_cModel);
+    }
+}
+
+@end

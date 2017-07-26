@@ -1,0 +1,47 @@
+//
+//  YDViewController.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/21.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDViewController.h"
+
+@interface YDViewController ()
+
+@end
+
+@implementation YDViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.view.backgroundColor = kViewControllerBackgroundColor;
+    
+    //添加的蓝色不透明背景，有时候会挡住title
+    UIView *navBGView = [self.navigationController.navigationBar viewWithTag:30000];
+    [self.navigationController.navigationBar sendSubviewToBack:navBGView];
+    
+    //防止tableview 或 scrollview 自动下移64
+    self.automaticallyAdjustsScrollViewInsets = NO;
+
+
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

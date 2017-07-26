@@ -1,0 +1,28 @@
+//
+//  YDAddCustFlowController.h
+//  CRM
+//
+//  Created by ios on 2016/11/23.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDAddAndEditViewController.h"
+
+@class YDPassengerModel,YDCustListModel;
+@interface YDAddCustFlowController : YDAddAndEditViewController
+
+@property (nonatomic, copy) NSString *customerName;
+@property (nonatomic, copy) NSString *customerPhone;
+
+@property (nonatomic, strong) YDPassengerModel *passengerModel;
+
+@property (nonatomic, copy) NSString *passengerId;//客流id
+
+
+/**
+ 新建客户时，输入的号码是订单客户，把订单客户的基本信息带进来
+ */
+@property (nonatomic, strong) YDCustListModel *orderCustomerModel;
+
+
+@end

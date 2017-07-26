@@ -1,0 +1,826 @@
+//
+//  YDQuoteAddCustomerController.m
+//  CRM
+//
+//  Created by ios on 16/11/10.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDQuoteAddCustomerController.h"
+#import "YDTool.h"
+#import "YDCustCellModel.h"
+#import "YDUpdateCusInfoS1Cell.h"
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDUpdateCusInfoS3Cell.h"
+#import "YDUpdateCusInfoS4Cell.h"
+#import "YDUpdateCusInfoS5Cell.h"
+#import <MessageUI/MessageUI.h>
+#import "YDCustomerDetailController.h"
+#import "AddressBookHelper.h"
+#import "YDQuoteModel.h"
+#import "YDPriceListInfoVC.h"
+#import "YDPassengerModel.h"
+#import "YDCarInfoModel.h"
+#import "NSDate+YDString.h"
+#import "YDCustListModel.h"
+
+@interface YDQuoteAddCustomerController () <UITableViewDelegate,UITableViewDataSource,MFMessageComposeViewControllerDelegate>
+
+
+@property (nonatomic, strong) NSMutableArray *cellArray;
+@property (nonatomic, strong) YDCustCellModel *haveCarCellModel; //保有车型cellModel
+
+
+@property (nonatomic, strong) UITableView *myTableView;
+@property (nonatomic, strong) UIButton *doneButton;
+
+//UIAlertView
+@property (nonatomic, strong) UIAlertView *saveAddressBookAlert;
+@property (nonatomic, strong) UIAlertView *sendMessageAlert;
+
+
+//新建的客户的参数
+@property (nonatomic, strong) NSMutableDictionary *customerInfoDic; //基本信息
+@property (nonatomic, strong) NSMutableDictionary *intentionInfoDic; //意向信息
+@property (nonatomic, strong) NSMutableDictionary *followInfoDic; //跟进信息
+@property (nonatomic, strong) NSMutableArray *carRelArray; //意向车型
+
+@property (nonatomic, strong) NSMutableArray *quoteListArray; //报价列表
+
+@property (nonatomic, strong) NSMutableDictionary *custLevelDic; //客户级别对应的跟进天数
+
+@property (nonatomic, copy) NSString *eventStaues; //事件的选中状态，默认@“000”
+
+@property (nonatomic, strong) YDCustCellModel *nextFollowTimeCellModel; //下次跟进时间cellModel
+@property (nonatomic, strong) YDCustCellModel *getCarTimeCellModel; //提车时间
+
+@end
+
+@implementation YDQuoteAddCustomerController
+
+- (instancetype)init
+{
+    if (self = [super init]) {
+        _quoteListArray = [NSMutableArray array];
+        _customerInfoDic = [NSMutableDictionary dictionary];
+        _intentionInfoDic = [NSMutableDictionary dictionary];
+        _followInfoDic = [NSMutableDictionary dictionary];
+        _carRelArray = [NSMutableArray array];
+        _eventStaues = @"100";
+        [_customerInfoDic setValue:@(1) forKey:@"gender"];
+    }
+    return self;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    [self setupNavigationBar];
+    
+    [self createView];
+    
+    [self loadQuoteListFormNetwork];
+    
+    [self lodaDaysWithCustomerLevelFromNetWorking];
+    
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    self.navigationController.navigationBar.translucent = NO;
+}
+
+#pragma mark -  ==========================UI部分==============================
+- (void)createView
+{
+    _myTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight - 64.0f) style:UITableViewStylePlain];
+    _myTableView.dataSource = self;
+    _myTableView.delegate = self;
+    _myTableView.backgroundColor = kViewControllerBackgroundColor;
+    _myTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _myTableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+    [_myTableView registerNib(@"YDUpdateCusInfoS1Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS3Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS4Cell")];
+    [_myTableView registerNib(@"YDUpdateCusInfoS5Cell")];
+    [self.view addSubview:_myTableView];
+    
+    self.cellArray = [NSMutableArray arrayWithArray:[YDTool cellModelArrayWithCellName:@"quoteAddCustomerCell"]];
+    
+    //取出电话
+    YDCustCellModel *cellModel = self.cellArray[0][1];
+    cellModel.subTitle = self.passengerModel.customerPhone;
+    [_customerInfoDic setValue:self.passengerModel.customerPhone forKey:@"customerPhone"];
+
+    if (self.passengerModel.customerName.length > 0) {
+        //取出客户姓名
+        YDCustCellModel *cellModel = self.cellArray[0][0];
+        cellModel.subTitle = self.passengerModel.customerName;
+        [_customerInfoDic setValue:self.passengerModel.customerName forKey:@"customerName"];
+    }
+    
+    //设置意向车型
+    YDCustCellModel *carCellModel = self.cellArray[0][3];
+    for (YDCarInfoModel *carModel in self.passengerModel.carRelArray) {
+        if ([carModel.type integerValue] == 1) {
+            carCellModel.subTitle = carModel.carTypeName;
+            [_carRelArray addObject:@{@"brandsId" : carModel.brandsId,
+                                      @"carsId" : carModel.carsId,
+                                      @"carTypeId" : carModel.carTypeId,
+                                      @"type" : @(1)}];
+        }
+    }
+    
+    //保有车型
+    NSMutableArray *groupArray = self.cellArray[0];
+    YDCustCellModel *haveCarCellModel = groupArray[5]; //取出保有车型
+    _haveCarCellModel = haveCarCellModel;
+    if (self.passengerModel.isDrive) {
+        //有保有车型
+        for (YDCarInfoModel *carModel in self.passengerModel.carRelArray) {
+            if ([carModel.type integerValue] == 0) {
+                _haveCarCellModel.subTitle = carModel.carTypeName;
+                [_carRelArray addObject:@{@"brandsId" : carModel.brandsId,
+                                          @"carsId" : carModel.carsId,
+                                          @"carTypeId" : carModel.carTypeId,
+                                          @"type" : @(0)}];
+            }
+        }
+        //没有保有车型
+        [groupArray removeObject:_haveCarCellModel];
+        
+    } else {
+        [groupArray removeObject:_haveCarCellModel];
+    }
+    
+    _nextFollowTimeCellModel = self.cellArray[2][0];
+    
+    //取出是否开车的cellModel
+    YDCustCellModel *isDriveCellModel = self.cellArray[0][4];
+    isDriveCellModel.onORoff = self.passengerModel.isDrive;
+    
+    [self.myTableView reloadData];
+    
+    [self setupBasicInfoOfOrderCustomerInfo];
+}
+
+#pragma mark 带入订单客户基本信息
+- (void)setupBasicInfoOfOrderCustomerInfo
+{
+    if ([self.orderCustomerModel.customerType integerValue] != 2) return;
+    
+    NSMutableArray *groupArray = self.cellArray[0];
+    
+    //客户名称
+    YDCustCellModel *custNameCellModel = groupArray[0];
+    custNameCellModel.subTitle = self.orderCustomerModel.customerName;
+    [_customerInfoDic setValue:custNameCellModel.subTitle forKey:@"customerName"];
+    
+    //保有车型
+    if (self.orderCustomerModel.carTypeName.length > 0) {
+        
+        //取出是否开车的cellModel
+        YDCustCellModel *isDriveCellModel = groupArray[4];
+        isDriveCellModel.onORoff = YES;
+        
+        _haveCarCellModel.subTitle = self.orderCustomerModel.carTypeName;
+        
+        if (groupArray.count == 5) {
+            [groupArray addObject:_haveCarCellModel];
+        }
+        
+        NSDictionary *carDic = @{@"brandsId":self.orderCustomerModel.brandsId,
+                                 @"carsId":self.orderCustomerModel.carsId,
+                                 @"carTypeId":self.orderCustomerModel.carTypeId,
+                                 @"type":@(0)
+                                 };
+        
+        [_carRelArray addObject:carDic];
+    }
+    
+    [self.myTableView reloadData];
+}
+
+#pragma mark 设置导航条
+- (void)setupNavigationBar
+{
+    self.title = @"补充客流";
+    self.navigationController.navigationBarHidden = NO;
+    
+    _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_doneButton setTitle:@"完成" forState:UIControlStateNormal];
+    _doneButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+    [_doneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    _doneButton.frame = CGRectMake(0, 0, 40.0f, 20.0f);
+    [_doneButton addTarget:self action:@selector(rightDoneButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *doneItem = [[UIBarButtonItem alloc] initWithCustomView:_doneButton];
+    self.navigationItem.rightBarButtonItem = doneItem;
+}
+
+#pragma mark - ============================功能============================
+#pragma mark 右上角完成点击
+- (void)rightDoneButtonClick
+{
+    //设置事件，这个页面默认都有报价
+    [_followInfoDic setValue:self.eventStaues forKey:@"eventType"];
+    
+    //检查必填项
+    for (NSArray *groupArray in self.cellArray) {
+        for (YDCustCellModel *cellModel in groupArray) {
+            if (cellModel.isMust && cellModel.subTitle.length <= 0) {
+                [MBProgressHUD showTips:[NSString stringWithFormat:@"%@不能为空", cellModel.title] toView:kWindow];
+                return;
+            }
+        }
+    }
+    
+    //战败的时间，相当于添加跟进点完成的时间
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+    NSString *currentFollowTime = [dateFormatter stringFromDate:[NSDate new]];
+    [_followInfoDic setValue:currentFollowTime forKey:@"createTime"];
+    
+    //参数
+    NSMutableDictionary *parameterDic = [NSMutableDictionary dictionary];
+    [parameterDic setValue:_customerInfoDic forKey:@"customerInfo"];
+    [parameterDic setValue:_intentionInfoDic forKey:@"intentionInfo"];
+    [parameterDic setValue:_followInfoDic forKey:@"followInfo"];
+    [parameterDic setValue:_carRelArray forKey:@"carRel"];
+    
+    [parameterDic setValue:self.passengerModel.modelId forKey:@"passengerId"];
+    [parameterDic setValue:self.passengerModel.customerId forKey:@"repleteCustomerId"];
+    
+    
+    //调用新增客流接口
+    NSString *url = [NSString stringWithFormat:@"%@type=save&sid=%@",kAddCustomerAddress,getNSUser(@"youdao.CRM_SID")];
+    
+    [self showHudInView:self.view hint:@""];
+    [YDDataService startRequest:parameterDic url:url block:^(id result) {
+        [self hideHud];
+        if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+            
+            //弹出是否保存到通讯录
+            _saveAddressBookAlert = [[UIAlertView alloc] initWithTitle:@"是否保存到通讯录" message:nil delegate:self cancelButtonTitle:@"是" otherButtonTitles:@"否", nil];
+            [_saveAddressBookAlert show];
+            
+            
+        }else{
+            [self showHint:@"添加失败"];
+        }
+        
+    } failBlock:^(id error) {
+        [self hideHud];
+        [self showHint:@"添加失败"];
+    }];
+}
+
+#pragma mark 保存到通讯录
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    
+    if (alertView == _saveAddressBookAlert) {
+        if (buttonIndex == 0) {
+            NSString *nameString = _customerInfoDic[@"customerName"];
+            NSString *phoneString = _customerInfoDic[@"customerPhone"];
+            YDCustCellModel *cellModel = self.cellArray[0][3];
+            NSString *carTypeName = cellModel.subTitle;
+            
+            ABHelperCheckExistResultType result = [AddressBookHelper existPhone:phoneString];
+            
+            if (result == ABHelperExistSpecificContact) {
+                //号码已存在
+                [MBProgressHUD showTips:@"该号码已经存在通讯录" toView:kWindow];
+                
+            } else if (result == ABHelperNotExistSpecificContact) {
+                //号码不存在
+                [AddressBookHelper addContactName:nameString phoneNum:phoneString withLabel:carTypeName];
+            }
+        }
+        
+        [self.navigationController popViewControllerAnimated:YES];
+        //暂时不发送离店短信了
+//        _sendMessageAlert = [[UIAlertView alloc] initWithTitle:@"是否发送离店短信" message:nil delegate:self cancelButtonTitle:@"是" otherButtonTitles:@"否", nil];
+//        [_sendMessageAlert show];
+        
+    } else if (alertView == _sendMessageAlert) {
+        
+        if (buttonIndex == 0) {
+            NSString *phone = _customerInfoDic[@"customerPhone"];
+            NSString *leaveMessage = getNSUser(kLeaveMessageKey);
+            [self sendMessageWithPhone:@[phone] message:leaveMessage];
+        } else {
+           
+            YDCustomerDetailController *custDetailController = [[YDCustomerDetailController alloc] init];
+            custDetailController.hidesBottomBarWhenPushed = YES;
+            custDetailController.customerId = self.passengerModel.customerId;
+            custDetailController.backCountLayer = 2;
+            [self.navigationController pushViewController:custDetailController animated:YES];
+        }
+        
+    } else {
+        YDCustomerDetailController *custDetailController = [[YDCustomerDetailController alloc] init];
+        custDetailController.hidesBottomBarWhenPushed = YES;
+        custDetailController.customerId = self.passengerModel.customerId;
+        [self.navigationController pushViewController:custDetailController animated:YES];
+
+    }
+    
+}
+
+
+
+
+#pragma mark 获取报价信息
+- (void)loadQuoteListFormNetwork
+{
+    NSDictionary *dic = @{@"passengerId" : self.passengerModel.modelId};
+    
+    NSString *getMessageUrl = [NSString stringWithFormat:@"%@sid=%@",kQuoteListAddress,getNSUser(@"youdao.CRM_SID")];
+    
+    [YDDataService startRequest:dic url:getMessageUrl block:^(id result) {
+        
+        if ([result[@"code"] isEqualToString:@"S_OK"]) {
+            NSArray *resultArray = result[@"var"];
+            [_quoteListArray removeAllObjects];
+            for (NSDictionary *dic in resultArray) {
+                YDQuoteModel *model = [YDQuoteModel instanceWithDict:dic];
+                [_quoteListArray addObject:model];
+            }
+            [self showQuoteList];
+        }
+        
+    } failBlock:^(id error) {
+        
+    }];
+}
+
+#pragma mark 将报价信息显示出来
+- (void)showQuoteList
+{
+    NSMutableArray *secondCellArray = self.cellArray[1];
+    for (int i = 0; i < _quoteListArray.count; i++) {
+        YDQuoteModel *quoteModel = _quoteListArray[i];
+        YDCustCellModel *cellModel = [[YDCustCellModel alloc] init];
+        cellModel.title = @"查看报价";
+        cellModel.subTitle = [NSString stringWithFormat:@"%@", quoteModel.totalBidAmount];
+        cellModel.isShowArrow = YES;
+        cellModel.cellName = @"YDUpdateCusInfoS2Cell";
+        cellModel.isShowCell = YES;
+        [secondCellArray addObject:cellModel];
+    }
+    [self.myTableView reloadData];
+}
+
+#pragma mark 根据客户级别设置客户的下次跟进时间
+- (void)setCustomerNextFollowTimeWithCustmoerLevel:(NSString *)custmerLevel
+{
+    
+    NSString *nextFollowTime = nil;
+    if (![custmerLevel isEqualToString:@"战败"]) {
+        NSInteger day = [[_custLevelDic valueForKey:custmerLevel] integerValue];
+        
+        //客流创建时间（下次跟进时间根据客流创建时间开始计算）
+        NSDate *nextFollowDate = [NSDate dateWithTimeInterval:24*60*60*day sinceDate:self.passengerModel.createDate];
+        nextFollowTime = [NSDate stringWithDate:nextFollowDate format:@"yyyy-MM-dd HH:mm:SS"];
+        
+        //把下次跟进时间和明天对比
+        NSTimeInterval result = [nextFollowDate timeIntervalSinceDate:[NSDate dateWithTimeInterval:24*60*60 sinceDate:[NSDate new]]];
+        if (result < 0) {
+            //如果下次跟进时间小于明天，置为空
+            nextFollowTime = @"";
+        }
+    }
+    
+    if ([custmerLevel isEqualToString:@"战败"]) {
+        NSMutableArray *fourthArray = self.cellArray[2];
+        
+        //如果原来不是战败，才移除第一个cellModel
+        if (fourthArray.count > 1) {
+            [fourthArray removeObjectAtIndex:0];
+        }
+        
+        YDCustCellModel *remarkCellModel = fourthArray[0];
+        remarkCellModel.title = @"战败原因";
+        remarkCellModel.placeholder = @"请说明战败原因";
+        remarkCellModel.isMust = YES;
+    } else {
+        
+        NSMutableArray *fourthArray = self.cellArray[2];
+        //如果原来是战败，才添加第一个cellModel
+        if (fourthArray.count < 2) {
+            [fourthArray insertObject:_nextFollowTimeCellModel atIndex:0];
+        }
+        
+        YDCustCellModel *remarkCellModel = fourthArray[1];
+        remarkCellModel.title = @"备注";
+        remarkCellModel.subTitle = @"";
+        remarkCellModel.placeholder = @"请填写备注";
+        remarkCellModel.isMust = NO;
+    }
+    
+    //如果不是战败，设置下次跟进时间
+    if (![custmerLevel isEqualToString:@"战败"]) {
+        _nextFollowTimeCellModel.subTitle = nextFollowTime;
+    }
+    
+    //设置下次跟进时间参数
+    [_followInfoDic setValue:nextFollowTime forKey:@"nextFollowTime"];
+    
+    [self.myTableView reloadData];
+}
+
+#pragma mark 获取客户级别对应的跟进天数
+- (void)lodaDaysWithCustomerLevelFromNetWorking
+{
+    _custLevelDic = getNSUser(kCustomerLevelKey);
+}
+
+#pragma mark - ======================Table view data source============================
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return self.cellArray.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    
+    return [self.cellArray[section] count];
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (indexPath.section == 0 && indexPath.row == 2) {
+        return 98;
+    } else{
+        return 49; 
+    }
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    NSArray *cellArray = self.cellArray[indexPath.section];
+    YDCustCellModel *cellModel = cellArray[indexPath.row];
+    
+    if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS1Cell"]) {
+        YDUpdateCusInfoS1Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        if ([cellModel.changeButtonType isEqualToString:@"1"]) {
+            cell.cellType = CellTypeMan;
+        } else {
+            cell.cellType = CellTypeBool;
+        }
+        cell.onORoff = cellModel.onORoff;
+        cell.name = cellModel.title;
+        cell.subString = cellModel.subTitle;
+        cell.isMust = cellModel.isMust;
+        cell.subT.placeholder = cellModel.placeholder;
+        
+        cell.ChangeBlack = ^(NSString *str){
+            [self setupParameterWithTitle:cellModel value:str];
+        };
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS2Cell"]) {
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.titleString = cellModel.title;
+        cell.subTitleString = cellModel.subTitle;
+        cell.subTitle.placeholder = cellModel.placeholder;
+        cell.showNextButton = cellModel.isShowArrow;
+        cell.isMust = cellModel.isMust;
+        cell.hidden = !cellModel.isShowCell;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS3Cell"]) {
+        YDUpdateCusInfoS3Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.titleName = cellModel.title;
+        
+        //如果选了下订，就不能选战败
+        NSInteger staues = [self.eventStaues integerValue] % 10;
+        if (staues == 1) {
+            cell.isDisableLastButton = YES;
+        } else {
+            cell.isDisableLastButton = NO;
+        }
+        
+        cell.ChangeBlack = ^(NSString *str){
+            
+            if ([cellModel.title isEqualToString:@"意向级别"]) {
+                [self setCustomerNextFollowTimeWithCustmoerLevel:str];
+            }
+            
+            self.doneButton.hidden = NO;
+            [kWindow endEditing:YES];
+            [self disableCellTextField];
+            
+            cellModel.subTitle = str;
+            
+            [self setupParameterWithTitle:cellModel value:str];
+        };
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS4Cell"]) {
+        YDUpdateCusInfoS4Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.firstButton.userInteractionEnabled = NO; //禁用报价按钮
+        cell.t = cellModel.title;
+        cell.eventType = self.eventStaues;
+        
+        //如果客户级别是战败禁用下订按钮
+        NSString *custLevel = [_intentionInfoDic valueForKey:@"customerLevel"];
+        if ([custLevel isEqualToString:@"Z"]) {
+            cell.isDisableLastButton = YES;
+        } else {
+            cell.isDisableLastButton = NO;
+        }
+        
+        cell.ClickButtonBlock = ^(NSString *eType, BOOL setH, NSString *bS) {
+            self.eventStaues = eType;
+            [_followInfoDic setValue:self.eventStaues forKey:@"eventType"];
+            //下订的处理
+            if ([bS isEqualToString:@"下订"]) {
+                if (setH) {
+                    self.cellArray[2][0] = self.getCarTimeCellModel;
+                    [self.myTableView reloadData];
+                } else {
+                    self.cellArray[2][0] = self.nextFollowTimeCellModel;
+                    [self.myTableView reloadData];
+                }
+                
+            }
+
+        };
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS5Cell"]) {
+        YDUpdateCusInfoS5Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.textInfo.text = cellModel.subTitle;
+        cell.textInfo.placeholder = cellModel.placeholder;
+        return cell;
+    }
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+    
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    if (section == 2) {
+        return 0;
+    }
+    return 5.0f;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return 0;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    NSArray *cellArray = self.cellArray[indexPath.section];
+    YDCustCellModel *cellModel = cellArray[indexPath.row];
+    
+    if ([cellModel.title isEqualToString:@"联系电话"]) {
+        return;
+    }
+    
+    if ([cellModel.title isEqualToString:@"查看报价"]) {
+        YDPriceListInfoVC *vc = [[YDPriceListInfoVC alloc]initWithNibName:@"YDPriceListInfoVC" bundle:nil];
+        vc.qutoeModel = _quoteListArray[indexPath.row - 1];
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+    
+    WEAKSELF
+    if ([cellModel.editMode isEqualToString:@"1"]) {
+        
+        //选择车型
+        [self chooseCarWithTableView:tableView cellModel:cellModel chooseBlock:^(NSMutableDictionary *dic) {
+            [weakSelf setupParameterWithTitle:cellModel value:dic];
+        }];
+        
+    } else if ([cellModel.editMode isEqualToString:@"2"]) {
+        
+        //_doneButton.hidden = YES;
+        //直接编辑的情况
+        [self directEditWithTableView:tableView cellModel:cellModel indexPath:indexPath chooseBlock:^(NSString *str) {
+            [weakSelf setupParameterWithTitle:cellModel value:str];
+            //weakSelf.doneButton.hidden = NO;
+        }];
+        
+    } else if ([cellModel.editMode isEqualToString:@"3"]) {
+        
+        _doneButton.hidden = YES;
+        //日历选择
+        [self calendarPickerWithTableView:tableView cellModel:cellModel indexPath:indexPath chooseBlock:^(NSString *str) {
+            [weakSelf setupParameterWithTitle:cellModel value:str];
+            weakSelf.doneButton.hidden = NO;
+        }];
+        
+    } else if ([cellModel.editMode isEqualToString:@"4"]) {
+        
+        //购车条件选择
+        [self buyCarOptionWithTableView:tableView cellModel:cellModel chooseBlock:^(NSString *str) {
+            
+        }];
+        
+    } else if ([cellModel.editMode isEqualToString:@"5"]) {
+        //地址选择
+        [self addressChooseWithTableView:tableView cellModel:cellModel indexPath:indexPath chooseBlock:^(NSString *str) {
+            
+        }];
+        
+    } else if ([cellModel.editMode isEqualToString:@"6"]) {
+        
+        _doneButton.hidden = YES;
+        //时间选择
+        [self dateChooseWithTableView:tableView cellModel:cellModel indexPath:indexPath chooseBlock:^(NSString *str) {
+            [weakSelf setupParameterWithTitle:cellModel value:str];
+            weakSelf.doneButton.hidden = NO;
+        }];
+        
+    } else if  ([cellModel.editMode isEqualToString:@"7"]) {
+        
+        //备注
+        [self remarksWithTableView:tableView cellModel:cellModel indexPath:indexPath chooseBlock:^(NSString *str) {
+            [weakSelf setupParameterWithTitle:cellModel value:str];
+        }];
+    } else {
+        
+    }
+    
+}
+
+#pragma mark 部分字段变编辑方法重写，主要调整tableView的便宜量
+//- (void)calendarPickerWithTableView:(UITableView *)tableView cellModel:(YDCustCellModel *)cellModel indexPath:(NSIndexPath *)indexPath chooseBlock:(BackStringBlock)block
+//{
+//    [super calendarPickerWithTableView:tableView cellModel:cellModel indexPath:indexPath chooseBlock:block];
+//    
+//    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+//    CGFloat offsetY = cell.y;
+//    if (indexPath.section == 2) {
+//        offsetY += 44.0f;
+//    }
+//    [UIView animateWithDuration:0.25f animations:^{
+//        tableView.contentOffset = CGPointMake(0, offsetY);
+//    }];
+//    
+//}
+
+
+/**
+ *  设置上传参数
+ *
+ *  @param cellName cell标题
+ *  @param value    选择的值
+ */
+#pragma mark - ================设置上传参数（cellName标题、value选择的值）====================
+- (void)setupParameterWithTitle:(YDCustCellModel *)cellModel value:(id)value
+{
+    
+    NSString *title = cellModel.title;
+    //上传的格式
+    NSDictionary *dic = @{@"customerInfo":
+                              @{
+                                  @"customerName":@"凤凰传奇",
+                                  @"customerPhone":@"15555665566",
+                                  @"gender":@(1),
+                                  @"isDrive":@(0),
+                                  @"birthday":@"1991-03-18",
+                                  @"idNumber":@"123456999988887777",
+                                  @"qq":@"1546353933",
+                                  @"weixin":@"1546353933",
+                                  @"address":@"中国",
+                                  @"familyStatus":@(1)
+                                  } ,
+                          @"intentionInfo":
+                              @{
+                                  @"customerLevel":@"H",
+                                  @"purpose":@"家用",
+                                  @"concerns":@"品牌",
+                                  @"type":@(1),
+                                  @"isLoan":@(0)
+                                  } ,
+                          @"followInfo":
+                              @{
+                                  @"nextFollowTime":@"2016-08-25 00:00:00",
+                                  @"remark":@"我只是个备注"
+                                  } ,
+                          @"carRel":
+                              @[
+                                  @{
+                                      @"brandsId":@"2",
+                                      @"carsId":@"2",
+                                      @"carTypeId":@"2",
+                                      @"type":@(1)
+                                      },
+                                  @{
+                                      @"brandsId":@"3",
+                                      @"carsId":@"3",
+                                      @"carTypeId":@"3",
+                                      @"type":@(2)
+                                      },
+                                  @{
+                                      @"brandsId":@"4",
+                                      @"carsId":@"4",
+                                      @"carTypeId":@"4",
+                                      @"type":@(2)
+                                      }
+                                  ]
+                          
+                          };
+    
+    
+    
+    
+    if ([title isEqualToString:@"客户名称"]) {
+        if ([value isEqualToString:@"女士"]) {
+            [_customerInfoDic setValue:@(0) forKey:@"gender"];
+        } else if ([value isEqualToString:@"男士"]) {
+            [_customerInfoDic setValue:@(1) forKey:@"gender"];
+        } else {
+            [_customerInfoDic setValue:value forKey:@"customerName"];
+            cellModel.subTitle = value;
+        }
+    } else if ([title isEqualToString:@"联系电话"]) {
+        [_customerInfoDic setValue:value forKey:@"customerPhone"];
+        cellModel.subTitle = value;
+    } else if ([title isEqualToString:@"意向级别"]) {
+        if ([value isEqualToString:@"A"]) {
+            [_intentionInfoDic setValue:@"A" forKey:@"customerLevel"];
+        } else if ([value isEqualToString:@"B"]) {
+            [_intentionInfoDic setValue:@"B" forKey:@"customerLevel"];
+        } else if ([value isEqualToString:@"C"]) {
+            [_intentionInfoDic setValue:@"C" forKey:@"customerLevel"];
+        } else if ([value isEqualToString:@"H"]) {
+            [_intentionInfoDic setValue:@"H" forKey:@"customerLevel"];
+        } else if ([value isEqualToString:@"战败"]) {
+            [_intentionInfoDic setValue:@"Z" forKey:@"customerLevel"];
+        }
+        cellModel.subTitle = title;
+    } else if ([title isEqualToString:@"意向车型"]) {
+        
+        //意向车型去重
+        for (NSDictionary *dic in _carRelArray) {
+            if ([[dic valueForKey:@"type"] integerValue] == 1) {
+                [_carRelArray removeObject:dic];
+            }
+        }
+        
+        [value setValue:@(1) forKey:@"type"];
+        [_carRelArray addObject:value];
+    } else if ([title isEqualToString:@"是否开车"]) {
+        if ([value isEqualToString:@"是"]) {
+            [_customerInfoDic setValue:@(1) forKey:@"isDrive"];
+            cellModel.onORoff = YES;
+            
+            [self.cellArray[0] insertObject:_haveCarCellModel atIndex:5];
+            [self.myTableView reloadData];
+        } else {
+            [_customerInfoDic setValue:@(0) forKey:@"isDrive"];
+            cellModel.onORoff = NO;
+            
+            [self.cellArray[0] removeObjectAtIndex:5];
+            [self.myTableView reloadData];
+        }
+        
+    } else if ([title isEqualToString:@"保有车型"]) {
+        [value setValue:@(0) forKey:@"type"];
+        [_carRelArray addObject:value];
+    } else if ([title isEqualToString:@"出生日期"]) {
+        [_customerInfoDic setValue:value forKey:@"birthday"];
+    } else if ([title isEqualToString:@"下次跟进时间"]) {
+        [_followInfoDic setValue:value forKey:@"nextFollowTime"];
+    } else if ([title isEqualToString:@"备注"]) {
+        [_followInfoDic setValue:value forKey:@"remark"];
+    } else if ([title isEqualToString:@"战败原因"]) {
+        [_followInfoDic setValue:value forKey:@"defeatApply"];
+    } else if ([title isEqualToString:@"提车时间"]) {
+        [_followInfoDic setValue:value forKey:@"takeCarTime"];
+    }
+}
+
+
+#pragma mark - ===============================各种cellModel===============================
+- (YDCustCellModel *)getCarTimeCellModel
+{
+    if (_getCarTimeCellModel == nil) {
+        _getCarTimeCellModel = [[YDCustCellModel alloc] init];
+        _getCarTimeCellModel.cellName = @"YDUpdateCusInfoS2Cell";
+        _getCarTimeCellModel.title = @"提车时间";
+        _getCarTimeCellModel.isShowArrow = NO;
+        _getCarTimeCellModel.placeholder = @"请选择提车时间";
+        _getCarTimeCellModel.isShowCell = YES;
+        _getCarTimeCellModel.editMode = @"3";
+        _getCarTimeCellModel.isMust = YES;
+    }
+    return _getCarTimeCellModel;
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

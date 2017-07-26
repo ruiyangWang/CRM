@@ -1,0 +1,83 @@
+//
+//  YDRequestAddress.h
+//  CRM
+//
+//  Created by YD_iOS on 16/7/15.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#ifndef YDRequestAddress_h
+#define YDRequestAddress_h
+
+
+#endif /* YDRequestAddress_h */
+
+/**
+ *  服务器地址
+ */
+#define kServerAddress @"http://192.168.8.177/admin-webapp/service/func"
+
+/**
+ *  服务器地址zeng
+ */
+#define kServerAddressZ @"http://192.168.8.177/admin-webapp/service/func"
+
+/**
+ *  服务器地址dong
+ */
+#define kServerAddressW @"http://192.168.1.15:8080/admin-webapp/service/func"
+
+
+/**
+ *  获取SID
+ */
+#define kSIDRequest @"http://192.168.8.177/admin-webapp/loginapi/token"
+
+/**
+ *  获取客流列表接口
+ */
+#define kListPassenger [NSString stringWithFormat:@"%@/passenger/crmListPassenger?",kServerAddress]
+
+/**
+ *  新增客流接口
+ */
+#define kAddPassenger [NSString stringWithFormat:@"%@/crmAddPassenger?",kServerAddress]
+
+/**
+ *  获取客流详情接口
+ */
+#define kFindPassenger [NSString stringWithFormat:@"%@/crmFindPassenger?",kServerAddress]
+
+/**
+ *  更新客流状态接口
+ */
+#define kUpdateStatus [NSString stringWithFormat:@"%@/crmUpdateStatus?",kServerAddress]
+
+/**
+ *  客户列表接口
+ */
+#define kCustomerListAddress [NSString stringWithFormat:@"%@/customer/crmListCustomer?",kServerAddress]
+
+/**
+ *  直接新建客户接口
+ */
+#define kAddCustomerAddress [NSString stringWithFormat:@"%@/customer/crmAddCustomer?type=save&",kServerAddress]
+
+/**
+ *  获取客户信息接口
+ */
+#define kGetCustomerInfoAddress [NSString stringWithFormat:@"%@/customer/CrmGetCustomerInfo?type=save&",kServerAddress]
+
+/**
+ *  获取未读消息列表接口
+ */
+#define kCrmGetNotifyMsg [NSString stringWithFormat:@"%@/notify/CrmGetNotifyMsg?",kServerAddress]
+
+/**
+ *  标记未读消息为已读接口
+ */
+#define kCrmModifyNotifyMsg [NSString stringWithFormat:@"%@/notify/CrmModifyNotifyMsg?",kServerAddress]
+
+
+
+

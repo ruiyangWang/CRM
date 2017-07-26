@@ -1,0 +1,53 @@
+//
+//  YDFollowArchivesCell.m
+//  CRM
+//
+//  Created by ios on 16/10/21.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDFollowArchivesCell.h"
+#import "YDFollowArchivesModel.h"
+
+
+@interface YDFollowArchivesCell ()
+
+@property (nonatomic, strong) UILabel *monthLabel;
+@property (nonatomic, strong) UILabel *dayLabel;
+
+
+@end
+
+@implementation YDFollowArchivesCell
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self createUI];
+    }
+    return self;
+}
+
+- (void)createUI
+{
+
+}
+
+- (void)setFollowArchivesModel:(YDFollowArchivesModel *)followArchivesModel
+{
+    _followArchivesModel = followArchivesModel;
+
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

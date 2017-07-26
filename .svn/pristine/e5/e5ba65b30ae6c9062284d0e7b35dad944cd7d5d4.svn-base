@@ -1,0 +1,28 @@
+//
+//  YDCustomerView.h
+//  CRM
+//
+//  Created by ios on 16/8/2.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+
+@protocol YDCustomerListViewDelegate <NSObject>
+
+- (void)leftTableViewDidSelectIndex:(NSInteger)index;
+- (void)rightTableViewDidSelectIndex:(NSInteger)index;
+
+@end
+
+@interface YDCustomerListView : UIView
+
+@property (nonatomic, weak) id<YDCustomerListViewDelegate> delegate;
+
+
+/**
+ *  是否显示第一个表（左边的）
+ */
+- (void)showOneTableView:(BOOL)isShow;
+@end

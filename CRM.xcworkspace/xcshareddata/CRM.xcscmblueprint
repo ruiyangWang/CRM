@@ -1,0 +1,25 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "3729e20e-d71d-e34c-b085-90387d84c3ea++3827",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+    "3729e20e-d71d-e34c-b085-90387d84c3ea++3827" : {
+
+    }
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "3729e20e-d71d-e34c-b085-90387d84c3ea++3827" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "BC143CFD-6924-4AB6-B12F-E7E86A517412",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "3729e20e-d71d-e34c-b085-90387d84c3ea++3827" : "CRM\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "CRM",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "CRM.xcworkspace",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "http:\/\/192.168.8.115\/vehicle",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "3729e20e-d71d-e34c-b085-90387d84c3ea++3827"
+    }
+  ]
+}

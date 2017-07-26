@@ -1,0 +1,210 @@
+//
+//  YDFollowupViewController.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/19.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDFollowupViewController.h"
+#import "YDUserInfoCell.h"
+#import "YDFollowupDateView.h"
+#import "YDCustListModel.h"
+#import "YDUpdateFollowupVC.h"
+
+@interface YDFollowupViewController (){
+    NSInteger _oldDate;//存放之前显示的是第几个标签，从0开始
+    BOOL runone;
+}
+
+@property (weak, nonatomic) IBOutlet UIView *dateButtonBGView;
+@property (weak, nonatomic) IBOutlet UITableView *myTableView;
+@property (weak, nonatomic) IBOutlet UIView *tableViewBGV;
+
+@property (copy, nonatomic) NSMutableDictionary *mData;
+@property (copy, nonatomic) NSArray *dateStrings;
+
+@end
+
+@implementation YDFollowupViewController
+
+- (void)dealloc
+{
+
+}
+
+#pragma mark ----- vc lift cycle 生命周期
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.title = @"待跟进";
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    _oldDate = 1;
+    _mData = [NSMutableDictionary dictionary];
+    _dateStrings = [NSDate nowAndAfter];
+
+}
+
+- (void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    if(!runone){
+        runone = YES;
+        [self requwstOverdueData];
+        [self setDateButtonInfo];
+    }
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark ----- get and setter 属性的set和get方法
+//设置dateButton的显示信息 和 点击事件
+- (void)setDateButtonInfo{
+    
+    for (int i = 20000; i<20006; i++) {
+        
+        YDFollowupDateView *fView = [_dateButtonBGView viewWithTag:i];
+        
+        if (i == 20000) {
+            fView.howRow = 0;
+        }else{
+            NSString *k = _dateStrings[fView.tag - 20000 - 1];
+            NSArray *d = [_followups objectForKey:k];
+            fView.howRow = d.count;
+        }
+            
+        fView.ClickButtonBlock = ^(YDFollowupDateView *showView){
+            
+            if (_oldDate != 0) {
+                [self tableViewHidden:NO tag:30000+_oldDate-1];
+            }
+            
+            NSInteger how = (NSInteger)( showView.frame.origin.x / (kScreenWidth/6));
+            
+            [UIView animateWithDuration:.25 animations:^{
+                _tableViewBGV.center = CGPointMake(_tableViewBGV.center.x - kScreenWidth*(how-_oldDate), _tableViewBGV.center.y);
+            } completion:^(BOOL finished) {
+                _oldDate = how;
+                if (_oldDate != 0) {
+                    [self tableViewHidden:YES tag:30000+_oldDate-1];
+                }
+            }];
+            
+        };
+    }
+}
+
+#pragma mark ----- event Response 事件响应(手势 通知)
+
+#pragma mark ----- custom action for UI 界面处理有关
+//隐藏显示左边的tv
+- (void)tableViewHidden:(BOOL)b tag:(NSInteger)tag{
+    for (UIView *v  in _tableViewBGV.subviews) {
+        UIView *tView = v.subviews[0];
+        if (tView.tag == tag) {
+            tView.hidden = b;
+            break;
+        }
+    }
+}
+#pragma mark ----- custom action for DATA 数据处理有关
+//获取逾期待跟进客流
+- (void)requwstOverdueData{
+    NSString *url = [NSString stringWithFormat:@"%@type=overdue&sid=%@",kCrmListFollow,getNSUser(@"youdao.CRM_SID")];
+    
+    [self showHudInView:self.view hint:@""];
+    [YDDataService startRequest:@{} url:url block:^(id result) {
+        [self hideHud];
+        if ([[result objectForKey:@"code"] isEqualToString:@"S_OK"]) {
+            
+            NSArray *data = result[@"var"][@"list"];
+            if ([data isKindOfClass:[NSArray class]]) { //是数组再遍历
+                for (NSDictionary *dic in data) {
+                    YDCustListModel *m = [[YDCustListModel alloc] initWithDict:dic];
+                    NSDate *mDate = [NSDate dateWithString:m.createTimeString format:@"yyyy-MM-dd HH:mm:ss"];
+                    NSString *mString = [NSDate stringWithDate:mDate format:@"yyyy-MM-dd"];
+                    
+                    NSMutableArray *mArray = [NSMutableArray arrayWithArray:[_mData objectForKey:mString]];
+                    [mArray addObject:m];
+                    [_mData setObject:mArray forKey:mString];
+                }
+            
+            
+            [_myTableView reloadData];
+            YDFollowupDateView *f = [_dateButtonBGView viewWithTag:20000];
+            f.howRow = data.count;
+            } else {
+                [self showHint:@"无待跟进客流"];
+            }
+            
+        }else{
+            [self showHint:@"获取逾期待跟进客流失败"];
+        }
+    } failBlock:^(id error) {
+        [self hideHud];
+        [self showHint:@"获取逾期待跟进客流失败"];
+    }];
+}
+
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+#pragma mark - Table view data source
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    
+    [tableView registerNib:[UINib nibWithNibName:@"YDUserInfoCell" bundle:nil] forCellReuseIdentifier:@"YDUserInfoCell"];
+    tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
+    if (tableView.tag == 30000) {
+        return _mData.allKeys.count;
+    }else{
+        return 1;
+    }
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if (tableView.tag == 30000) {
+        NSString *key = _mData.allKeys[section];
+        return [[_mData objectForKey:key] count];
+    }else{
+        NSArray *datas = [_followups objectForKey:_dateStrings[tableView.tag-30000-1]];
+        return datas.count;
+    }
+}
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+    if (tableView.tag == 30000) {
+        UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, kScreenWidth, 25)];
+        label.backgroundColor = [UIColor whiteColor];
+        label.font = [UIFont systemFontOfSize:12];
+        label.textColor = kNavigationBackgroundColor;
+        label.text = [NSString stringWithFormat:@"    %@",_mData.allKeys[section]];
+        return label;
+    }else
+        return [[UIView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, 0.1)];
+}
+- (nullable UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section{
+    return [[UIView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, 0.1)];
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    YDUserInfoCell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUserInfoCell" forIndexPath:indexPath];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    if (tableView.tag == 30000) {
+        NSString *key = _mData.allKeys[indexPath.section];
+        cell.custListModel = [_mData objectForKey:key][indexPath.row];
+        
+    }else{
+
+        NSArray *datas = [_followups objectForKey:_dateStrings[tableView.tag-30000-1]];
+        cell.custListModel = datas[indexPath.row];
+    }
+    return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    YDUserInfoCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    YDUpdateFollowupVC *vc = [[YDUpdateFollowupVC alloc] initWithNibName:@"YDUpdateFollowupVC" bundle:nil];
+    vc.cModel = cell.custListModel;
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+
+@end

@@ -1,0 +1,61 @@
+//
+//  YDUpdateCusInfoS1Cell.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUpdateCusInfoS1Cell.h"
+#import "YDSwith.h"
+
+@interface YDUpdateCusInfoS1Cell()
+
+@property (weak, nonatomic) IBOutlet YDSwith *swithView;
+@property (weak, nonatomic) IBOutlet UILabel *t;
+@property (weak, nonatomic) IBOutlet UILabel *subT;
+
+@end
+
+@implementation YDUpdateCusInfoS1Cell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+    
+    _swithView.ClickButtonBlack = ^(NSString *str ){
+        if (_ChangeBlack != nil) {
+            _ChangeBlack(str);
+        }
+    };
+}
+
+-(void)setCellType:(CellType)cellType{
+    _cellType = cellType;
+    
+    _swithView.colorStyle = (NSInteger)_cellType;
+
+}
+-(void)setName:(NSString *)name{
+    _name = name;
+    _t.text = name;
+}
+-(void)setSubString:(NSString *)subString{
+    _subString = subString;
+    
+    if (subString.length > 0) {
+        _t.text = @"客户名称";
+        _subT.text = subString;
+    }else{
+        _t.text = @"是否开车";
+        _subT.text = subString;
+    }
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

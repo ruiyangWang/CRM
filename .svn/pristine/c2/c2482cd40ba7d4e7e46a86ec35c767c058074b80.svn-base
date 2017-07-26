@@ -1,0 +1,94 @@
+//
+//  YDUpdateCusInfoS4Cell.m
+//  CRM
+//
+//  Created by YD_iOS on 16/7/22.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUpdateCusInfoS4Cell.h"
+
+@interface YDUpdateCusInfoS4Cell()
+
+@property (weak, nonatomic) IBOutlet UILabel *tLabel;
+@property (weak, nonatomic) IBOutlet UILabel *subLabel;
+@property (copy, nonatomic) NSArray *hColors;   //点击之后，通过改变hColors的颜色值来改变状态
+@property (copy, nonatomic) NSArray *titles;
+
+
+@end
+
+@implementation YDUpdateCusInfoS4Cell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+-(void)setT:(NSString *)t{
+    _t = t;
+    if ([t isEqualToString:@"事件"]) {
+        _tLabel.text = t;
+        _subLabel.text = @"（多选）";
+        _hColors = @[[UIColor colorWithHexString:@"98BC7B"],
+                     [UIColor colorWithHexString:@"98BC7B"],
+                     [UIColor colorWithHexString:@"98BC7B"]];
+        _titles = @[@"报价",@"试驾",@"下定"];
+    }else{
+        _tLabel.text = t;
+        _subLabel.text = @"";
+        _hColors = @[[UIColor colorWithHexString:@"D8B628"],
+                     [UIColor colorWithHexString:@"E55F5F"],
+                     [UIColor colorWithHexString:@"AE5AA2"]];
+        _titles = @[@"单身",@"已婚",@"已育"];
+
+    }
+    
+    for (int i=10000; i<10003; i++) {
+        UIButton *button = (UIButton *)[self viewWithTag:i];
+        [button setTitle:_titles[i-10000] forState:(UIControlStateNormal)];
+    }
+    
+    UIButton *firstButton = (UIButton *)[self viewWithTag:10000];
+    _buttonType = [NSMutableArray arrayWithArray:@[@0, @0, @0]];
+    [self clickButton:firstButton];
+}
+
+- (IBAction)clickButton:(UIButton *)sender {
+    
+    //多选，不需要清空之前的数据；单选，清空之前的数据，
+    if ([_t isEqualToString:@"事件"]) {
+        BOOL b = [_buttonType[sender.tag-10000] boolValue];
+        _buttonType[sender.tag - 10000] = [NSNumber numberWithBool:!b];
+        [self changeColor:sender];
+    }else{
+        _buttonType = [NSMutableArray arrayWithArray:@[@0, @0, @0]];
+        _buttonType[sender.tag-10000] = @1;
+        
+        for (int i=10000; i<10003; i++) {
+            UIButton *button = (UIButton *)[self viewWithTag:i];
+            [self changeColor:button];
+        }
+    }
+    
+}
+
+- (void)changeColor:(UIButton *)sender{
+    BOOL buttonIsH = [_buttonType[sender.tag-10000] boolValue];
+    if (buttonIsH) {
+        sender.backgroundColor = _hColors[sender.tag-10000];
+        [sender setTitleColor:[UIColor whiteColor] forState:(UIControlStateNormal)];
+    }else{
+        sender.backgroundColor = [UIColor colorWithHexString:@"FAFAFA"];
+        [sender setTitleColor:[UIColor colorWithHexString:@"444444"] forState:(UIControlStateNormal)];
+    }
+}
+
+
+@end

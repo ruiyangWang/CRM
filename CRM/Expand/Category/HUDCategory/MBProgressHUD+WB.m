@@ -1,0 +1,92 @@
+//
+//  MBProgressHUD+WB.m
+//  YDCalculateTool
+//
+//  Created by ios on 16/6/30.
+//  Copyright © 2016年 ios. All rights reserved.
+//
+
+#import "MBProgressHUD+WB.h"
+
+@implementation MBProgressHUD (WB)
+
++ (instancetype)showNotNetworkingHUDToView:(UIView *)view
+{
+    [MBProgressHUD hideAllHUDsForView:view animated:NO];
+    
+    MBProgressHUD *HUD = [MBProgressHUD showHUDAddedTo:view animated:YES];
+    HUD.customView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"car1"]];
+    HUD.removeFromSuperViewOnHide = YES;
+    //HUD.mode = MBProgressHUDModeCustomView;
+    HUD.labelText = @"请检查网络状态";
+    [HUD show:YES];
+    [HUD hide:YES afterDelay:2.0];
+    return HUD;
+}
+
++ (instancetype)showStatus:(NSString *)statusString toView:(UIView *)view
+{
+    [MBProgressHUD hideAllHUDsForView:view animated:NO];
+    MBProgressHUD *HUD = [MBProgressHUD showHUDAddedTo:view animated:YES];
+    HUD.removeFromSuperViewOnHide = YES;
+    HUD.labelText = statusString;
+    return HUD;
+}
+
++ (instancetype)showTips:(NSString *)tipsString toView:(UIView *)view
+{
+    [MBProgressHUD hideAllHUDsForView:view animated:NO];
+    MBProgressHUD *HUD = [MBProgressHUD showHUDAddedTo:view animated:YES];
+    HUD.removeFromSuperViewOnHide = YES;
+    HUD.labelText = tipsString;
+    HUD.mode = 5;
+    [HUD hide:YES afterDelay:2.0];
+    return HUD;
+}
+
++ (instancetype)showInputErrorTips:(NSString *)tipsString toView:(UIView *)view
+{
+    [MBProgressHUD hideAllHUDsForView:view animated:NO];
+    MBProgressHUD *HUD = [MBProgressHUD showHUDAddedTo:view animated:YES];
+    HUD.removeFromSuperViewOnHide = YES;
+    HUD.customView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"car_sign"]];
+    //HUD.mode = MBProgressHUDModeCustomView;
+    HUD.labelText = tipsString;
+    [HUD show:YES];
+    [HUD hide:YES afterDelay:2.0];
+    return HUD;
+}
+
++ (instancetype)showSuccessTips:(NSString *)tipsString toView:(UIView *)view
+{
+    [MBProgressHUD hideAllHUDsForView:view animated:YES];
+    MBProgressHUD *HUD = [MBProgressHUD showHUDAddedTo:view animated:YES];
+    HUD.customView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"car_sign"]];
+    HUD.removeFromSuperViewOnHide = YES;
+    //HUD.mode = MBProgressHUDModeCustomView;
+    HUD.labelText = tipsString;
+    [HUD show:YES];
+    [HUD hide:YES afterDelay:2.0];
+    return HUD;
+}
+
++ (instancetype)showLoadingMessage:(NSString *)message toView:(UIView *)view
+{
+    [MBProgressHUD hideAllHUDsForView:view animated:NO];
+    MBProgressHUD *HUD = [MBProgressHUD showHUDAddedTo:view animated:YES];
+    HUD.removeFromSuperViewOnHide = YES;
+    HUD.labelText = message;
+    return HUD;
+    
+}
+
+- (BOOL)isShowForView:(UIView *)view
+{
+    NSArray *array = [MBProgressHUD allHUDsForView: view];
+    if (array != nil && array.count > 0) {
+        return YES;
+    }
+    return NO;
+}
+
+@end

@@ -1,0 +1,82 @@
+//
+//  YDLoseSettleVC.m
+//  CRM
+//
+//  Created by YD_iOS on 16/8/4.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDLoseSettleVC.h"
+#import "YDUpdateCusInfoS2Cell.h"
+
+@interface YDLoseSettleVC (){
+    NSArray *titles;
+    NSArray *subTitles;
+}
+
+@property (weak, nonatomic) IBOutlet UITableView *myTableView;
+
+@end
+
+@implementation YDLoseSettleVC
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.title = @"战败处理";
+
+    [_myTableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    _myTableView.tableFooterView = [[UIView alloc]init];
+    
+    titles = @[@[@"申请时间"],@[@"申请原因"],@[@"处理结果"]];
+    subTitles = @[@[@"6月30日 周日"],@[@"什么情况啊"],@[@"重新分配"]];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+#pragma mark ----- get and setter 属性的set和get方法
+#pragma mark ----- event Response 事件响应(手势 通知)
+#pragma mark ----- custom action for UI 界面处理有关
+#pragma mark ----- custom action for DATA 数据处理有关
+#pragma mark ----- xxxxxx delegate 各种delegate回调
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return [titles count];
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return [titles[section] count];
+}
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+    UIView *view = [[UIView alloc]init];
+    return view;
+}
+- (nullable UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section{
+    UIView *view = [[UIView alloc]init];
+    return view;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"YDUpdateCusInfoS2Cell" forIndexPath:indexPath];
+    cell.titleString = titles[indexPath.section][indexPath.row];
+    cell.subTitleString = subTitles[indexPath.section][indexPath.row];
+    cell.showNextButton = NO;
+    return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    NSLog(@"");
+}
+
+@end

@@ -1,0 +1,128 @@
+//
+//  YDUserInfoController.m
+//  CRM
+//
+//  Created by ios on 16/8/1.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDUserInfoController.h"
+#import "YDTool.h"
+#import "YDCustCellModel.h"
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDUserInfoFMDB.h"
+#import "UIImageView+WebCache.h"
+
+@interface YDUserInfoController ()
+
+@property (nonatomic, strong) NSMutableArray *cellArray;
+
+
+@end
+
+@implementation YDUserInfoController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    
+    [self getCellData];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [self showUserInfoData];
+}
+
+- (void)getCellData
+{
+    self.title = @"个人信息";
+    self.navigationController.navigationBarHidden = NO;
+    
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
+    [self.tableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    
+    self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+    self.tableView.backgroundColor = kViewControllerBackgroundColor;
+    
+    self.cellArray = [NSMutableArray arrayWithArray:[YDTool cellModelWithCellName:@"userInfoCell"]];
+    
+}
+
+- (void)showUserInfoData
+{
+    NSDictionary *userDic = self.userInfoDic;
+    for (YDCustCellModel *cellModel in self.cellArray) {
+        if ([cellModel.title isEqualToString:@"姓名"]) {
+            cellModel.subTitle = userDic[@"memberName"];
+        } else if ([cellModel.title isEqualToString:@"头像"]) {
+            cellModel.subTitle = userDic[@"headPic"];
+        }
+        else if ([cellModel.title isEqualToString:@"手机号码"]) {
+            cellModel.subTitle = userDic[@"mobilePhone"];
+        }
+        else if ([cellModel.title isEqualToString:@"4s店全称"]) {
+            cellModel.subTitle = userDic[@"orgName"];
+        }
+        else if ([cellModel.title isEqualToString:@"品牌"]) {
+            NSString *brandsName = [userDic valueForKey:@"brandsName"];
+            cellModel.subTitle = brandsName.length > 0 ? brandsName : @"";
+            if (cellModel.subTitle.length <= 0) {
+                cellModel.placeholder = @"无";
+            }
+        }
+    }
+    
+    [self.tableView reloadData];
+}
+
+#pragma mark - ==================tableview delegate==================
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return self.cellArray.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDCustCellModel *cellModel = self.cellArray[indexPath.row];
+    if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS2Cell"]) {
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName];
+        cell.titleString = cellModel.title;
+        cell.subTitleString = cellModel.subTitle;
+        cell.subTitle.placeholder = cellModel.placeholder;
+        cell.showNextButton = cellModel.isShowArrow;
+        
+        
+        //第二个头像
+        if (indexPath.row == 1) {
+            UIImageView *iconView = [[UIImageView alloc] init];
+            iconView.frame = CGRectMake(kScreenWidth - 29.0f - 32.0f, 10.0f, 29.0f, 29.0f);
+            [iconView sd_setImageWithURL:[NSURL URLWithString:cellModel.subTitle] placeholderImage:[UIImage imageNamed:@"iconImage_default"]];
+            iconView.layer.cornerRadius = 14.5f;
+            iconView.layer.masksToBounds = YES;
+            [cell addSubview:iconView];
+            
+            cell.subTitleString = @"";
+        }
+        
+        return cell;
+    }
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName];
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 49.0f;
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+@end

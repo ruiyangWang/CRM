@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="YDGiveCarVC">
+            <connections>
+                <outlet property="layerView" destination="g2k-Jz-1Xl" id="KU4-5L-WGo"/>
+                <outlet property="myTableView" destination="Glj-dd-8B4" id="kRM-Gc-cvQ"/>
+                <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" style="plain" separatorStyle="none" rowHeight="49" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Glj-dd-8B4">
+                    <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <connections>
+                        <outlet property="dataSource" destination="-1" id="gTK-fu-AbB"/>
+                        <outlet property="delegate" destination="-1" id="sDR-Rq-LZr"/>
+                    </connections>
+                </tableView>
+                <button opaque="NO" alpha="0.0" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="g2k-Jz-1Xl">
+                    <rect key="frame" x="-23" y="-15" width="46" height="30"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <connections>
+                        <action selector="clickLayerView:" destination="-1" eventType="touchUpInside" id="rW5-D9-dKn"/>
+                    </connections>
+                </button>
+            </subviews>
+            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="g2k-Jz-1Xl" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="4kp-Ih-psl"/>
+                <constraint firstAttribute="trailing" secondItem="g2k-Jz-1Xl" secondAttribute="trailing" id="5gf-YN-Jy0"/>
+                <constraint firstAttribute="trailing" secondItem="Glj-dd-8B4" secondAttribute="trailing" id="DKB-J7-Mt1"/>
+                <constraint firstItem="Glj-dd-8B4" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="TWH-vX-PX1"/>
+                <constraint firstItem="Glj-dd-8B4" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="Woe-aZ-dcs"/>
+                <constraint firstAttribute="bottom" secondItem="Glj-dd-8B4" secondAttribute="bottom" id="aHk-U8-66O"/>
+                <constraint firstAttribute="bottom" secondItem="g2k-Jz-1Xl" secondAttribute="bottom" id="ciP-8B-qbc"/>
+                <constraint firstItem="g2k-Jz-1Xl" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" constant="49" id="k09-jp-gsS"/>
+            </constraints>
+            <variation key="default">
+                <mask key="subviews">
+                    <exclude reference="Glj-dd-8B4"/>
+                    <exclude reference="g2k-Jz-1Xl"/>
+                </mask>
+                <mask key="constraints">
+                    <exclude reference="4kp-Ih-psl"/>
+                    <exclude reference="5gf-YN-Jy0"/>
+                    <exclude reference="ciP-8B-qbc"/>
+                    <exclude reference="k09-jp-gsS"/>
+                    <exclude reference="DKB-J7-Mt1"/>
+                    <exclude reference="TWH-vX-PX1"/>
+                    <exclude reference="Woe-aZ-dcs"/>
+                    <exclude reference="aHk-U8-66O"/>
+                </mask>
+            </variation>
+            <variation key="widthClass=compact">
+                <mask key="subviews">
+                    <include reference="Glj-dd-8B4"/>
+                    <include reference="g2k-Jz-1Xl"/>
+                </mask>
+                <mask key="constraints">
+                    <include reference="4kp-Ih-psl"/>
+                    <include reference="5gf-YN-Jy0"/>
+                    <include reference="ciP-8B-qbc"/>
+                    <include reference="k09-jp-gsS"/>
+                    <include reference="DKB-J7-Mt1"/>
+                    <include reference="TWH-vX-PX1"/>
+                    <include reference="Woe-aZ-dcs"/>
+                    <include reference="aHk-U8-66O"/>
+                </mask>
+            </variation>
+        </view>
+    </objects>
+</document>

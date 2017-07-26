@@ -1,0 +1,39 @@
+//
+//  YDFunction.h
+//  CRM
+//
+//  Created by YD_iOS on 16/7/15.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#ifndef YDFunction_h
+#define YDFunction_h
+
+
+#endif /* YDFunction_h */
+
+#define kCRM_SIDKey     @"youdao.CRM_SID"
+#define kUserInfoKey    @"userInfoDictionary"
+#define kNewestVersion  @"1.0.2"
+#define kCurrentVersionKey @"currentVersionKey"
+#define kUserDefaults       [NSUserDefaults standardUserDefaults]
+#define setNSUser(obj,key)  [kUserDefaults setObject:obj forKey:key]
+#define getNSUser(key)      [kUserDefaults objectForKey:key]
+
+#define kWindow [[UIApplication sharedApplication].delegate window]
+
+#define kScreenWidth CGRectGetWidth([UIScreen mainScreen].bounds)
+#define kScreenHeight CGRectGetHeight([UIScreen mainScreen].bounds)
+
+#define WEAKSELF typeof(self) __weak weakSelf = self;
+#define WEAK_OBJECT(obj) typeof(obj) __weak weak_##obj = obj
+#define STRONGSELF typeof(weakSelf) __strong strongSelf = weakSelf;
+
+//tableView注册cell
+#define registerNib(strName) registerNib:[UINib nibWithNibName:strName bundle:nil] forCellReuseIdentifier:strName
+
+
+//写在pch文件中，项目调成release模式，所有NSLog都不打印。
+#ifndef DEBUG
+#    define NSLog(...)
+#endif

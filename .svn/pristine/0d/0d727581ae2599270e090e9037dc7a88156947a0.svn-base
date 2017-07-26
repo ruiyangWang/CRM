@@ -1,0 +1,28 @@
+//
+//  YDAddFollowController.h
+//  CRM
+//
+//  Created by ios on 16/7/27.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDViewController.h"
+
+typedef NS_ENUM(NSInteger, AddFollowType) {
+    AddFollowTypeManual,    //手动添加跟进
+    AddFollowTypePhone      //打电话后跟进
+};
+
+@interface YDAddFollowController : YDViewController
+
+/**
+ *  添加跟进类型
+ */
+@property (nonatomic, assign) AddFollowType addFollowType;
+
+/**
+ *  客户ID
+ */
+@property (nonatomic, copy) NSString *customerId;
+
+@end

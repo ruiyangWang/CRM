@@ -1,0 +1,74 @@
+//
+//  YDCreateCustView.m
+//  CRM
+//
+//  Created by ios on 16/7/25.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDCreateCustView.h"
+#import "YDCustomerListCell.h"
+
+
+@interface YDCreateCustView () <UITextFieldDelegate>
+@property (weak, nonatomic) IBOutlet UITextField *custPhoneTextField;
+
+@property (weak, nonatomic) IBOutlet UIButton *nextButton;
+@property (weak, nonatomic) IBOutlet UILabel *promptLabel;
+@property (nonatomic, strong) YDCustomerListCell *cell;
+@end
+
+@implementation YDCreateCustView
+
+- (instancetype)init
+{
+    if (self = [super init]) {
+        self = [[[NSBundle mainBundle] loadNibNamed:@"YDCreateCustView" owner:self options:nil] lastObject];
+        [self createUI];
+    }
+    return self;
+}
+
+- (void)createUI
+{
+    self.nextButton.hidden = YES;
+    
+    _cell = [[YDCustomerListCell alloc] init];
+    _cell.frame = CGRectMake(5.0f, CGRectGetMaxY(self.promptLabel.frame) + 8.0f, kScreenWidth - 10.0f, 74.0f);
+    _cell.backgroundColor = [UIColor whiteColor];
+    [self addSubview:_cell];
+    
+    self.custPhoneTextField.delegate = self;
+}
+
+- (IBAction)backBtnClick {
+
+    if ([self.delegate respondsToSelector:@selector(backFontPage)]) {
+        [self.delegate backFontPage];
+    }
+}
+- (IBAction)nextBtnClick:(UIButton *)sender {
+    if ([self.delegate respondsToSelector:@selector(nextStepBtnClick)]) {
+        [self.delegate nextStepBtnClick];
+    }
+}
+
+- (void)textFieldDidBeginEditing:(UITextField *)textField
+{
+    self.nextButton.hidden = NO;
+    
+    self.cell.hidden = YES;
+    self.promptLabel.hidden = YES;
+
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    if (textField.text.length >= 11) {
+        return NO;
+    } else {
+        return YES;
+    }
+}
+
+@end

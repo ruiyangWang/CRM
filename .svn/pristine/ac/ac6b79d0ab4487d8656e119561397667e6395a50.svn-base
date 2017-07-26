@@ -1,0 +1,118 @@
+//
+//  YDFollowRecordController.m
+//  CRM
+//
+//  Created by ios on 16/7/28.
+//  Copyright © 2016年 YD_iOS. All rights reserved.
+//
+
+#import "YDFollowRecordController.h"
+#import "YDTool.h"
+#import "YDCustCellModel.h"
+
+//cell
+#import "YDUpdateCusInfoS2Cell.h"
+#import "YDUpdateCusInfoS4Cell.h"
+#import "YDUpdateCusInfoS5Cell.h"
+#import "YDFollowChooseCell.h"
+
+
+@interface YDFollowRecordController ()
+
+@property (nonatomic, strong) NSMutableArray *cellArray;
+
+@end
+
+@implementation YDFollowRecordController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    
+     [self setupViewData];
+}
+
+
+#pragma mark 设置view
+- (void)setupViewData
+{
+    self.title = @"查看跟进";
+    
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [self.tableView registerNib(@"YDUpdateCusInfoS2Cell")];
+    [self.tableView registerNib(@"YDFollowChooseCell")];
+    [self.tableView registerNib(@"YDUpdateCusInfoS5Cell")];
+    [self.tableView registerNib(@"YDUpdateCusInfoS4Cell")];
+    self.cellArray = [NSMutableArray arrayWithArray:[YDTool cellModelArrayWithCellName:@"followRecordCell"]];
+}
+
+#pragma mark - ==================tableview delegate=====================
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return self.cellArray.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [self.cellArray[section] count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    YDCustCellModel *cellModel = self.cellArray[indexPath.section][indexPath.row];
+    
+    if ([cellModel.cellName isEqualToString:@"YDFollowChooseCell"]) {
+        YDFollowChooseCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS2Cell"]) {
+        YDUpdateCusInfoS2Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.titleString = cellModel.title;
+        cell.subTitleString = cellModel.subTitle;
+        cell.subTitle.placeholder = cellModel.placeholder;
+        cell.showNextButton = cellModel.isShowArrow;
+        return cell;
+    }  else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS4Cell"]) {
+        YDUpdateCusInfoS4Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        cell.t = cellModel.title;
+        return cell;
+    } else if ([cellModel.cellName isEqualToString:@"YDUpdateCusInfoS5Cell"]) {
+        YDUpdateCusInfoS5Cell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName forIndexPath:indexPath];
+        
+        return cell;
+    }
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellModel.cellName];
+    
+    return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 49.0f;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    return 5.0f;
+}
+
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end
